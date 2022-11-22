@@ -142,9 +142,14 @@ public class AssetBundleManager : SingletonBase<AssetBundleManager>
     /// <param name="bytes"></param>
     public void WriteAssetBundle(string filePath, byte[] bytes)
     {
-        var sw = System.Diagnostics.Stopwatch.StartNew();
         File.WriteAllBytes(filePath, bytes);
-        sw.Stop();
-        Debug.Log($"WriteAssetBundle: time = {sw.ElapsedMilliseconds} path = {filePath}");
+        if (File.Exists(filePath))
+        {
+            Debug.Log($"WriteAssetBundle completed: path = {filePath}");
+        }
+        else
+        {
+            Debug.Log($"WriteAssetBundle failed.");
+        }
     }
 }

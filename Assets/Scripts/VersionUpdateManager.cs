@@ -104,6 +104,7 @@ public class VersionUpdateManager : SingletonBase<VersionUpdateManager>
         var avatarVersion = GetAvatarVersion(versions);
         if (avatarVersion == null) return null;
 
+        Debug.Log($"GetAvatarIdentifier: Identifier = {avatarVersion.Identifier}");
         return avatarVersion.Identifier;
     }
 
@@ -256,6 +257,13 @@ public class VersionUpdateManager : SingletonBase<VersionUpdateManager>
         var json = JsonUtility.ToJson(versions);
         var filePath = FileHelper.GetLocalDataFolderPath() + "Versions.json";
         File.WriteAllText(filePath, json, Encoding.UTF8);
-        Debug.Log($"WriteVersions: filePath = {filePath}, json = {json}");
+        if (File.Exists(filePath))
+        {
+            Debug.Log($"WriteVersions completed: filePath = {filePath}, json = {json}");
+        }
+        else
+        {
+            Debug.Log($"WriteVersions failed.");
+        }
     }
 }
