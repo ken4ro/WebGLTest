@@ -40,6 +40,14 @@ public class AssetBundleManager : SingletonBase<AssetBundleManager>
         {
             AvatarAssetBundle = LoadAssetBundle(AvatarAssetBundleFilePath);
         }
+        if (AvatarAssetBundle != null)
+        {
+            Debug.Log($"LoadAvatarAssetBundle completed.");
+        }
+        else
+        {
+            Debug.Log($"LoadAvatarAssetBundle failed.");
+        }
     }
 
     /// <summary>
@@ -51,6 +59,14 @@ public class AssetBundleManager : SingletonBase<AssetBundleManager>
         if (ResourcePackAssetBundle == null)
         {
             ResourcePackAssetBundle = LoadAssetBundle(ResourcePackBundleFilePath);
+        }
+        if (ResourcePackAssetBundle != null)
+        {
+            Debug.Log($"LoadResourcePackAssetBundle completed.");
+        }
+        else
+        {
+            Debug.Log($"LoadResourcePackAssetBundle failed.");
         }
     }
 
@@ -128,10 +144,15 @@ public class AssetBundleManager : SingletonBase<AssetBundleManager>
     /// <returns></returns>
     public AssetBundle LoadAssetBundle(string filePath)
     {
-        var sw = System.Diagnostics.Stopwatch.StartNew();
         var assetBundle = AssetBundle.LoadFromFile(filePath);
-        sw.Stop();
-        Debug.Log($"LoadAssetBundle: time = {sw.ElapsedMilliseconds} path = {filePath}");
+        if (assetBundle != null)
+        {
+            Debug.Log($"LoadAssetBundle completed: asset = {assetBundle.GetAllAssetNames()}");
+        }
+        else
+        {
+            Debug.Log($"LoadAssetBundle failed.");
+        }
         return assetBundle;
     }
 

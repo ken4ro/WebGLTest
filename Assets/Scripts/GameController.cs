@@ -69,6 +69,14 @@ public class GameController : SingletonMonoBehaviour<GameController>
 
         // キャラクターオブジェクト作成
         GameObject characterObject = assetBundle.LoadAsset<GameObject>("Una2D");
+        if (characterObject != null)
+        {
+            Debug.Log($"LoadCharacterObject: LoadAsset completed.");
+        }
+        else
+        {
+            Debug.Log($"LoadCharacterObject: LoadAsset failed.");
+        }
         //switch (GlobalState.Instance.CurrentCharacterModel)
         //{
         //    case CharacterModel.Una3D:
@@ -82,6 +90,14 @@ public class GameController : SingletonMonoBehaviour<GameController>
         //        break;
         //}
         characterObject = Instantiate(characterObject);
+        if (characterObject != null)
+        {
+            Debug.Log($"LoadCharacterObject: Instantiate completed.");
+        }
+        else
+        {
+            Debug.Log($"LoadCharacterObject: Instantiate failed.");
+        }
 
         // Front Canvas より奥に描画するようにする
         var frontCanvasIndex = GameObject.Find("FrontCanvas").transform.GetSiblingIndex();
