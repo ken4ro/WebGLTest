@@ -131,7 +131,7 @@ public class AssetBundleManager : SingletonBase<AssetBundleManager>
         var sw = System.Diagnostics.Stopwatch.StartNew();
         var assetBundle = AssetBundle.LoadFromFile(filePath);
         sw.Stop();
-        //Debug.Log($"AssetBundle load time: {sw.ElapsedMilliseconds} path: {filePath}");
+        Debug.Log($"LoadAssetBundle: time = {sw.ElapsedMilliseconds} path = {filePath}");
         return assetBundle;
     }
 
@@ -145,6 +145,6 @@ public class AssetBundleManager : SingletonBase<AssetBundleManager>
         var sw = System.Diagnostics.Stopwatch.StartNew();
         File.WriteAllBytes(filePath, bytes);
         sw.Stop();
-        //Debug.Log($"AssetBundle write time: {sw.ElapsedMilliseconds} path: {filePath}");
+        Debug.Log($"WriteAssetBundle: time = {sw.ElapsedMilliseconds} path = {filePath}");
     }
 }

@@ -114,6 +114,7 @@ public class VersionUpdateManager : SingletonBase<VersionUpdateManager>
     private ResponseAssetBundleVersions LoadLocalVersions()
     {
         var filePath = FileHelper.GetLocalDataFolderPath() + "Versions.json";
+        Debug.Log($"LoadLocalVersions: filePath = {filePath}");
         if (File.Exists(filePath))
         {
             var json = File.ReadAllText(filePath);
@@ -255,5 +256,6 @@ public class VersionUpdateManager : SingletonBase<VersionUpdateManager>
         var json = JsonUtility.ToJson(versions);
         var filePath = FileHelper.GetLocalDataFolderPath() + "Versions.json";
         File.WriteAllText(filePath, json, Encoding.UTF8);
+        Debug.Log($"WriteVersions: filePath = {filePath}, json = {json}");
     }
 }
