@@ -39,6 +39,10 @@ public class GameController : SingletonMonoBehaviour<GameController>
         {
             GlobalState.Instance.CurrentCharacterModel = characterModel;
         }
+        else if (identifier == "una2d_webgl")
+        {
+            GlobalState.Instance.CurrentCharacterModel = CharacterModel.Una2D;
+        }
         else
         {
             Debug.LogError($"Mismatch between identifier and character model: {identifier}");

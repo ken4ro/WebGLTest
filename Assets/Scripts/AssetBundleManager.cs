@@ -144,14 +144,22 @@ public class AssetBundleManager : SingletonBase<AssetBundleManager>
     /// <returns></returns>
     public AssetBundle LoadAssetBundle(string filePath)
     {
-        var assetBundle = AssetBundle.LoadFromFile(filePath);
-        if (assetBundle != null)
+        AssetBundle assetBundle = null;
+        try
         {
-            Debug.Log($"LoadAssetBundle completed.");
+            assetBundle = AssetBundle.LoadFromFile(filePath);
+            if (assetBundle != null)
+            {
+                Debug.Log($"LoadAssetBundle completed.");
+            }
+            else
+            {
+                Debug.Log($"LoadAssetBundle failed.");
+            }
         }
-        else
+        catch (Exception e)
         {
-            Debug.Log($"LoadAssetBundle failed.");
+            Debug.LogError($"LoadAssetBundle exception: {e.Message}");
         }
         return assetBundle;
     }
