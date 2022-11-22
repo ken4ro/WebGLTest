@@ -147,7 +147,7 @@ public class AssetBundleManager : SingletonBase<AssetBundleManager>
         var assetBundle = AssetBundle.LoadFromFile(filePath);
         if (assetBundle != null)
         {
-            Debug.Log($"LoadAssetBundle completed: asset = {assetBundle.GetAllAssetNames()}");
+            Debug.Log($"LoadAssetBundle completed.");
         }
         else
         {
