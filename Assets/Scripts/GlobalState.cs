@@ -63,5 +63,5 @@ public class GlobalState : SingletonBase<GlobalState>
     /// <summary>
     /// 現在のキャラクターモデル
     /// </summary>
-    public CharacterModel CurrentCharacterModel { get; set; } = CharacterModel.Una3D;
+    public CharacterModel CurrentCharacterModel { get; set; } = CharacterModel.Una2D;
 }

@@ -1,119 +1,109 @@
 <!DOCTYPE html>
-<html lang="en-us">
-  <head>
-    <meta charset="utf-8">
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-    <title>Unity WebGL Player | telexistence_test_avatar</title>
-    <link rel="shortcut icon" href="TemplateData/favicon.ico">
-    <link rel="stylesheet" href="TemplateData/style.css">
-  </head>
-  <body>
-    <div id="unity-container" class="unity-desktop">
-      <canvas id="unity-canvas" width=960 height=600></canvas>
-      <div id="unity-loading-bar">
-        <div id="unity-logo"></div>
-        <div id="unity-progress-bar-empty">
-          <div id="unity-progress-bar-full"></div>
-        </div>
-      </div>
-      <div id="unity-warning"> </div>
-      <div id="unity-footer">
-        <div id="unity-webgl-logo"></div>
-        <div id="unity-fullscreen-button"></div>
-        <div id="unity-build-title">telexistence_test_avatar</div>
-      </div>
-    </div>
-    <script>
-      var container = document.querySelector("#unity-container");
-      var canvas = document.querySelector("#unity-canvas");
-      var loadingBar = document.querySelector("#unity-loading-bar");
-      var progressBarFull = document.querySelector("#unity-progress-bar-full");
-      var fullscreenButton = document.querySelector("#unity-fullscreen-button");
-      var warningBanner = document.querySelector("#unity-warning");
+<html lang="en">
+<head>
+	<title>iframe Unity test</title>
+</head>
 
-      // Shows a temporary message banner/ribbon for a few seconds, or
-      // a permanent error message on top of the canvas if type=='error'.
-      // If type=='warning', a yellow highlight color is used.
-      // Modify or remove this function to customize the visually presented
-      // way that non-critical warnings and error messages are presented to the
-      // user.
-      function unityShowBanner(msg, type) {
-        function updateBannerVisibility() {
-          warningBanner.style.display = warningBanner.children.length ? 'block' : 'none';
+<body>
+    <div id="demo"></div>
+    <!--<iframe id="gameframe" src="game.html" scrolling=’no’ frameBorder="0"></iframe>-->
+</body>
+
+<script>
+// ------------------------------- START: JOSHUA Prepare iframe ------------------------------- //      
+    document.getElementById("demo").innerHTML = prepiframe();
+
+    function prepiframe(){
+        const properties = {
+        allow: "xr-spatial-tracking",
+        allowFullScreen: true,
+        allowvr: "yes"
         }
-        var div = document.createElement('div');
-        div.innerHTML = msg;
-        warningBanner.appendChild(div);
-        if (type == 'error') div.style = 'background: red; padding: 10px;';
-        else {
-          if (type == 'warning') div.style = 'background: yellow; padding: 10px;';
-          setTimeout(function() {
-            warningBanner.removeChild(div);
-            updateBannerVisibility();
-          }, 5000);
+        if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+            return (
+                //"<div><iframe "+{...properties}+" scrolling='no' frameBorder='0' id='gameframe' top:0px left:0px src='game.html?ver=mobile'/></div>"
+                "<iframe "+{...properties}+" src='game.html?ver=mobile' style='position:fixed; top:0px; left:0px; bottom:0px; right:0px; width:100%; height:100%; border:none; margin:0; padding:0; overflow:hidden; z-index:999999;'></iframe></div"
+            )
+        }else{
+            return (
+                //"<div><iframe "+{...properties}+" scrolling='no' frameBorder='0' id='gameframe' src='game.html?ver=pc'/></div>"
+                "<iframe "+{...properties}+" src='game.html?ver=pc' scrolling='no'; frameBorder='0'; id='gameframe'; style='position:fixed; top:0px; left:0px; border:none; margin:0; padding:0; overflow:hidden; z-index:999999;'></iframe></div"
+
+            )
         }
-        updateBannerVisibility();
-      }
 
-      var buildUrl = "Build";
-      var loaderUrl = buildUrl + "/docs.loader.js";
-      var config = {
-        dataUrl: buildUrl + "/docs.data",
-        frameworkUrl: buildUrl + "/docs.framework.js",
-        codeUrl: buildUrl + "/docs.wasm",
-        streamingAssetsUrl: "StreamingAssets",
-        companyName: "DefaultCompany",
-        productName: "telexistence_test_avatar",
-        productVersion: "0.1",
-        showBanner: unityShowBanner,
-      };
+    }
+// ------------------------------- END: JOSHUA Prepare iframe ------------------------------- //      
 
-      // By default Unity keeps WebGL canvas render target size matched with
-      // the DOM size of the canvas element (scaled by window.devicePixelRatio)
-      // Set this to false if you want to decouple this synchronization from
-      // happening inside the engine, and you would instead like to size up
-      // the canvas DOM size and WebGL render target sizes yourself.
-      // config.matchWebGLToCanvasSize = false;
+// ------------------------------- START: JOSHUA Page initialization ------------------------------- //      
 
-      if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+    var gameiframe = document.getElementById("gameframe");
+
+    if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
         // Mobile device style: fill the whole browser client area with the game canvas:
 
         var meta = document.createElement('meta');
         meta.name = 'viewport';
         meta.content = 'width=device-width, height=device-height, initial-scale=1.0, user-scalable=no, shrink-to-fit=yes';
         document.getElementsByTagName('head')[0].appendChild(meta);
-        container.className = "unity-mobile";
-        canvas.className = "unity-mobile";
+        //container.className = "unity-mobile";
+        gameiframe.className = "unity-mobile";
 
         // To lower canvas resolution on mobile devices to gain some
         // performance, uncomment the following line:
         // config.devicePixelRatio = 1;
 
-        unityShowBanner('WebGL builds are not supported on mobile devices.');
-      } else {
-        // Desktop style: Render the game canvas in a window that can be maximized to fullscreen:
+        //unityShowBanner('WebGL builds are not supported on mobile devices.');
+        gameiframe.style.width = "100%";
+        gameiframe.style.height = "100%";
+        window.addEventListener('load', resizePage, false);
+        window.addEventListener('resize', resizePage, false);
 
-        canvas.style.width = "960px";
-        canvas.style.height = "600px";
+    } else {
+        gameiframe.style.width = window.innerWidth + "px";
+        gameiframe.style.height = window.innerHeight + "px";
+        window.addEventListener('load', resizePage, false);
+        window.addEventListener('resize', resizePage, false);
+
+    }
+// ------------------------------- END: JOSHUA Page initialization ------------------------------- //      
+
+// ------------------------------- START: JOSHUA Dynamic resizing ------------------------------- //      
+      function resizePage()
+      {  
+        //console.log("resize");
+        previousWidth = Number(gameiframe.style.width.replace('px',''));
+        previousHeight = Number(gameiframe.style.height.replace('px',''));
+
+        //Keeping aspect ratio
+        if(previousWidth > previousHeight){
+        newWidth = window.innerWidth
+        newHeight = (newWidth/previousWidth)*previousHeight;
+        if(newHeight>window.innerHeight){ //new size too tall
+            newHeight = window.innerHeight;
+            newWidth = (newHeight/previousHeight)*previousWidth
+        }
+        }else{
+        newHeight = window.innerWidth
+        newWidth = (newHeight/previousHeight)*previousWidth;
+        if(newWidth > window.innerWidth){ // new size too wide
+            newWidth = window.innerWidth;
+            newHeight = (newWidth/previousWidth)*previousHeight;
+        }
+        }
+        gameiframe.style.width = newWidth + 'px';
+        gameiframe.style.height = newHeight + 'px';
+
+        //gameiframe.style.width = window.innerWidth + 'px';
+        //gameiframe.style.height = window.innerHeight + 'px';
       }
+// ------------------------------- END: JOSHUA Dynamic resizing ------------------------------- //
 
-      loadingBar.style.display = "block";
 
-      var script = document.createElement("script");
-      script.src = loaderUrl;
-      script.onload = () => {
-        createUnityInstance(canvas, config, (progress) => {
-          progressBarFull.style.width = 100 * progress + "%";
-        }).then((unityInstance) => {
-          loadingBar.style.display = "none";
-          fullscreenButton.onclick = () => {
-            unityInstance.SetFullscreen(1);
-          };
-        }).catch((message) => {
-          alert(message);
-        });
-      };
-      document.body.appendChild(script);
-    </script>
-  </body>
+
+
+
+
+</script>
+
 </html>
