@@ -6,6 +6,8 @@ using UnityEngine.UI;
 using TMPro;
 using Cysharp.Threading.Tasks;
 using static GlobalState;
+using System.Text;
+using System.IO;
 
 /// <summary>
 // 主にゲーム全体のステート管理やプロセス遷移を担う
@@ -19,6 +21,8 @@ public class GameController : SingletonMonoBehaviour<GameController>
     public TextMeshProUGUI AccessToken = null;
     public TextMeshProUGUI RefreshToken = null;
     public TextMeshProUGUI ExpiresIn = null;
+    public TextMeshProUGUI Json1 = null;
+    public TextMeshProUGUI Json2 = null;
 
     /// <summary>
     /// メインスレッドコンテキスト
@@ -70,28 +74,69 @@ public class GameController : SingletonMonoBehaviour<GameController>
         // 1秒後に実行
         await UniTask.Delay(millisecondsDelay: 1000);
 
-#if false
         // ユーザートークン取得
         var userTokenUrl = "https://development.studio-sylphid.com:6500/cloud/api/v1/user/token/get";
         var jsonObject = new RequestUserTokenJson()
         {
-            login_id = "dummy@client1",
+            login_id = "user01user01user01",
             login_type = "basic",
-            password = "4nZaR6On"
+            password = "passpasspass"
         };
         var json = JsonUtility.ToJson(jsonObject);
         var ret = await WebServerManager.Instance.RequestUserToken(userTokenUrl, json);
-        var responseJsonObject = JsonUtility.FromJson<ResponseUserTokenJson>(ret);
+
+        var responseJsonObject = JsonUtility.FromJson<RequestUserTokenResponseJson>(ret);
         AccessToken.text = "Access token: " + Environment.NewLine + responseJsonObject.access_token;
         RefreshToken.text = "Refresh token: " + Environment.NewLine + responseJsonObject.refresh_token;
         ExpiresIn.text = "Expires in: " + responseJsonObject.expires_in;
+        var base64Token = Convert.ToBase64String(Encoding.UTF8.GetBytes(responseJsonObject.access_token));
 
+        // フローの初期ノード呼び出し
+        var callFirstNodeUrl = "https://development.studio-sylphid.com:6500/cloud/api/v1/flow/dialog/get";
+        var requestCallFirstNodeJsonObject = new CallFirstNodeJson()
+        {
+            flow_id = "fba931ed-0a78-43a8-830f-22a17e4352ad-25b95b05-9622-4554-9965-ca4dbcd4bddb"
+        };
+        json = JsonUtility.ToJson(requestCallFirstNodeJsonObject);
+        ret = await WebServerManager.Instance.CallFirstNode(callFirstNodeUrl, base64Token, json);
+        var callFirstNodeResponseJsonObject = JsonUtility.FromJson<CallFirstNodeResponseJson>(ret);
+        if (callFirstNodeResponseJsonObject.response.Text.Jp == null)
+        {
+            Debug.LogError($"CallFirstNode response parse error.");
+        }
+        else
+        {
+            Json1.text = callFirstNodeResponseJsonObject.response.Text.Jp;
+        }
+
+        // フローレスポンス取得
+        var requestFlowUrl = "https://development.studio-sylphid.com:6500/cloud/api/v1/flow/dialog/put";
+        var requestFlowJsonObject = new RequestFlowJson()
+        {
+            flow_id = "fba931ed-0a78-43a8-830f-22a17e4352ad-25b95b05-9622-4554-9965-ca4dbcd4bddb",
+            utterance = "問い合わせ"
+            //utterance = "もにょもにょ"
+        };
+        var requestFlowJson = JsonUtility.ToJson(requestFlowJsonObject);
+        ret = await WebServerManager.Instance.RequestFlow(requestFlowUrl, base64Token, requestFlowJson);
+        var requestFlowResponseJsonObject = JsonUtility.FromJson<RequestFlowResponseJson>(ret);
+        if (requestFlowResponseJsonObject.response.Text.Jp == null)
+        {
+            Debug.LogError($"RequestFlow response parse error.");
+        }
+        else
+        {
+            Json2.text = requestFlowResponseJsonObject.response.Text.Jp;
+        }
+
+        /*
         // ユーザートークン更新
-        //var updateuserTokenUrl = "https://development.studio-sylphid.com:6500/cloud/api/v1/user/token/put";
-        //await WebServerManager.Instance.UpdateUserToken(updateuserTokenUrl);
-#endif
+        var updateuserTokenUrl = "https://development.studio-sylphid.com:6500/cloud/api/v1/user/token/put";
+        await WebServerManager.Instance.UpdateUserToken(updateuserTokenUrl);
+        */
     }
 
+    [Serializable]
     public class RequestUserTokenJson
     {
         public string login_id;
@@ -99,12 +144,38 @@ public class GameController : SingletonMonoBehaviour<GameController>
         public string password;
     }
 
-    public class ResponseUserTokenJson
+    [Serializable]
+    public class RequestUserTokenResponseJson
     {
         public string token_type;
         public string access_token;
         public string refresh_token;
-        public string expires_in;
+        public int expires_in;
+    }
+
+    [Serializable]
+    public class CallFirstNodeJson
+    {
+        public string flow_id;
+    }
+
+    [Serializable]
+    public class CallFirstNodeResponseJson
+    {
+        public BotManager.BotResponse response;
+    }
+
+    [Serializable]
+    public class RequestFlowJson
+    {
+        public string flow_id;
+        public string utterance;
+    }
+
+    [Serializable]
+    public class RequestFlowResponseJson
+    {
+        public BotManager.BotResponse response;
     }
 
     void OnApplicationQuit()

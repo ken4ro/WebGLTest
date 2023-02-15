@@ -109,6 +109,8 @@ public class WebServerManager : SingletonBase<WebServerManager>
             if (www.result != UnityWebRequest.Result.Success)
             {
                 Debug.LogError(www.result.ToString());
+                var a = www.GetResponseHeader("Access-Control-Allow-Origin");
+                Debug.LogError($"response header1 = {a}");
             }
             else
             {
@@ -120,16 +122,17 @@ public class WebServerManager : SingletonBase<WebServerManager>
         catch (Exception e)
         {
             Debug.LogError(e.Message);
+            var a = www.GetResponseHeader("Access-Control-Allow-Origin");
+            Debug.LogError($"response header2 = {a}");
         }
 
         return null;
     }
 
-    public async UniTask UpdateUserToken(string url)
+    public async UniTask UpdateUserToken(string url, string token)
     {
         using UnityWebRequest www = new UnityWebRequest(url, "POST");
-        www.SetRequestHeader("Authorization", "Bearer NDAyYzhlYzctMGY2Ny00ZjNmLWFkYjEtN2QxMjg3MTU0MThkLTcyOGQxMTE0LWM1MDYtNDEyYy04OGQ1LTE5NjBlNzk0NjY4NS1jNTZjZGUwYy1jZWU2LTQzNzgtYTE2Mi0zOWU5YTkwZTUxYzk=");
-        //www.SetRequestHeader("accept", "text/plain");
+        www.SetRequestHeader("Authorization", "Bearer " + token);
         www.downloadHandler = new DownloadHandlerBuffer();
         try
         {
@@ -148,6 +151,64 @@ public class WebServerManager : SingletonBase<WebServerManager>
         {
             Debug.LogError(e.Message);
         }
+    }
+
+    public async UniTask<string> CallFirstNode(string url, string token, string json)
+    {
+        using UnityWebRequest www = new UnityWebRequest(url, "POST");
+        www.SetRequestHeader("Content-Type", "application/json");
+        www.SetRequestHeader("Authorization", "Bearer " + token);
+        www.uploadHandler = new UploadHandlerRaw(Encoding.UTF8.GetBytes(json));
+        www.downloadHandler = new DownloadHandlerBuffer();
+        try
+        {
+            await www.SendWebRequest();
+            if (www.result != UnityWebRequest.Result.Success)
+            {
+                Debug.LogError(www.result.ToString());
+            }
+            else
+            {
+                var ret = www.downloadHandler.text;
+                Debug.Log(ret);
+                return ret;
+            }
+        }
+        catch (Exception e)
+        {
+            Debug.LogError(e.Message);
+        }
+
+        return null;
+    }
+
+    public async UniTask<string> RequestFlow(string url, string token, string json)
+    {
+        using UnityWebRequest www = new UnityWebRequest(url, "POST");
+        www.SetRequestHeader("Content-Type", "application/json");
+        www.SetRequestHeader("Authorization", "Bearer " + token);
+        www.uploadHandler = new UploadHandlerRaw(Encoding.UTF8.GetBytes(json));
+        www.downloadHandler = new DownloadHandlerBuffer();
+        try
+        {
+            await www.SendWebRequest();
+            if (www.result != UnityWebRequest.Result.Success)
+            {
+                Debug.LogError(www.result.ToString());
+            }
+            else
+            {
+                var ret = www.downloadHandler.text;
+                Debug.Log(ret);
+                return ret;
+            }
+        }
+        catch (Exception e)
+        {
+            Debug.LogError(e.Message);
+        }
+
+        return null;
     }
 
     [Serializable]
