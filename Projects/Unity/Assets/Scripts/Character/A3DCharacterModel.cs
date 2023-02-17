@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Cysharp.Threading.Tasks;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using UnityEngine;
@@ -208,7 +209,7 @@ public abstract class A3DCharacterModel : ICharacterModel
         _preController = animatorController;
     }
 
-    public async Task ChangeAnimation(AnimationType animationType)
+    public async UniTask ChangeAnimation(AnimationType animationType)
     {
         if (_animator.runtimeAnimatorController != _motionController)
         {
@@ -226,10 +227,10 @@ public abstract class A3DCharacterModel : ICharacterModel
 
         // 遷移後のアニメーションが終了するまで待機
         var delayTime = (int)(_motionClipsTimeTable[animationType] * 1000);
-        await Task.Delay(delayTime);
+        await UniTask.Delay(delayTime);
     }
 
-    public async Task ChangeFacial(FacialType facialType, int msec)
+    public async UniTask ChangeFacial(FacialType facialType, int msec)
     {
         ResetFacialKey();
 
@@ -244,7 +245,7 @@ public abstract class A3DCharacterModel : ICharacterModel
 
         SetFacialKey(facialType);
 
-        await Task.Delay(msec);
+        await UniTask.Delay(msec);
 
         ResetFacialKey();
     }

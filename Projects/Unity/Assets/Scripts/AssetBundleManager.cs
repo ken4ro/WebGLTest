@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Video;
 
-using static GlobalState;
+using static Global;
 using Cysharp.Threading.Tasks;
 using UnityEngine.Networking;
 

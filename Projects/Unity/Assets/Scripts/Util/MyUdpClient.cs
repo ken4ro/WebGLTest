@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Cysharp.Threading.Tasks;
+using System;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading.Tasks;
@@ -50,7 +51,7 @@ public class MyUdpClient
     /// 非同期で受信
     /// </summary>
     /// <returns></returns>
-    public async Task ReceiveAsync()
+    public async UniTask ReceiveAsync()
     {
         while (true)
         {
@@ -97,7 +98,7 @@ public class MyUdpClient
     /// <param name="data"></param>
     /// <param name="dataLength"></param>
     /// <returns></returns>
-    public async Task SendAsync(byte[] data, int dataLength)
+    public async UniTask SendAsync(byte[] data, int dataLength)
     {
         await _udpClient.SendAsync(data, dataLength);
     }

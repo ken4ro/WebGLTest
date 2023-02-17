@@ -4,6 +4,7 @@ using UnityEngine;
 using Live2D.Cubism.Core;
 using Live2D.Cubism.Framework;
 using System.Threading.Tasks;
+using Cysharp.Threading.Tasks;
 
 public abstract class ALive2DCharacterModel : ICharacterModel
 {
@@ -115,7 +116,7 @@ public abstract class ALive2DCharacterModel : ICharacterModel
         }
     }
 
-    public async Task ChangeAnimation(AnimationType animationType)
+    public async UniTask ChangeAnimation(AnimationType animationType)
     {
         if (_animator.runtimeAnimatorController != _motionController)
         {
@@ -133,10 +134,10 @@ public abstract class ALive2DCharacterModel : ICharacterModel
 
         // 遷移後のアニメーションが終了するまで待機
         var delayTime = (int)(_motionClipsTimeTable[animationType] * 1000);
-        await Task.Delay(delayTime);
+        await UniTask.Delay(delayTime);
     }
 
-    public async Task ChangeFacial(FacialType facialType, int msec)
+    public async UniTask ChangeFacial(FacialType facialType, int msec)
     {
         _eyeBlinkController.enabled = false;
 
@@ -150,7 +151,7 @@ public abstract class ALive2DCharacterModel : ICharacterModel
 
         // 遷移後のアニメーションが終了するまで待機
         var delayTime = (int)(_facialClipsTimeTable[facialType] * 1000);
-        await Task.Delay(delayTime);
+        await UniTask.Delay(delayTime);
 
         _eyeBlinkController.enabled = true;
     }

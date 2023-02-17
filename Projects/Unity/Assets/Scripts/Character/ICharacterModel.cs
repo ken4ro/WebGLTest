@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using Cysharp.Threading.Tasks;
+using System.Collections;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using UnityEngine;
@@ -110,12 +111,12 @@ public interface ICharacterModel
     /// <summary>
     /// アニメーション切り替え
     /// </summary>
-    Task ChangeAnimation(AnimationType animationType);
+    UniTask ChangeAnimation(AnimationType animationType);
 
     /// <summary>
     /// フェイシャル切り替え
     /// </summary>
-    Task ChangeFacial(FacialType facialType, int msec);
+    UniTask ChangeFacial(FacialType facialType, int msec);
 
     /// <summary>
     /// フェイシャル初期化

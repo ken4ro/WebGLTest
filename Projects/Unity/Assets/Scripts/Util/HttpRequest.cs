@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Cysharp.Threading.Tasks;
+using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
@@ -62,7 +63,7 @@ public class HttpRequest : MonoBehaviour
     /// <param name="mediaType"></param>
     /// <param name="isLongPolling"></param>
     /// <returns></returns>
-    public static async Task<HttpJsonResponse> RequestJsonAsync(HttpRequestType type, string url, KeyValuePair<string, string>[] headers, HttpContent content = default, MediaTypeHeaderValue mediaType = default, bool isLongPolling = false)
+    public static async UniTask<HttpJsonResponse> RequestJsonAsync(HttpRequestType type, string url, KeyValuePair<string, string>[] headers, HttpContent content = default, MediaTypeHeaderValue mediaType = default, bool isLongPolling = false)
     {
         var ret = new HttpJsonResponse();
 
@@ -258,7 +259,7 @@ public class HttpRequest : MonoBehaviour
     /// <param name="mediaType"></param>
     /// <param name="isLongPolling"></param>
     /// <returns></returns>
-    public static async Task<HttpBytesResponse> RequestBytesAsync(HttpRequestType type, string url, KeyValuePair<string, string>[] headers, HttpContent content = default, MediaTypeHeaderValue mediaType = default, bool isLongPolling = false)
+    public static async UniTask<HttpBytesResponse> RequestBytesAsync(HttpRequestType type, string url, KeyValuePair<string, string>[] headers, HttpContent content = default, MediaTypeHeaderValue mediaType = default, bool isLongPolling = false)
     {
         var ret = new HttpBytesResponse();
 

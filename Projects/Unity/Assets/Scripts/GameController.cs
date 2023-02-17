@@ -5,12 +5,11 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using Cysharp.Threading.Tasks;
-using static GlobalState;
-using System.Text;
-using System.IO;
+using static Global;
+using UniRx;
 
 /// <summary>
-// 主にゲーム全体のステート管理やプロセス遷移を担う
+// 主にゲーム全体のステート管理を担う
 /// </summary>
 public class GameController : SingletonMonoBehaviour<GameController>
 {
@@ -29,6 +28,19 @@ public class GameController : SingletonMonoBehaviour<GameController>
     /// </summary>
     public SynchronizationContext MainContext { get; private set; } = null;
 
+    /// <summary>
+    /// 現在の待機時間[s]
+    /// </summary>
+    public float CurrentIdleTimeSec { get; set; } = 0.0f;
+
+    /// <summary>
+    /// スクリーンセーバー種別
+    /// </summary>
+    public SignageSettings.ScreenSaverTypes CurrentScreenSaverType { get; set; } = SignageSettings.ScreenSaverTypes.None;
+
+    // State管理
+    private List<IState> _states = new List<IState>();
+
     protected override async void Awake()
     {
         base.Awake();
@@ -36,27 +48,29 @@ public class GameController : SingletonMonoBehaviour<GameController>
         // メインスレッド同期用コンテキストを取得しておく
         MainContext = SynchronizationContext.Current;
 
+        // 全Stateセット
+        _states.Add(new Waiting());
+        _states.Add(new Starting());
+        _states.Add(new Loading());
+        _states.Add(new LoadingComplete());
+        _states.Add(new LoadingError());
+        _states.Add(new Speakable());
+        _states.Add(new Speaking());
+        _states.Add(new SpeakingComplete());
+        _states.Add(new Disconnect());
+        _states.Add(new PreOperating());
+        _states.Add(new Operating());
+
+        // イベント購読
+        Global.Instance.CurrentState.ObserveOnMainThread().Pairwise().Subscribe(x => OnStateChanged(x.Previous, x.Current)).AddTo(this.gameObject);
+        BotManager.Instance.OnStartRequest += OnStartBotRequest;
+        BotManager.Instance.OnCompleteRequest += OnCompleteBotRequest;
+        BotManager.Instance.OnNoMatch += OnNoMatchBotRequest;
+
 #if UNITY_EDITOR || !UNITY_WEBGL // CORS 対策が落ち着くまで無効化
-        if (await WebServerManager.Instance.HealthCheck())
-        {
-            // アセットバージョンアップ
-            await VersionUpdateManager.Instance.AssetUpdateSync();
-        }
 
         // 使用キャラクターセット
-        var identifier = VersionUpdateManager.Instance.GetAvatarIdentifier();
-        if (Enum.TryParse(identifier, true, out CharacterModel characterModel))
-        {
-            GlobalState.Instance.CurrentCharacterModel = characterModel;
-        }
-        else if (identifier == "una2d_webgl")
-        {
-            GlobalState.Instance.CurrentCharacterModel = CharacterModel.Una2D;
-        }
-        else
-        {
-            Debug.LogError($"Mismatch between identifier and character model: {identifier}");
-        }
+        Global.Instance.CurrentCharacterModel = CharacterModel.Una2D;
 
         // アバター読み込み
         AssetBundleManager.Instance.LoadAvatarAssetBundle();
@@ -71,122 +85,75 @@ public class GameController : SingletonMonoBehaviour<GameController>
         // キャラクター表示
         CharacterManager.Instance.Enable();
 
-        // 1秒後に実行
+        // ボット処理初期化
+        await BotManager.Instance.Initialize();
+
+        // 指定時間待機
+#if false
+        var offsetSec = Global.Instance.ApplicationGlobalSettings.StartOffsetSec;
+        Observable.Timer(TimeSpan.FromSeconds(offsetSec)).Subscribe(_ =>
+        {
+            // ボット処理開始
+            Global.Instance.CurrentState.Value = State.Starting;
+        });
+#else
+        // 1秒後に実行（仮）
         await UniTask.Delay(millisecondsDelay: 1000);
-
-        // ユーザートークン取得
-        var userTokenUrl = "https://development.studio-sylphid.com:6500/cloud/api/v1/user/token/get";
-        var jsonObject = new RequestUserTokenJson()
-        {
-            login_id = "user01user01user01",
-            login_type = "basic",
-            password = "passpasspass"
-        };
-        var json = JsonUtility.ToJson(jsonObject);
-        var ret = await WebServerManager.Instance.RequestUserToken(userTokenUrl, json);
-
-        var responseJsonObject = JsonUtility.FromJson<RequestUserTokenResponseJson>(ret);
-        AccessToken.text = "Access token: " + Environment.NewLine + responseJsonObject.access_token;
-        RefreshToken.text = "Refresh token: " + Environment.NewLine + responseJsonObject.refresh_token;
-        ExpiresIn.text = "Expires in: " + responseJsonObject.expires_in;
-        var base64Token = Convert.ToBase64String(Encoding.UTF8.GetBytes(responseJsonObject.access_token));
-
-        // フローの初期ノード呼び出し
-        var callFirstNodeUrl = "https://development.studio-sylphid.com:6500/cloud/api/v1/flow/dialog/get";
-        var requestCallFirstNodeJsonObject = new CallFirstNodeJson()
-        {
-            flow_id = "fba931ed-0a78-43a8-830f-22a17e4352ad-25b95b05-9622-4554-9965-ca4dbcd4bddb"
-        };
-        json = JsonUtility.ToJson(requestCallFirstNodeJsonObject);
-        ret = await WebServerManager.Instance.CallFirstNode(callFirstNodeUrl, base64Token, json);
-        var callFirstNodeResponseJsonObject = JsonUtility.FromJson<CallFirstNodeResponseJson>(ret);
-        if (callFirstNodeResponseJsonObject.response.Text.Jp == null)
-        {
-            Debug.LogError($"CallFirstNode response parse error.");
-        }
-        else
-        {
-            Json1.text = callFirstNodeResponseJsonObject.response.Text.Jp;
-        }
-
-        // フローレスポンス取得
-        var requestFlowUrl = "https://development.studio-sylphid.com:6500/cloud/api/v1/flow/dialog/put";
-        var requestFlowJsonObject = new RequestFlowJson()
-        {
-            flow_id = "fba931ed-0a78-43a8-830f-22a17e4352ad-25b95b05-9622-4554-9965-ca4dbcd4bddb",
-            utterance = "問い合わせ"
-            //utterance = "もにょもにょ"
-        };
-        var requestFlowJson = JsonUtility.ToJson(requestFlowJsonObject);
-        ret = await WebServerManager.Instance.RequestFlow(requestFlowUrl, base64Token, requestFlowJson);
-        var requestFlowResponseJsonObject = JsonUtility.FromJson<RequestFlowResponseJson>(ret);
-        if (requestFlowResponseJsonObject.response.Text.Jp == null)
-        {
-            Debug.LogError($"RequestFlow response parse error.");
-        }
-        else
-        {
-            Json2.text = requestFlowResponseJsonObject.response.Text.Jp;
-        }
-
-        /*
-        // ユーザートークン更新
-        var updateuserTokenUrl = "https://development.studio-sylphid.com:6500/cloud/api/v1/user/token/put";
-        await WebServerManager.Instance.UpdateUserToken(updateuserTokenUrl);
-        */
-    }
-
-    [Serializable]
-    public class RequestUserTokenJson
-    {
-        public string login_id;
-        public string login_type;
-        public string password;
-    }
-
-    [Serializable]
-    public class RequestUserTokenResponseJson
-    {
-        public string token_type;
-        public string access_token;
-        public string refresh_token;
-        public int expires_in;
-    }
-
-    [Serializable]
-    public class CallFirstNodeJson
-    {
-        public string flow_id;
-    }
-
-    [Serializable]
-    public class CallFirstNodeResponseJson
-    {
-        public BotManager.BotResponse response;
-    }
-
-    [Serializable]
-    public class RequestFlowJson
-    {
-        public string flow_id;
-        public string utterance;
-    }
-
-    [Serializable]
-    public class RequestFlowResponseJson
-    {
-        public BotManager.BotResponse response;
+        // ボット処理開始
+        Global.Instance.CurrentState.Value = State.Starting;
+#endif
     }
 
     void OnApplicationQuit()
     {
         // 各ゲームオブジェクトが破棄される前に行なければならない後始末
         // 同期的に実行する(原則 await 禁止)
+
+        // 現在の状態の終了処理を呼んでおく
+        _states[(int)Global.Instance.CurrentState.Value].OnExit();
     }
 
     // Update is called once per frame
     void Update()
     {
+        _states[(int)Global.Instance.CurrentState.Value].OnUpdate();
+    }
+
+    // 現在の処理状態が変更された際に一度だけ呼ばれる
+    private void OnStateChanged(State previous, State current)
+    {
+        Debug.Log($"State {previous} To {current}");
+
+        _states[(int)previous].OnExit();
+
+        // ここに遷移時に行いたい処理を追加する
+
+        _states[(int)current].OnEnter();
+    }
+
+    // ボット処理開始
+    private void OnStartBotRequest()
+    {
+        // ボットリクエスト開始
+
+        // ボット処理待ち状態へ移行
+        Global.Instance.CurrentState.Value = State.Loading;
+    }
+
+    private void OnCompleteBotRequest()
+    {
+        // ボットリクエスト完了
+
+        // ボット処理完了状態へ移行
+        Global.Instance.CurrentState.Value = State.LoadingComplete;
+    }
+
+    private void OnNoMatchBotRequest()
+    {
+        // ボットリクエスト失敗
+
+        // ボット処理失敗状態へ移行
+        Global.Instance.CurrentState.Value = State.LoadingError;
     }
 
     private void LoadCharacterObject()
@@ -226,7 +193,7 @@ public class GameController : SingletonMonoBehaviour<GameController>
         }
 
         // Front Canvas より奥に描画するようにする
-        //var frontCanvasIndex = GameObject.Find("FrontCanvas").transform.GetSiblingIndex();
-        //characterObject.transform.SetSiblingIndex(frontCanvasIndex);
+        var frontCanvasIndex = GameObject.Find("FrontCanvas").transform.GetSiblingIndex();
+        characterObject.transform.SetSiblingIndex(frontCanvasIndex);
     }
 }

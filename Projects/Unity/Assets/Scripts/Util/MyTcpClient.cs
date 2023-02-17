@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Cysharp.Threading.Tasks;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Net;
@@ -59,7 +60,7 @@ public class MyTcpClient : IDisposable
     /// 非同期受信
     /// </summary>
     /// <returns></returns>
-    public async Task ReceiveAsync()
+    public async UniTask ReceiveAsync()
     {
         if (_tcpClient == null) return;
 
@@ -81,7 +82,7 @@ public class MyTcpClient : IDisposable
     /// 非同期送信
     /// </summary>
     /// <param name="data"></param>
-    public async Task SendAsync(byte[] data)
+    public async UniTask SendAsync(byte[] data)
     {
         if (_tcpClient == null) return;
 
