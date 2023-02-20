@@ -3,10 +3,9 @@ using System.Threading;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
-using TMPro;
 using Cysharp.Threading.Tasks;
-using static Global;
 using UniRx;
+using static GlobalState;
 
 /// <summary>
 // 主にゲーム全体のステート管理を担う
@@ -16,17 +15,15 @@ public class GameController : SingletonMonoBehaviour<GameController>
     [SerializeField]
     public Camera MainCamera = null;
 
-    [SerializeField]
-    public TextMeshProUGUI AccessToken = null;
-    public TextMeshProUGUI RefreshToken = null;
-    public TextMeshProUGUI ExpiresIn = null;
-    public TextMeshProUGUI Json1 = null;
-    public TextMeshProUGUI Json2 = null;
-
     /// <summary>
     /// メインスレッドコンテキスト
     /// </summary>
     public SynchronizationContext MainContext { get; private set; } = null;
+
+    /// <summary>
+    /// クライアント(ユーザー or オペレーター)
+    /// </summary>
+    public IClient Client { get; private set; } = null;
 
     /// <summary>
     /// 現在の待機時間[s]
@@ -45,8 +42,19 @@ public class GameController : SingletonMonoBehaviour<GameController>
     {
         base.Awake();
 
+        // サイネージ設定ファイル読み込み
+        SignageSettings.LoadSettings();
+        CurrentScreenSaverType = SignageSettings.Settings.ScreenSaver;
+
+        // GoogleService 設定ファイル読み込み
+        GoogleService.ImportSettings();
+
         // メインスレッド同期用コンテキストを取得しておく
         MainContext = SynchronizationContext.Current;
+
+        // クライアント初期化
+        Client = new UserClient();
+        Client.Initialize();
 
         // 全Stateセット
         _states.Add(new Waiting());
@@ -62,7 +70,7 @@ public class GameController : SingletonMonoBehaviour<GameController>
         _states.Add(new Operating());
 
         // イベント購読
-        Global.Instance.CurrentState.ObserveOnMainThread().Pairwise().Subscribe(x => OnStateChanged(x.Previous, x.Current)).AddTo(this.gameObject);
+        GlobalState.Instance.CurrentState.ObserveOnMainThread().Pairwise().Subscribe(x => OnStateChanged(x.Previous, x.Current)).AddTo(this.gameObject);
         BotManager.Instance.OnStartRequest += OnStartBotRequest;
         BotManager.Instance.OnCompleteRequest += OnCompleteBotRequest;
         BotManager.Instance.OnNoMatch += OnNoMatchBotRequest;
@@ -70,11 +78,14 @@ public class GameController : SingletonMonoBehaviour<GameController>
 #if UNITY_EDITOR || !UNITY_WEBGL // CORS 対策が落ち着くまで無効化
 
         // 使用キャラクターセット
-        Global.Instance.CurrentCharacterModel = CharacterModel.Una2D;
+        GlobalState.Instance.CurrentCharacterModel.Value = CharacterModel.Una2D;
 
         // アバター読み込み
         AssetBundleManager.Instance.LoadAvatarAssetBundle();
 #else
+        // 使用キャラクターセット
+        GlobalState.Instance.CurrentCharacterModel.Value = CharacterModel.Una2D;
+
         // アバター読み込み
         await AssetBundleManager.Instance.LoadAvatarAssetBundleFromStreamingAssets();
 #endif
@@ -86,7 +97,7 @@ public class GameController : SingletonMonoBehaviour<GameController>
         CharacterManager.Instance.Enable();
 
         // ボット処理初期化
-        await BotManager.Instance.Initialize();
+        BotManager.Instance.Initialize();
 
         // 指定時間待機
 #if false
@@ -98,9 +109,9 @@ public class GameController : SingletonMonoBehaviour<GameController>
         });
 #else
         // 1秒後に実行（仮）
-        await UniTask.Delay(millisecondsDelay: 1000);
+        //await UniTask.Delay(millisecondsDelay: 1000);
         // ボット処理開始
-        Global.Instance.CurrentState.Value = State.Starting;
+        //StartBotProcess();
 #endif
     }
 
@@ -110,13 +121,19 @@ public class GameController : SingletonMonoBehaviour<GameController>
         // 同期的に実行する(原則 await 禁止)
 
         // 現在の状態の終了処理を呼んでおく
-        _states[(int)Global.Instance.CurrentState.Value].OnExit();
+        _states[(int)GlobalState.Instance.CurrentState.Value].OnExit();
     }
 
     // Update is called once per frame
     void Update()
     {
-        _states[(int)Global.Instance.CurrentState.Value].OnUpdate();
+        _states[(int)GlobalState.Instance.CurrentState.Value].OnUpdate();
+    }
+
+    public void StartBotProcess()
+    {
+        // ボット処理開始
+        GlobalState.Instance.CurrentState.Value = State.Starting;
     }
 
     // 現在の処理状態が変更された際に一度だけ呼ばれる
@@ -137,7 +154,7 @@ public class GameController : SingletonMonoBehaviour<GameController>
         // ボットリクエスト開始
 
         // ボット処理待ち状態へ移行
-        Global.Instance.CurrentState.Value = State.Loading;
+        GlobalState.Instance.CurrentState.Value = State.Loading;
     }
 
     private void OnCompleteBotRequest()
@@ -145,7 +162,7 @@ public class GameController : SingletonMonoBehaviour<GameController>
         // ボットリクエスト完了
 
         // ボット処理完了状態へ移行
-        Global.Instance.CurrentState.Value = State.LoadingComplete;
+        GlobalState.Instance.CurrentState.Value = State.LoadingComplete;
     }
 
     private void OnNoMatchBotRequest()
@@ -153,7 +170,7 @@ public class GameController : SingletonMonoBehaviour<GameController>
         // ボットリクエスト失敗
 
         // ボット処理失敗状態へ移行
-        Global.Instance.CurrentState.Value = State.LoadingError;
+        GlobalState.Instance.CurrentState.Value = State.LoadingError;
     }
 
     private void LoadCharacterObject()

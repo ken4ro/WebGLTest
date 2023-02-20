@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Text.RegularExpressions;
 using UnityEngine;
+using static GlobalState;
 using static SignageSettings;
 
 public partial class BotManager
@@ -246,7 +247,6 @@ public partial class BotManager
 
         public void OnAfterDeserialize()
         {
-
             Image = image;
             Jp = jp;
             En = en;
@@ -255,7 +255,7 @@ public partial class BotManager
             Ar = ar;
             Vi = vi;
 
-            if (color != null)
+            if (!string.IsNullOrEmpty(color))
             {
                 var col = color.Split(',');
                 Color = new Color(float.Parse(col[0]) / 255, float.Parse(col[1]) / 255, float.Parse(col[2]) / 255, float.Parse(col[3]) / 255);
@@ -361,14 +361,11 @@ public partial class BotManager
 
     static public string ReplaceVariable(string origin)
     {
-        /* いったん無効
         //変換テーブル作成
         var table = SettingHub.Instance.Variable.Cache.GetTable();
         table.Add("$language$", SignageSettings.CurrentLanguage.Value.ToString());
         table.Add("$talk$", StreamingSpeechToText.Instance.RecognitionCompleteText);
         table.Add("$Application.SignalingUserName$", SettingHub.Instance.Application.Cache.SignalingUserName);
         return table.Aggregate(origin, (result, s) => result.Replace(s.Key, s.Value));
-        */
-        return null;
     }
 }

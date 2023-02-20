@@ -27,7 +27,7 @@ public class RecordingCheckPanel : MonoBehaviour
     /// </summary>
     public Action OnClickNoBtn = null;
 
-    private static readonly string SpriteBasePath = "Image/RecordingCheck/";
+    private static readonly string SpriteBasePath = "Images/RecordingCheck/";
 
     void OnEnable()
     {

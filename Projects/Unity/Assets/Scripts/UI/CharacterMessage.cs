@@ -2,16 +2,19 @@
 using System.IO;
 using System.Text;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.Networking;
 using UniRx;
 using TMPro;
-using UnityEngine.Video;
-using Cysharp.Threading.Tasks;
-using static BotManager;
-using static SignageSettings;
 using DG.Tweening;
 using Coffee.UIExtensions;
+using static BotManager;
+using static GlobalState;
+using static SignageSettings;
+using UnityEngine.Video;
+using Cysharp.Threading.Tasks;
 
 public class CharacterMessage : MonoBehaviour
 {
@@ -63,6 +66,7 @@ public class CharacterMessage : MonoBehaviour
     private Dictionary<int, List<BotResponseSelect>> _selectObjectsInPage = new Dictionary<int, List<BotResponseSelect>>();
     private Button _leftButton = null;
     private Button _rightButton = null;
+    private Language _viewLanguage = Language.Japanese;
 
     void Awake()
     {
@@ -71,8 +75,7 @@ public class CharacterMessage : MonoBehaviour
         _pageIndex.Subscribe(x => PageChanged(x)).AddTo(gameObject);
 
         // フォントサイズを設定ファイルから読み込む
-        //messageText.fontSize = GlobalState.Instance.ApplicationGlobalSettings.FontSize;
-        messageText.fontSize = 54;
+        messageText.fontSize = GlobalState.Instance.ApplicationGlobalSettings.FontSize;
     }
 
     /// <summary>
@@ -103,8 +106,7 @@ public class CharacterMessage : MonoBehaviour
     public async UniTask SetCharacterMessage(string message, bool isAnim, ImageAccessTypes imageType, string imageFileName)
     {
         // 文字表示速度リセット
-        //TextAnimationDelayTimeMs = SignageSettings.Settings.BaseTextSpeed;
-        TextAnimationDelayTimeMs = 30;
+        TextAnimationDelayTimeMs = SignageSettings.Settings.BaseTextSpeed;
         // 表示リセット
         ResetCharacterMessage();
         // 表示を有効化
@@ -396,6 +398,7 @@ public class CharacterMessage : MonoBehaviour
             _leftButton.onClick.AddListener(PrevPage);
         }
         _pageIndex.Value = 0;
+        _viewLanguage = lang;
 
         // ボタン設定
         SetSelectObjectButton();
@@ -412,7 +415,7 @@ public class CharacterMessage : MonoBehaviour
         for (var i = 0; i < _selectObjectsInPage[_pageIndex.Value].Count; i++)
         {
             buttons[i].gameObject.transform.parent.gameObject.SetActive(true);
-            buttons[i].GetComponentInChildren<TextMeshProUGUI>(true).text = BotResponseSelect.GetTargetText(_selectObjectsInPage[_pageIndex.Value][i], Language.Japanese);
+            buttons[i].GetComponentInChildren<TextMeshProUGUI>(true).text = BotResponseSelect.GetTargetText(_selectObjectsInPage[_pageIndex.Value][i], _viewLanguage);
             var col = buttons[i].colors;
             col.normalColor = _selectObjectsInPage[_pageIndex.Value][i].Color;
             buttons[i].colors = col;

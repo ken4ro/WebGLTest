@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+/*
 public class MicManager : SingletonBase<MicManager>
 {
     /// <summary>
@@ -19,7 +20,7 @@ public class MicManager : SingletonBase<MicManager>
     private static readonly int DelayMilliseconds = 100;
 
     private bool _isInitialized = false;
-    //private WaveInEvent _waveIn = null;
+    private WaveInEvent _waveIn = null;
 
     private long _sendTimeStamp = 0;
     private int _sampleRate = 0;
@@ -29,7 +30,6 @@ public class MicManager : SingletonBase<MicManager>
     /// </summary>
     public void Initialize()
     {
-        /* いったん無効
         Microphone.GetDeviceCaps(Microphone.devices[0], out int minFreq, out int maxFreq);
         Debug.Log($"Microphone device name = {Microphone.devices[0]}, min freq = {minFreq}, max freq = {maxFreq}");
         _sampleRate = minFreq;
@@ -42,7 +42,6 @@ public class MicManager : SingletonBase<MicManager>
         _waveIn.BufferMilliseconds = DelayMilliseconds;
         _waveIn.DataAvailable += MicDataAvailable;
         _isInitialized = true;
-        */
     }
 
     /// <summary>
@@ -52,8 +51,8 @@ public class MicManager : SingletonBase<MicManager>
     {
         if (!_isInitialized) return;
 
-        //_waveIn.DataAvailable -= MicDataAvailable;
-        //_waveIn.Dispose();
+        _waveIn.DataAvailable -= MicDataAvailable;
+        _waveIn.Dispose();
         _isInitialized = false;
     }
 
@@ -67,7 +66,7 @@ public class MicManager : SingletonBase<MicManager>
         IsRecording = true;
         _sendTimeStamp = 0;
 
-        //_waveIn.StartRecording();
+        _waveIn.StartRecording();
     }
 
     /// <summary>
@@ -79,10 +78,9 @@ public class MicManager : SingletonBase<MicManager>
 
         IsRecording = false;
 
-        //_waveIn.StopRecording();
+        _waveIn.StopRecording();
     }
 
-    /*
     private void MicDataAvailable(object sender, WaveInEventArgs args)
     {
         if (!_isInitialized) return;
@@ -117,5 +115,46 @@ public class MicManager : SingletonBase<MicManager>
 
         OnMicDataAvailable?.Invoke(micBuffer);
     }
-    */
+}
+*/
+
+public class MicManager : SingletonBase<MicManager>
+{
+    /// <summary>
+    /// マイク入力データを受け取る
+    /// </summary>
+    public Action<byte[]> OnMicDataAvailable = null;
+
+    /// <summary>
+    /// 録音中かどうか
+    /// </summary>
+    public bool IsRecording { get; private set; } = false;
+
+    /// <summary>
+    /// マイク初期化
+    /// </summary>
+    public void Initialize()
+    {
+    }
+
+    /// <summary>
+    /// マイク処理終了
+    /// </summary>
+    public void Quit()
+    {
+    }
+
+    /// <summary>
+    /// 録音開始
+    /// </summary>
+    public void StartRecording()
+    {
+    }
+
+    /// <summary>
+    /// 録音終了
+    /// </summary>
+    public void StopRecording()
+    {
+    }
 }

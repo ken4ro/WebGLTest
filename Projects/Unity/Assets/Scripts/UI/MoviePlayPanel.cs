@@ -4,8 +4,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.Video;
-using DG.Tweening;
 using UniRx;
+using DG.Tweening;
 
 public class MoviePlayPanel : MonoBehaviour
 {

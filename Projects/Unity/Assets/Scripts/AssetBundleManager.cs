@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Video;
 
-using static Global;
+using static GlobalState;
 using Cysharp.Threading.Tasks;
 using UnityEngine.Networking;
 
@@ -100,6 +100,7 @@ public class AssetBundleManager : SingletonBase<AssetBundleManager>
     /// <returns></returns>
     public Texture2D LoadTexture2DFromResourcePack(string assetName)
     {
+        Debug.Log("LoadTexture2DFromResourcePack");
         LoadResourcePackAssetBundle();
 
         return ResourcePackAssetBundle.LoadAsset<Texture2D>(assetName);
@@ -112,6 +113,7 @@ public class AssetBundleManager : SingletonBase<AssetBundleManager>
     /// <returns></returns>
     public TextAsset LoadTextAssetFromResourcePack(string assetName)
     {
+        Debug.Log("LoadTextAssetFromResourcePack");
         LoadResourcePackAssetBundle();
 
         return ResourcePackAssetBundle.LoadAsset<TextAsset>(assetName);
@@ -124,6 +126,7 @@ public class AssetBundleManager : SingletonBase<AssetBundleManager>
     /// <returns></returns>
     public VideoClip LoadVideoClipFromResourcePack(string assetName)
     {
+        Debug.Log("LoadVideoClipFromResourcePack");
         LoadResourcePackAssetBundle();
 
         return ResourcePackAssetBundle.LoadAsset<VideoClip>(assetName);
@@ -136,6 +139,7 @@ public class AssetBundleManager : SingletonBase<AssetBundleManager>
     /// <returns></returns>
     public AudioClip LoadAudioClipFromResourcePack(string assetName)
     {
+        Debug.Log("LoadAudioClipFromResourcePack");
         LoadResourcePackAssetBundle();
         return ResourcePackAssetBundle.LoadAsset<AudioClip>(assetName);
     }

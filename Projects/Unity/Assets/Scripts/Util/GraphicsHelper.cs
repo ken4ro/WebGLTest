@@ -7,7 +7,6 @@ using static SignageSettings;
 
 public static class GraphicsHelper
 {
-
     /// <summary>
     /// 画像取得
     /// </summary>

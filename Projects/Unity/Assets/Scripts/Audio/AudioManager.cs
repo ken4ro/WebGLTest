@@ -1,9 +1,13 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.IO;
+using System.Threading.Tasks;
+using System.Collections.Concurrent;
 using System.Runtime.InteropServices;
 using UnityEngine;
 using UnityEngine.Networking;
 using UniRx;
-using DG.Tweening;
 using static SignageSettings;
 using Cysharp.Threading.Tasks;
 
@@ -78,22 +82,7 @@ public class AudioManager : SingletonMonoBehaviour<AudioManager>
 
     private bool _isInitializeAudio = false;
 
-    #region for Mute
-
-    [DllImport("user32.dll")]
-    public static extern IntPtr GetActiveWindow();
-    private IntPtr _hwnd = IntPtr.Zero;
-
-    [DllImport("user32.dll")]
-    private static extern IntPtr SendMessageW(IntPtr hWnd, int Msg, IntPtr wParam, IntPtr lParam);
-    private const int WM_APPCOMMAND = 0x0319;
-    private const int APPCOMMAND_MICROPHONE_VOLUME_MUTE = 24;
-    private const int APPCOMMAND_MICROPHONE_VOLUME_DOWN = 25;
-    private const int APPCOMMAND_MICROPHONE_VOLUME_UP = 26;
-
-    #endregion for Mute
-
-    #region RingAudioLibrary
+#region RingAudioLibrary
 
     [DllImport("RingAudioLibrary", CallingConvention = CallingConvention.Cdecl)]
     extern static IntPtr createRingAudio(int bitRate, int samplingRate, int sampleTime);
@@ -116,21 +105,15 @@ public class AudioManager : SingletonMonoBehaviour<AudioManager>
     [DllImport("RingAudioLibrary", CallingConvention = CallingConvention.Cdecl)]
     extern static bool readPcm(IntPtr handle, int bitRate, int samplingRate, long timeStamp, float sampleTime, IntPtr buffer);
 
-    #endregion RingAudioLibrary
-
-    protected override void Awake()
-    {
-        base.Awake();
-
-        _hwnd = GetActiveWindow();
-
-        CharacterManager.Instance.OnAudioFilterReadCallback += OnAudioFilterRead;
-    }
+#endregion RingAudioLibrary
 
     void Start()
     {
+        CharacterManager.Instance.OnAudioFilterReadCallback += OnAudioFilterRead;
+
         // ボイス再生対象キャラクターオブジェクトをセット
         _audioSourceForCharacter = CharacterManager.Instance.gameObject.GetComponent<AudioSource>();
+        _audioSourceForCharacter.volume = 0.1f;
     }
 
     protected override void OnDestroy()
@@ -190,7 +173,6 @@ public class AudioManager : SingletonMonoBehaviour<AudioManager>
     /// <param name="data"></param>
     public void AudioDataReceived(byte[] data)
     {
-        /* いったん無効
         // タイムスタンプを抽出
         var timeStamp = BitConverter.ToInt64(data, 0);
         var timeStampSize = 8;
@@ -208,7 +190,7 @@ public class AudioManager : SingletonMonoBehaviour<AudioManager>
 
         // 指定したコーデックでデコード
         byte[] decoded;
-        switch (Global.Instance.ApplicationGlobalSettings.AudioCodec)
+        switch (GlobalState.Instance.ApplicationGlobalSettings.AudioCodec)
         {
             case ApplicationSettings.AudioCodecType.MuLaw:
                 decoded = MuLawCodec.Decode(receivedAudioBuffer, 0, receivedAudioBuffer.Length);
@@ -245,7 +227,6 @@ public class AudioManager : SingletonMonoBehaviour<AudioManager>
         {
             Debug.LogError($"WritePcm exception: {ex.Message}");
         }
-        */
     }
 
     // オーディオバッファ要求Unityコールバック
@@ -352,7 +333,6 @@ public class AudioManager : SingletonMonoBehaviour<AudioManager>
     /// <returns></returns>
     public async UniTask<AudioClip> GetAudioClip(string text)
     {
-        /* いったん無効
         AudioClip audioClip = null;
         switch (SignageSettings.CurrentTextToSpeechEngine)
         {
@@ -379,8 +359,6 @@ public class AudioManager : SingletonMonoBehaviour<AudioManager>
         }
 
         return audioClip;
-        */
-        return null;
     }
 
     /// <summary>
@@ -480,7 +458,6 @@ public class AudioManager : SingletonMonoBehaviour<AudioManager>
     /// <returns></returns>
     private async UniTask<AudioClip> GetWebAudioClip(TextToSpeechEngine type, string text)
     {
-        /* いったん無効
         string key = $"{SignageSettings.CurrentTextToSpeechEngine.ToString()}_{text}";
         var audioCache = new TextToSpeechAudioCache(key);
         if (audioCache != null && audioCache.IsCached())
@@ -521,12 +498,10 @@ public class AudioManager : SingletonMonoBehaviour<AudioManager>
                     break;
             }
             // 音声ファイル保存
-            audioCache.SaveFile(audioData);
+            //audioCache.SaveFile(audioData);
 
             return audioClip;
         }
-        */
-        return null;
     }
 
     // マイクミュート

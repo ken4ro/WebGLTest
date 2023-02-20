@@ -33,6 +33,8 @@ public class Background : MonoBehaviour
     /// </summary>
     public void Initialize()
     {
+        return;
+
         _backGround = this.gameObject;
         _rectTransform = _backGround.GetComponent<RectTransform>();
         _backGroundImage = GetComponent<Image>();

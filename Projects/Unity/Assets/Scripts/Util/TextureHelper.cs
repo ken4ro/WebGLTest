@@ -102,7 +102,6 @@ public class TextureHelper
     /// <returns></returns>
     public static async UniTask<Texture2D> CreateTexture2DFromWeb(string url)
     {
-        /* いったん無効化
 
         if (String.IsNullOrEmpty(url))
             return null;
@@ -126,9 +125,7 @@ public class TextureHelper
         }
 
         return DownloadHandlerTexture.GetContent(request);
-        */
-        await UniTask.Delay(10);
-        return null;
+
     }
 
 }

@@ -10,12 +10,16 @@ public class LoadingComplete : IState
 {
     public async void OnEnter()
     {
+        //スクリプトだけ先んじて処理
+        SettingHub.Instance.ResetSetting();
+        var scripts = BotManager.Instance.GetScripts();
+        BotManager.Instance.ExecutionScript(scripts);
+
         // ボットレスポンス取得
         var voice = BotManager.Instance.GetVoice();
         var text = BotManager.Instance.GetText();
         var image = BotManager.Instance.GetImage();
-        //var imageType = BotManager.Instance.GetImageAccessType();
-        var imageType = ImageAccessTypes.Local;
+        var imageType = BotManager.Instance.GetImageAccessType();
         var motion = BotManager.Instance.GetMotion();
         var scene = BotManager.Instance.GetScene();
         var options = BotManager.Instance.GetOptions();
@@ -32,8 +36,7 @@ public class LoadingComplete : IState
         }
 
         // ボイス再生タスク作成
-        UniTask audioTask;
-        /*
+        UniTask audioTask = UniTask.CompletedTask;
         if (!string.IsNullOrEmpty(voice))
         {
             // 他タスクより先に音声合成を行う
@@ -41,13 +44,15 @@ public class LoadingComplete : IState
 
             audioTask = AudioManager.Instance.Play(audioClip);
         }
-        */
 
         // UIタスク作成
         // 選択肢の表示タイミングは録音開始と合わせる
-        UniTask uiTask;
-        var fullSizeImageName = BotManager.GetSelectParameter(options, OptionTypes.fullScreen);
-        uiTask = UIManager.Instance.SetCharacterMessage(text, true, imageType, image, fullSizeImageName);
+        UniTask uiTask = UniTask.CompletedTask;
+        if (!string.IsNullOrEmpty(text))
+        {
+            var fullSizeImageName = BotManager.GetSelectParameter(options, OptionTypes.fullScreen);
+            uiTask = UIManager.Instance.SetCharacterMessage(text, true, imageType, image, fullSizeImageName);
+        }
 
         // タスク実行
         if (Enum.TryParse(motion, true, out AnimationType result))
@@ -57,15 +62,14 @@ public class LoadingComplete : IState
             {
                 // アテンド時はボイス再生終了時に戻す
                 await animationTask;
-                //await audioTask;
+                await audioTask;
                 await CharacterManager.Instance.ChangeAnimation(AnimationType.HereReturn);
                 await uiTask;
             }
             else
             {
                 // 全タスクを並列で
-                //await UniTask.WhenAll(audioTask, uiTask, animationTask);
-                await UniTask.WhenAll(uiTask, animationTask);
+                await UniTask.WhenAll(audioTask, uiTask, animationTask);
             }
         }
         // 動画は全タスク終了後に再生

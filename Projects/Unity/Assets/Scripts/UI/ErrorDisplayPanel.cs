@@ -2,11 +2,14 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
+
 using UnityEngine;
 using UnityEngine.UI;
+
 using UniRx;
 using TMPro;
-using static Global;
+
+using static GlobalState;
 
 public class ErrorDisplayPanel : MonoBehaviour
 {
@@ -24,7 +27,7 @@ public class ErrorDisplayPanel : MonoBehaviour
             // 非表示
             Disable();
             // Botモード先頭から始める
-            Global.Instance.CurrentState.Value = State.Starting;
+            GlobalState.Instance.CurrentState.Value = State.Starting;
         }).AddTo(gameObject);
     }
 

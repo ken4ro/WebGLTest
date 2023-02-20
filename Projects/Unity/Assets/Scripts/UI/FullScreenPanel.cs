@@ -7,13 +7,11 @@ using UnityEngine.UI;
 
 public class FullScreenPanel : MonoBehaviour
 {
-
     [SerializeField] Image ImagePanel = null;
 
     bool DiscardEvent = true;
 
     public Action OnClick = null;
-
 
     // Start is called before the first frame update
     void Start()
@@ -26,7 +24,6 @@ public class FullScreenPanel : MonoBehaviour
     {
         
     }
-
 
     /// <summary>
     /// パネル初期化
@@ -58,7 +55,6 @@ public class FullScreenPanel : MonoBehaviour
         FadeIn();
     }
 
-
     /// <summary>
     /// パネル無効化
     /// </summary>
@@ -73,16 +69,16 @@ public class FullScreenPanel : MonoBehaviour
         FadeOut();
     }
 
-
     /// <summary>
     /// イメージのセット
     /// </summary>
     /// <param name="img"></param>
-    public void SetImage(Texture2D img) => ImagePanel.sprite = Sprite.Create(img, new Rect(0.0f, 0.0f, img.width, img.height), Vector2.zero, 1.0f); 
+    public void SetImage(Texture2D img) => ImagePanel.sprite = Sprite.Create(img, new Rect(0.0f, 0.0f, img.width, img.height), Vector2.zero, 1.0f);
 
-
-    void FadeIn()=> ImagePanel.DOColor(new Color(1, 1, 1, 1), 0.5f).OnComplete(() => DiscardEvent = false);
-
+    void FadeIn()
+    {
+        ImagePanel.DOColor(new Color(1, 1, 1, 1), 0.5f).OnComplete(() => DiscardEvent = false);
+    }
 
     /// <summary>
     /// パネルフェードアウト
@@ -91,14 +87,12 @@ public class FullScreenPanel : MonoBehaviour
     {
         DiscardEvent = true;
         ImagePanel.DOComplete();
-        ImagePanel.DOColor(new Color(1, 1, 1, 0), 0.3f).OnComplete(()=> {
+        ImagePanel.DOColor(new Color(1, 1, 1, 0), 0.3f).OnComplete(() =>
+        {
             EnableEvent(false);
             ImagePanel.enabled = false;
         });
-        
-
     }
-
 
     /// <summary>
     /// イベントの有効化
@@ -109,7 +103,6 @@ public class FullScreenPanel : MonoBehaviour
         var im = this.GetComponent<Image>();
         im.raycastTarget = swt;
     }
-
 
     public void PushPanel()
     {

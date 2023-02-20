@@ -14,8 +14,8 @@ public class CallingPanel : MonoBehaviour
     [SerializeField]
     private Button _cancelButton = null;
 
-    private static readonly string CallingIconPath = "Image/Icon/icon_calling";
-    private static readonly string CallingEndIconPath = "Image/Icon/icon_calling_end";
+    private static readonly string CallingIconPath = "Images/Icon/icon_calling";
+    private static readonly string CallingEndIconPath = "Images/Icon/icon_calling_end";
     private static readonly float AnimationIntervalSec = 2.5f;
     private static readonly Vector3 CallingIconShakeVec = new Vector3(0.0f, 0.0f, 5.0f);
     private static readonly Color CallingTextFadeColor = new Color(1.0f, 1.0f, 1.0f, 1.0f);

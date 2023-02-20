@@ -117,13 +117,6 @@ public class UnaChan2DRugbyModel : ALive2DCharacterModel
         var bodyPitch = -1 * faceInfo.BodyPitch;
         var bodyRoll = faceInfo.BodyRoll;
 
-        //_model.Parameters[(int)UnaParameter.ParamAngleX].Value = (float)yaw;
-        //_model.Parameters[(int)UnaParameter.ParamAngleY].Value = (float)pitch;
-        //_model.Parameters[(int)UnaParameter.ParamAngleZ].Value = (float)roll;
-        //_model.Parameters[(int)UnaParameter.ParamBodyAngleX].Value = (float)bodyYaw;
-        //_model.Parameters[(int)UnaParameter.ParamBodyAngleY].Value = (float)bodyPitch;
-        //_model.Parameters[(int)UnaParameter.ParamBodyAngleZ].Value = (float)bodyRoll;
-
         _model.Parameters[(int)UnaRugbyParameter.ParamAngleX].BlendToValue(CubismParameterBlendMode.Override, (float)yaw);
         _model.Parameters[(int)UnaRugbyParameter.ParamAngleY].BlendToValue(CubismParameterBlendMode.Override, (float)pitch);
         _model.Parameters[(int)UnaRugbyParameter.ParamAngleZ].BlendToValue(CubismParameterBlendMode.Override, (float)roll);

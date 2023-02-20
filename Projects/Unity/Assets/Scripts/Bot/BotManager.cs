@@ -3,22 +3,13 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Net;
 using UnityEngine;
-using static Global;
+using UniRx;
+using static GlobalState;
+using static SignageSettings;
 using Cysharp.Threading.Tasks;
-using static ApiServerManager;
-using System.Text;
 
 public partial class BotManager : SingletonBase<BotManager>
 {
-    // フローID
-    private static readonly string FlowID = "fba931ed-0a78-43a8-830f-22a17e4352ad-25b95b05-9622-4554-9965-ca4dbcd4bddb";
-
-    // ログインID
-    private static readonly string LoginID = "user01user01user01";
-
-    // ログインパスワ－ド
-    private static readonly string LoginPassword = "passpasspass";
-
     /// <summary>
     /// Bot処理開始時コールバック
     /// </summary>
@@ -40,6 +31,11 @@ public partial class BotManager : SingletonBase<BotManager>
     public bool IsInitialized { get; set; } = false;
 
     /// <summary>
+    /// リクエスト失敗時テキスト
+    /// </summary>
+    public string NoMatchText { get => _botLanguageProcessor.NoMatchText; }
+
+    /// <summary>
     /// Botレスポンス
     /// </summary>
     public BotResponse Response { get; private set; } = null;
@@ -58,14 +54,6 @@ public partial class BotManager : SingletonBase<BotManager>
         Five,
     }
 
-    public enum BotResponseStatus
-    {
-        Success,
-        BadRequest,
-        ParseError,
-        NoMatch,
-    }
-
     public class BotRequestResult
     {
         public HttpStatusCode Status { get; set; }
@@ -73,31 +61,36 @@ public partial class BotManager : SingletonBase<BotManager>
         public string result { get; set; }
     }
 
-    // ユーザートークン
-    public string UserToken { get; private set; } = "";
+    // Botサービス別処理
+    private IBotService _botServiceProcessor = null;
+
+    // 言語別処理
+    private ABotLanguageProcessor _botLanguageProcessor = null;
+    private IDisposable _currentBotLanguageObserver = null;
 
     // 選択肢
     private static readonly int MaxSelectCount = 4;
     private List<string> _selectImages = new List<string>(MaxSelectCount);
 
+    private List<BotResponseOption> _options = new List<BotResponseOption>();
+
     /// <summary>
     /// 初期化
     /// </summary>
-    public async UniTask Initialize()
+    public void Initialize()
     {
         IsInitialized = false;
 
-        // ユーザートークン取得
-        var jsonObject = new RequestUserTokenJson()
-        {
-            login_id = LoginID,
-            login_type = "basic",
-            password = LoginPassword
-        };
-        var json = JsonUtility.ToJson(jsonObject);
-        var ret = await ApiServerManager.Instance.RequestUserToken(json);
-        var responseJsonObject = JsonUtility.FromJson<RequestUserTokenResponseJson>(ret);
-        UserToken = Convert.ToBase64String(Encoding.UTF8.GetBytes(responseJsonObject.access_token));
+        // チャットボットサービス別処理用クラス生成
+        // 動的に変わることは無いので監視対象外
+        CreateChatbotServiceProcessor();
+
+        // チャットボットサービス初期化
+        _botServiceProcessor.Initialize();
+
+        // 言語月処理用クラス生成
+        // 動的に変わるので監視対象
+        _currentBotLanguageObserver = CurrentLanguage.Subscribe(x => CreateBotLanguageProcessor(x));
 
         IsInitialized = true;
     }
@@ -107,6 +100,43 @@ public partial class BotManager : SingletonBase<BotManager>
     /// </summary>
     public void Dispose()
     {
+        _botServiceProcessor = null;
+        _botLanguageProcessor = null;
+        _currentBotLanguageObserver.Dispose();
+    }
+
+    /// <summary>
+    /// チャットボットサービスを初期化して先頭から開始する
+    /// </summary>
+    /// <returns></returns>
+    public async UniTask Reset()
+    {
+        IsInitialized = false;
+
+        // Botサービスリセット
+        var resetResponse = await _botServiceProcessor.Reset();
+        switch (resetResponse.Status)
+        {
+            case HttpStatusCode.RequestTimeout:
+                // リクエストタイムアウト
+                RequestTimeout();
+                return;
+            case HttpStatusCode.BadRequest:
+                // リクエストパラメータ不正
+                BadRequest();
+                return;
+            case HttpStatusCode.Unauthorized:
+                // 認証エラー
+                Unauthorized();
+                return;
+        }
+
+        IsInitialized = true;
+
+        // シナリオの初期化が即走るので、アニメーションを途切れさせないようにする(処理のフローよりも見栄え重視)
+        //GlobalState.Instance.CurrentProcess.Value = GlobalState.Process.Waiting;
+
+        await Request(true, "init");
     }
 
     /// <summary>
@@ -115,87 +145,68 @@ public partial class BotManager : SingletonBase<BotManager>
     /// <param name="init"></param>
     /// <param name="text"></param>
     /// <returns></returns>
-    public async UniTask Request(bool isInit, string inputText = null)
+    public async UniTask<bool> Request(bool isInit, string inputText = null)
     {
         if (!IsInitialized)
         {
-            Debug.Log("BotManager.Request: BotManager not initialized");
+            Debug.Log("BotManager not initialized");
 
-            return;
+            return false;
         }
 
         // イベント通知
         OnStartRequest?.Invoke();
 
-        // ボットリクエスト
-        BotResponseStatus responseStatus;
-        string ret;
-        if (isInit)
+        // リクエスト
+        var response = await _botServiceProcessor.Request(isInit, inputText);
+
+        if (response.Status == HttpStatusCode.RequestTimeout)
         {
-            // フローの初期ノードをリクエスト
-            var requestFirstNodeJsonObject = new RequestFirstNodeJson()
-            {
-                flow_id = FlowID
-            };
-            var json = JsonUtility.ToJson(requestFirstNodeJsonObject);
-            ret = await ApiServerManager.Instance.RequestFirstNode(UserToken, json);
-            var requestFirstNodeResponseJsonObject = JsonUtility.FromJson<RequestFirstNodeResponseJson>(ret);
-            Response = requestFirstNodeResponseJsonObject.response;
-            if (requestFirstNodeResponseJsonObject.response.Text.Jp == null)
-            {
-                Debug.LogError($"RequestFirstNode response parse error.");
-                responseStatus = BotResponseStatus.ParseError;
-            }
-            else
-            {
-                Debug.Log($"RequestFirstNode response text: {requestFirstNodeResponseJsonObject.response.Text.Jp}");
-                responseStatus = BotResponseStatus.Success;
-            }
-        }
-        else
-        {
-            // 次のノードをリクエスト
-            var requestFlowJsonObject = new RequestNextNodeJson()
-            {
-                flow_id = FlowID,
-                utterance = inputText
-                //utterance = "もにょもにょ"
-            };
-            var requestFlowJson = JsonUtility.ToJson(requestFlowJsonObject);
-            ret = await ApiServerManager.Instance.RequestNextNode(UserToken, requestFlowJson);
-            var requestNextNodeResponseJsonObject = JsonUtility.FromJson<RequestNextNodeResponseJson>(ret);
-            Response = requestNextNodeResponseJsonObject.response;
-            if (requestNextNodeResponseJsonObject.response.Text.Jp == null)
-            {
-                Debug.LogError($"RequestNextNode response parse error.");
-                responseStatus = BotResponseStatus.ParseError;
-            }
-            else
-            {
-                Debug.Log($"RequestNextNode response text: {requestNextNodeResponseJsonObject.response.Text.Jp}");
-                responseStatus = BotResponseStatus.Success;
-            }
+            // リクエストタイムアウト
+            RequestTimeout();
+
+            return false;
         }
 
-        if (responseStatus == BotResponseStatus.NoMatch)
+        if (response.Status == HttpStatusCode.NotFound || response.result == "NOMATCH")
         {
+            // 答えがマッチしなかった
+
             // イベント通知
             OnNoMatch?.Invoke();
 
-            return;
+            return true;
         }
+
+        // レスポンス取得
+        BotResponse responseObj = null;
+        try
+        {
+            var str = ReplaceVariable(response.result);
+            responseObj = JsonUtility.FromJson<BotResponse>(str);
+        }
+        catch (Exception)
+        {
+            // JSON パースエラー
+            UnrecognizedResponse();
+
+            return false;
+        }
+        Response = responseObj;
 
         // イベント通知
         OnCompleteRequest?.Invoke();
+
+        return true;
     }
 
     /// <summary>
     /// 空リクエスト送信
     /// </summary>
     /// <returns></returns>
-    public async UniTask RequestEmpty()
+    public async UniTask<bool> RequestEmpty()
     {
-        await Request(false, "");
+        return await Request(false, "");
     }
 
     /// <summary>
@@ -210,14 +221,14 @@ public partial class BotManager : SingletonBase<BotManager>
     /// </summary>
     /// <param name="response"></param>
     /// <returns></returns>
-    public string GetVoice() => Response.Voice.Jp;
+    public string GetVoice() => _botLanguageProcessor.GetVoice(Response);
 
     /// <summary>
     /// リクエスト結果から表示文字列を取得
     /// </summary>
     /// <param name="response"></param>
     /// <returns></returns>
-    public string GetText() => Response.Text.Jp;
+    public string GetText() => _botLanguageProcessor.GetText(Response);
 
     /// <summary>
     /// リクエスト結果からキャラクターアニメーションを取得
@@ -268,11 +279,12 @@ public partial class BotManager : SingletonBase<BotManager>
     }
 
     /// <summary>
-    /// リクエスト結果から選択肢のリストを取得
+    /// リクエスト結果から選択肢のテキストリストを取得
     /// </summary>
     /// <param name="response"></param>
     /// <returns></returns>
-    public List<BotResponseSelect> GetSelectObjects() => new List<BotResponseSelect>(Response.Selects);
+    //public List<string> GetSelectTexts() => _botLanguageProcessor.GetSelectTexts(Response);
+    public List<BotResponseSelect> GetSelectObjects() => _botLanguageProcessor.GetSelectObjects(Response);
 
     /// <summary>
     /// リクエスト結果からコントローラーデバイスに送信用のテキストリストを取得
@@ -284,5 +296,78 @@ public partial class BotManager : SingletonBase<BotManager>
     /// リクエスト結果から表示動画ファイル名を取得
     /// </summary>
     public string GetMovie() => Response.Movie;
+
+    private void CreateChatbotServiceProcessor()
+    {
+        switch (Settings.ChatbotService)
+        {
+            case ChatbotServices.Repl:
+                _botServiceProcessor = new ReplAIService();
+                break;
+            case ChatbotServices.Dialogflow:
+                _botServiceProcessor = new DialogflowService();
+                break;
+            case ChatbotServices.CAIAsset:
+            case ChatbotServices.CAIFile:
+                _botServiceProcessor = new LocalAIService();
+                break;
+            case ChatbotServices.CAIWeb:
+                _botServiceProcessor = new WebAIService();
+                break;
+            default:
+                break;
+        }
+    }
+
+    private void CreateBotLanguageProcessor(Language language)
+    {
+        switch (language)
+        {
+            case Language.Japanese:
+                _botLanguageProcessor = new BotLanguageProcessorJapanese();
+                break;
+            case Language.English:
+                _botLanguageProcessor = new BotLanguageProcessorEnglish();
+                break;
+            case Language.Chinese:
+                _botLanguageProcessor = new BotLanguageProcessorChinese();
+                break;
+            case Language.Russian:
+                _botLanguageProcessor = new BotLanguageProcessorRussian();
+                break;
+            case Language.Arabic:
+                _botLanguageProcessor = new BotLanguageProcessorArabic();
+                break;
+            case Language.Vietnamese:
+                _botLanguageProcessor = new BotLanguageProcessorVietnamese();
+                break;
+            default:
+                break;
+        }
+    }
+
+    private void UnrecognizedResponse()
+    {
+        UIManager.Instance.DisplayError(ErrorCode.ReplUnrecognizedResponse);
+        GlobalState.Instance.CurrentState.Value = State.Waiting;
+    }
+
+    private void RequestTimeout()
+    {
+        UIManager.Instance.DisplayError(ErrorCode.Network);
+        GlobalState.Instance.CurrentState.Value = State.Waiting;
+    }
+
+    private void Unauthorized()
+    {
+        UIManager.Instance.DisplayError(ErrorCode.ReplUnauthorized);
+        GlobalState.Instance.CurrentState.Value = State.Waiting;
+    }
+
+    private void BadRequest()
+    {
+        UIManager.Instance.DisplayError(ErrorCode.ReplBadRequest);
+        GlobalState.Instance.CurrentState.Value = State.Waiting;
+    }
 }
 

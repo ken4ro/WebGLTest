@@ -68,7 +68,6 @@ public class UsagiChan : ALive2DCharacterModel
         _model.Parameters[(int)UsagiParameter.BODY_ANGLE_X].BlendToValue(CubismParameterBlendMode.Override, (float)bodyYaw);
         _model.Parameters[(int)UsagiParameter.BODY_ANGLE_Y].BlendToValue(CubismParameterBlendMode.Override, (float)bodyPitch);
         _model.Parameters[(int)UsagiParameter.BODY_ANGLE_Z].BlendToValue(CubismParameterBlendMode.Override, (float)bodyRoll);
-        //_model.Parameters[(int)UsagiParameter.BODY_ANGLE_XZ].BlendToValue = (float)yaw;
     }
 
 #if false

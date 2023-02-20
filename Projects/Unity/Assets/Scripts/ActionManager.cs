@@ -24,7 +24,7 @@ public class ActionManager : SingletonBase<ActionManager>
                 // n秒後に再スタート
                 TimerTask = Observable.Timer(TimeSpan.FromSeconds(SettingHub.Instance.Signage.Cache.ReturnWaitTime)).Subscribe(_ =>
                 {
-                    Global.Instance.CurrentState.Value = Global.State.Starting;
+                    GlobalState.Instance.CurrentState.Value = GlobalState.State.Starting;
                 });
                 // 音声認識は行わない
                 return;
@@ -39,41 +39,41 @@ public class ActionManager : SingletonBase<ActionManager>
             case "translate":
                 //Debug.Log("Translation Mode");
                 // 翻訳モードに切り替える
-                Global.Instance.CurrentBotRequestMode = Global.BotRequestMode.Translation;
+                GlobalState.Instance.CurrentBotRequestMode.Value = GlobalState.BotRequestMode.Translation;
                 break;
             case "nomatch":
                 Debug.Log("NoMatch");
                 break;
             case "telexistence":
                 // 遠隔対話モード
-                if (Global.Instance.ApplicationGlobalSettings.EnableRecordingAgreement == "true")
+                if (GlobalState.Instance.ApplicationGlobalSettings.EnableRecordingAgreement == "true")
                 {
                     // 録音確認画面を表示
-                    Global.Instance.CurrentState.Value = Global.State.PreOperating;
+                    GlobalState.Instance.CurrentState.Value = GlobalState.State.PreOperating;
                 }
                 else
                 {
                     // 録音確認画面をスキップ
-                    Global.Instance.CurrentState.Value = Global.State.Operating;
+                    GlobalState.Instance.CurrentState.Value = GlobalState.State.Operating;
                 }
                 // 音声認識は行わない
                 return;
             default:
                 //Debug.Log("Dictionary Mode");
                 // 辞書モードに切り替える
-                Global.Instance.CurrentBotRequestMode = Global.BotRequestMode.Dictionary;
+                GlobalState.Instance.CurrentBotRequestMode.Value = GlobalState.BotRequestMode.Dictionary;
                 break;
         }
 
-        if (Global.Instance.CurrentBotRequestMethod == Global.BotRequestMethod.Button)
+        if (GlobalState.Instance.CurrentBotRequestMethod == GlobalState.BotRequestMethod.Button)
         {
             // 発話可能状態へダイレクトに移行
-            Global.Instance.CurrentState.Value = Global.State.Speakable;
+            GlobalState.Instance.CurrentState.Value = GlobalState.State.Speakable;
         }
         else
         {
             // ストリーミング音声認識開始要求
-            //var runTask = StreamingSpeechToText.Instance.RunOneShotTask();
+            var runTask = StreamingSpeechToText.Instance.RunOneShotTask();
         }
     }
 }

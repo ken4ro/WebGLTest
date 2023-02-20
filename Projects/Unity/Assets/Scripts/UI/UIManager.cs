@@ -5,7 +5,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using UniRx;
 using DG.Tweening;
-using static Global;
+using static GlobalState;
 using static Background;
 using static BotManager;
 using static SignageSettings;
@@ -110,11 +110,6 @@ public class UIManager : SingletonMonoBehaviour<UIManager>
     [SerializeField] FullScreenPanel fullScreenPanel = null;
 
     /// <summary>
-    /// Webカメラ映像表示用パネル
-    /// </summary>
-    //[SerializeField] WebCameraPanel webCameraPanel = null;
-
-    /// <summary>
     /// 受領資料表示用パネル
     /// </summary>
     [SerializeField] ReceivedDocumentPanel receivedDocumentPanel = null;
@@ -145,6 +140,11 @@ public class UIManager : SingletonMonoBehaviour<UIManager>
     [SerializeField] CanvasGroup languageGroup = null;
 
     /// <summary>
+    /// 言語ウィンドウ
+    /// </summary>
+    [SerializeField] LangWindow languageWindow = null;
+
+    /// <summary>
     /// 録音確認画面
     /// </summary>
     [SerializeField] RecordingCheckPanel recordingCheckPanel = null;
@@ -171,11 +171,10 @@ public class UIManager : SingletonMonoBehaviour<UIManager>
         // TODO: インターフェース作成
         background.Initialize();
         userMessage.Initialize();
-        //speakingMessage.Initialize();
+        speakingMessage.Initialize();
         speakableIcon.Initialize();
         pushableSimpleIcon.Initialize();
         pushableCocoaIcon.Initialize();
-        receivedDocumentPanel.Initialize();
         callingPanel.Initialize();
         errorDisplayPanel.Initialize();
         moviePlayerPanel.Initialize();
@@ -183,6 +182,7 @@ public class UIManager : SingletonMonoBehaviour<UIManager>
         recordingCheckPanel.Initialize();
 
         callingPanel.OnCancelled += CancelCalling;
+        languageWindow.OnSelectLanguage += SelectLanguage;
         characterMessage.OnClickSelectWord += SelectWord;
         characterMessage.OnImageClick += ClickThumbnailPanel;
         moviePlayerPanel.OnClick += ClickScreenSaver;
@@ -191,10 +191,10 @@ public class UIManager : SingletonMonoBehaviour<UIManager>
         recordingCheckPanel.OnClickNoBtn += RejectRecording;
         
         // 言語変更を監視
-        //_changeLanguageObserver = CurrentLanguage.Subscribe(x => { ChangeLanguage(x); });
+        _changeLanguageObserver = CurrentLanguage.Subscribe(x => { ChangeLanguage(x); });
 
         // 入力モード別処理
-        if (Global.Instance.CurrentBotRequestMethod != BotRequestMethod.Button)
+        if (GlobalState.Instance.CurrentBotRequestMethod != BotRequestMethod.Button)
         {
             // マイクのミュート状態を監視
             AudioManager.Instance.OnMicMute += ChangeMicMute;
@@ -203,8 +203,8 @@ public class UIManager : SingletonMonoBehaviour<UIManager>
 
     protected override void OnDestroy()
     {
-        /*
         callingPanel.OnCancelled -= CancelCalling;
+        languageWindow.OnSelectLanguage -= SelectLanguage;
         characterMessage.OnClickSelectWord -= SelectWord;
         characterMessage.OnImageClick -= ClickThumbnailPanel;
         moviePlayerPanel.OnClick -= ClickScreenSaver;
@@ -213,7 +213,6 @@ public class UIManager : SingletonMonoBehaviour<UIManager>
         recordingCheckPanel.OnClickNoBtn -= RejectRecording;
 
         _changeLanguageObserver.Dispose();
-        */
 
         base.OnDestroy();
     }
@@ -261,7 +260,7 @@ public class UIManager : SingletonMonoBehaviour<UIManager>
     public void FadeInAcceptableIcon()
     {
         // TODO: インターフェースで書き直し
-        switch (Global.Instance.CurrentAcceptableAnimationType)
+        switch (GlobalState.Instance.CurrentAcceptableAnimationType)
         {
             case AcceptableAnimationType.Simple:
                 FadeInPushableSimpleIcon();
@@ -281,7 +280,7 @@ public class UIManager : SingletonMonoBehaviour<UIManager>
     public void FadeOutAcceptableIcon()
     {
         // TODO: インターフェース使って書き直し
-        switch (Global.Instance.CurrentAcceptableAnimationType)
+        switch (GlobalState.Instance.CurrentAcceptableAnimationType)
         {
             case AcceptableAnimationType.Simple:
                 FadeOutPushableSimpleIcon();
@@ -523,7 +522,7 @@ public class UIManager : SingletonMonoBehaviour<UIManager>
     /// </summary>
     /// <param name="selectTexts"></param>
     //public void SetCharacterSelectMessage(List<string> selectTexts) => characterMessage.SetSelectMessage(selectTexts);
-    public void SetCharacterSelectMessage(List<BotResponseSelect> selectObjects) => characterMessage.SetSelectObjects(selectObjects, /*languageWindow.GetActiveLanguage()*/Language.Japanese);
+    public void SetCharacterSelectMessage(List<BotResponseSelect> selectObjects) => characterMessage.SetSelectObjects(selectObjects, languageWindow.GetActiveLanguage());
 
     /// <summary>
     /// キャラクターメッセージをリセット
@@ -550,7 +549,6 @@ public class UIManager : SingletonMonoBehaviour<UIManager>
     /// <param name="text"></param>
     public void SetSpeakingText(string text) => speakingMessage.SetSpeakingText(text);
 
-    /// <summary>
     /// オペレーター呼び出し開始
     /// </summary>
     public void BeginCalling() => callingPanel.Call();
@@ -618,12 +616,12 @@ public class UIManager : SingletonMonoBehaviour<UIManager>
         Resources.UnloadAsset(micBtn.sprite);
         if (mute)
         {
-            micIcon.sprite = Resources.Load<Sprite>("Image/Icon/icon_mic_off");
+            micIcon.sprite = Resources.Load<Sprite>("Images/Icon/icon_mic_off");
             micBtn.color = new Color(240.0f / 255, 76.0f / 255, 102.0f / 255, 1.0f);
         }
         else
         {
-            micIcon.sprite = Resources.Load<Sprite>("Image/Icon/icon_mic_on");
+            micIcon.sprite = Resources.Load<Sprite>("Images/Icon/icon_mic_on");
             micBtn.color = new Color(14.0f / 255, 170.0f / 255, 157.0f / 255, 1.0f);
         }
     }
@@ -645,6 +643,7 @@ public class UIManager : SingletonMonoBehaviour<UIManager>
     private void ChangeLanguage(Language language)
     {
         // 言語ウィンドウに反映
+        languageWindow.SetLanguage(language);
     }
 
     // 選択肢が選択された
@@ -658,6 +657,7 @@ public class UIManager : SingletonMonoBehaviour<UIManager>
     private void ClickScreenSaver()
     {
         // イベント発行
+        //languageWindow.SetDefaultLang(); // 不要なはず
         OnClickScreenSaver?.Invoke();
     }
 
@@ -672,6 +672,7 @@ public class UIManager : SingletonMonoBehaviour<UIManager>
     {
         EnableFullScreenPanel();
         GameController.Instance.CurrentIdleTimeSec = 0.0f;
+
     }
 
     // 録音確認画面で賛同した

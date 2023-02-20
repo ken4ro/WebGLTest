@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UniRx;
 using UnityEngine;
+using static AudioManager;
 
 /// <summary>
 /// サイネージ設定管理クラス
@@ -71,6 +72,7 @@ public class SignageSettings
 
         [NonSerialized] public ChatbotServices ChatbotService;
         [NonSerialized] public ScreenSaverTypes ScreenSaver;
+        [NonSerialized] public Dictionary<Language, TextToSpeechEngine> LanguageVoiceMap = new Dictionary<Language, TextToSpeechEngine>();
         [NonSerialized] public int BaseTextSpeed;
         [NonSerialized] public ImageAccessTypes ImageAccessType;
         [NonSerialized] public int InputLimitTime;
@@ -106,6 +108,19 @@ public class SignageSettings
             {
                 ScreenSaver = ScreenSaverTypes.None;
             }
+
+            //音声サービス
+            LanguageVoiceMap.Clear();
+            foreach (var obj in languages)
+            {
+                try
+                {
+                    var key = (Language)Enum.Parse(typeof(Language), obj.language);
+                    var val = (TextToSpeechEngine)Enum.Parse(typeof(TextToSpeechEngine), obj.voice);
+                    LanguageVoiceMap.Add(key, val);
+                }
+                catch { }
+            }
         }
 
         public void OnBeforeSerialize()
@@ -128,10 +143,38 @@ public class SignageSettings
     public static ReactiveProperty<Language> CurrentLanguage { get; set; }
 
     /// <summary>
+    /// 選択中の音声合成エンジン
+    /// </summary>
+    public static TextToSpeechEngine CurrentTextToSpeechEngine
+    {
+        get
+        {
+            return Settings.LanguageVoiceMap[CurrentLanguage.Value];
+        }
+    }
+
+    /// <summary>
+    /// 選択中の言語を初期化
+    /// </summary>
+    public static void InitializeCurrentLanguage()
+    {
+        // デフォルト言語は SinageSettings で最初に記述されたものにする
+        if (CurrentLanguage == null)
+        {
+            CurrentLanguage = new ReactiveProperty<Language>(Settings.LanguageVoiceMap.Keys.First());
+        }
+        else
+        {
+            CurrentLanguage.Value = Settings.LanguageVoiceMap.Keys.First();
+        }
+    }
+
+    /// <summary>
     /// 設定読み込み
     /// </summary>
     public static void LoadSettings()
     {
+#if false
         var settingFileAsset = AssetBundleManager.Instance.LoadTextAssetFromResourcePack("SignageSettings");
         if (settingFileAsset == null)
         {
@@ -140,6 +183,41 @@ public class SignageSettings
         }
         var json = settingFileAsset.text.Trim(new char[] { '\uFEFF' });
         Settings = JsonUtility.FromJson<SignageSetting>(json);
+#else
+        // オンメモリで値を設定(WebGL暫定対応)
+        Settings = new SignageSetting()
+        {
+            BaseTextSpeed = 30,
+            ChatbotService = ChatbotServices.CAIWeb,
+            DelayTime = 5,
+            ImageAccessType = ImageAccessTypes.UnityAsset,
+            InputLimitTime = 60,
+            LanguageVoiceMap = new Dictionary<Language, TextToSpeechEngine>()
+            {
+                { Language.Japanese, TextToSpeechEngine.Google },
+                { Language.English, TextToSpeechEngine.Google },
+            },
+            RestartWaitTime = 60,
+            ReturnWaitTime = 6,
+            ScreenSaver = ScreenSaverTypes.None
+        };
+#endif
+
+        InitializeCurrentLanguage();
     }
 
+    /// <summary>
+    /// 指定音声サービスの利用チェック
+    /// </summary>
+    /// <param name="type">音声サービスタイプ</param>
+    /// <returns></returns>
+    public static bool IsActiveVoiceService(TextToSpeechEngine type)
+    {
+        foreach(var o in Settings.LanguageVoiceMap)
+        
+            if (o.Value == type)
+                return true;
+        
+        return false;
+    }
 }

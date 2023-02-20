@@ -7,7 +7,6 @@ using UnityEngine;
 using Live2D.Cubism.Core;
 using Live2D.Cubism.Framework;
 using Live2D.Cubism.Framework.Motion;
-using System.Threading.Tasks;
 using Cysharp.Threading.Tasks;
 
 /// <summary>
@@ -103,15 +102,15 @@ public class CharacterManager : SingletonMonoBehaviour<CharacterManager>
             var animator = gameObject.GetComponent<Animator>();
             var parameters = gameObject.transform.Find("Parameters");
             var eyeBlinkController = gameObject.GetComponent<CubismEyeBlinkController>();
-            switch (Global.Instance.CurrentCharacterModel)
+            switch (GlobalState.Instance.CurrentCharacterModel.Value)
             {
-                case Global.CharacterModel.Usagi:
+                case GlobalState.CharacterModel.Usagi:
                     _characterModel = new UsagiChan(this.gameObject, model, animator, _motionAnimatorController, _facialAnimatorController, parameters, eyeBlinkController);
                     break;
-                case Global.CharacterModel.Una2D:
+                case GlobalState.CharacterModel.Una2D:
                     _characterModel = new UnaChan2DModel(this.gameObject, model, animator, _motionAnimatorController, _facialAnimatorController, parameters, eyeBlinkController);
                     break;
-                case Global.CharacterModel.Una2D_Rugby:
+                case GlobalState.CharacterModel.Una2D_Rugby:
                     _characterModel = new UnaChan2DRugbyModel(this.gameObject, model, animator, _motionAnimatorController, _facialAnimatorController, parameters, eyeBlinkController);
                     break;
             }
@@ -125,21 +124,22 @@ public class CharacterManager : SingletonMonoBehaviour<CharacterManager>
                 Debug.LogError("Check 3D character object!");
                 return;
             }
-            switch (Global.Instance.CurrentCharacterModel)
+            switch (GlobalState.Instance.CurrentCharacterModel.Value)
             {
-                case Global.CharacterModel.Maru:
+                case GlobalState.CharacterModel.Maru:
                     // まるちゃん
                     _characterModel = new PolygonModel(this.gameObject, animator, _motionAnimatorController, _facialAnimatorController, FacialSkinnedMesh, NeckTransform, BodyTransform);
                     break;
-                case Global.CharacterModel.Una3D:
+                case GlobalState.CharacterModel.Una3D:
                     // うなちゃん
                     _characterModel = new UnaChanModel(this.gameObject, animator, _motionAnimatorController, _facialAnimatorController, FacialSkinnedMesh, NeckTransform, BodyTransform);
                     break;
                 default:
-                    Debug.LogError($"Character model {Global.Instance.CurrentCharacterModel} is not implemented yet.");
+                    Debug.LogError($"Character model {GlobalState.Instance.CurrentCharacterModel.Value.ToString()} is not implemented yet.");
                     break;
             }
         }
+        Debug.Log($"_characterModel = {_characterModel}, GlobalState.Instance.CurrentCharacterModel = {GlobalState.Instance.CurrentCharacterModel.Value}");
     }
 
     async void Start()

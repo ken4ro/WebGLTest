@@ -6,6 +6,24 @@ export const useUnity = (props) => {
     const containerRef = useRef(null);
     const instanceRef = useRef(null);
 
+    useEffect(() => {
+        if (!window.createUnityInstance) {
+            const t = window.setTimeout(() => {
+                setRetryCount((c) => c + 1);
+            }, 100);
+            return () => {
+                window.clearTimeout(t);
+            };
+        }
+        handleStart();
+        return () => {
+            const { current } = instanceRef;
+            if (current) {
+                current.Quit();
+            }
+        };
+    }, [retryCount]);
+    
     const handleStart = () => {
         const { current } = containerRef;
         if (!current) {
@@ -35,29 +53,8 @@ export const useUnity = (props) => {
             });
     };
 
-    useEffect(() => {
-        if (!window.createUnityInstance) {
-            const t = window.setTimeout(() => {
-                setRetryCount((c) => c + 1);
-            }, 100);
-            return () => {
-                window.clearTimeout(t);
-            };
-        }
-        handleStart();
-        return () => {
-            const { current } = instanceRef;
-            if (current) {
-                current.Quit();
-            }
-        };
-    }, [retryCount]);
-
-    const scriptSrc = `${unityBuildRoot}/${buildName}.loader.js`;
-
     return {
         instanceRef,
         containerRef,
-        scriptSrc,
     };
 };

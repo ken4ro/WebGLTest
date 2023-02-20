@@ -1,7 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using Cysharp.Threading.Tasks;
+using System.Collections.Generic;
 using System.Text;
-using System.Threading.Tasks;
 using UnityEngine.Networking;
+
 public static class WebRequest
 {
     public enum Method
@@ -12,7 +13,7 @@ public static class WebRequest
         DELETE
     }
 
-    public static string Request(string url, Method method, KeyValuePair<string,string>[] headers, string json)
+    public static async UniTask<string> Request(string url, Method method, KeyValuePair<string,string>[] headers, string json)
     {
         var req = new UnityWebRequest(url, method.ToString());
         // ヘッダ
@@ -25,7 +26,7 @@ public static class WebRequest
         req.uploadHandler = new UploadHandlerRaw(body);
         req.downloadHandler = new DownloadHandlerBuffer();
         // リクエスト
-        req.SendWebRequest();
+        await req.SendWebRequest();
         // レスポンスを返す
         return DownloadHandlerBuffer.GetContent(req);
     }

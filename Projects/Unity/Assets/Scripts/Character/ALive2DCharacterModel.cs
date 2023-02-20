@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
+using DG.Tweening;
 using Live2D.Cubism.Core;
 using Live2D.Cubism.Framework;
-using System.Threading.Tasks;
 using Cysharp.Threading.Tasks;
 
 public abstract class ALive2DCharacterModel : ICharacterModel
@@ -190,10 +190,8 @@ public abstract class ALive2DCharacterModel : ICharacterModel
 
     public void MovePosition(Vector3 pos, float time)
     {
-#if false
         var currentPos = _parent.transform.position;
         DOTween.To(() => _parent.transform.position, value => _parent.transform.position = value, pos, time);
-#endif
     }
 
     public void ResetPosition()

@@ -1,8 +1,8 @@
-﻿using Cysharp.Threading.Tasks;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 using UnityEngine;
+using DG.Tweening;
+using Cysharp.Threading.Tasks;
 
 /// <summary>
 /// 3Dキャラクターモデル抽象基底クラス
@@ -184,9 +184,7 @@ public abstract class A3DCharacterModel : ICharacterModel
     public void MovePosition(Vector3 pos, float time)
     {
         var currentPos = _parent.transform.position;
-#if false
         DOTween.To(() => _parent.transform.position, value => _parent.transform.position = value, pos, time);
-#endif
     }
 
     public void ResetAnimation()
@@ -211,6 +209,7 @@ public abstract class A3DCharacterModel : ICharacterModel
 
     public async UniTask ChangeAnimation(AnimationType animationType)
     {
+        Debug.Log($"ChangeAnimation _animator = {_animator}, _motionController = {_motionController}");
         if (_animator.runtimeAnimatorController != _motionController)
         {
             SetAnimatorController(_motionController);
@@ -257,7 +256,6 @@ public abstract class A3DCharacterModel : ICharacterModel
 
     public void FaceUpdate(FaceInfoManager.FaceInfo faceInfo)
     {
-#if false
         // 顔情報取得
         var pitch = faceInfo.Pitch;
         var yaw = faceInfo.Yaw;
@@ -270,8 +268,6 @@ public abstract class A3DCharacterModel : ICharacterModel
         _neckRotateAngles.x = (float)yaw;
         _neckRotateAngles.z = (float)pitch;
         _neckRotateAngles.y = (float)roll;
-        //var neckDestQuaternion = Quaternion.Euler(_neckRotateAngles);
-        //_neck.transform.localRotation = neckDestQuaternion;
         _neck.DOComplete();
         _neck.DOLocalRotateQuaternion(Quaternion.Euler(_neckRotateAngles), 0.1f);
 
@@ -279,13 +275,8 @@ public abstract class A3DCharacterModel : ICharacterModel
         _bodyRotateAngles.x = (float)bodyYaw;
         _bodyRotateAngles.z = (float)bodyPitch;
         _bodyRotateAngles.y = (float)bodyRoll;
-        //var bodyDestQuaternion = Quaternion.Euler(_bodyRotateAngles);
-        //_body.transform.localRotation = bodyDestQuaternion;
         _body.DOComplete();
         _body.DOLocalRotateQuaternion(Quaternion.Euler(_bodyRotateAngles), 0.1f);
-
-        //Debug.Log($"FaceUpdate {Time.time}: ({_neckRotateAngles.x}, {_neckRotateAngles.y}, {_neckRotateAngles.z})");
-#endif
     }
 
     private void ResetFacialKey()

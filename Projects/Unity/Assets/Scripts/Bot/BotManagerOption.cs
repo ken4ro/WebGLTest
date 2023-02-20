@@ -68,12 +68,11 @@ public partial class BotManager : SingletonBase<BotManager>
     /// </summary>
     /// <returns></returns>
     public ImageAccessTypes GetImageAccessType()
-    {
+    {      
         try
         {
             var idx = Array.Find(Response.Options, p => p.Type == "imageAccessType");
             return idx == null ? SettingHub.Instance.Signage.Cache.ImageAccessType : (ImageAccessTypes)Enum.Parse(typeof(ImageAccessTypes), idx.ParameterArray[0]);
-
         }
         catch { return SettingHub.Instance.Signage.Cache.ImageAccessType; }
     }
@@ -81,7 +80,7 @@ public partial class BotManager : SingletonBase<BotManager>
     public static string GetSelectParameter(List<BotResponseOption> options, OptionTypes type)
     {
         var str = type.ToString();
-        foreach (var opt in options)
+        foreach(var opt in options)
         {
             if (opt.Type != str)
                 continue;
