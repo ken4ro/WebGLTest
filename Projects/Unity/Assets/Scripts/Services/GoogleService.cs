@@ -147,7 +147,6 @@ public static partial class GoogleService
             // 成功
             var responseJson = response.Json;
             //Debug.Log("GoogleService.SpeechToText request succeeded. response json: ");
-            Debug.Log(responseJson);
             var responseJsonObj = JsonConvert.DeserializeObject<GoogleSpeechToTextResponse>(responseJson);
             if (responseJsonObj != null && responseJsonObj.Results != null && responseJsonObj.Results.Length > 0)
             {

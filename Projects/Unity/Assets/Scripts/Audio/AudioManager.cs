@@ -380,14 +380,18 @@ public class AudioManager : SingletonMonoBehaviour<AudioManager>
     /// <returns></returns>
     public async UniTask Play(AudioClip audioClip)
     {
-        _audioSourceForCharacter.loop = false;
+        // オートリップシンク開始
+        CharacterManager.Instance.StartAutoLipSync();
         // AudioClipをセット
         _audioSourceForCharacter.clip = audioClip;
         // 再生
+        _audioSourceForCharacter.loop = false;
         _audioSourceForCharacter.Play();
         // 再生終了まで待つ
         var audioClipLengthMs = (int)TimeSpan.FromSeconds(audioClip.length).TotalMilliseconds;
         await UniTask.Delay(audioClipLengthMs);
+        // オートリップシンク終了
+        CharacterManager.Instance.StopAutoLipSync();
     }
 
     /// <summary>

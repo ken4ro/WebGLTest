@@ -66,8 +66,6 @@ public partial class WebAIService : IBotService
 
     public async UniTask<BotRequestResult> Request(bool isInit, string inputText)
     {
-        Debug.Log("Request");
-
         var ret = new BotRequestResult();
 
         // ボットリクエスト

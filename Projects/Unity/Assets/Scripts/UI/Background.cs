@@ -33,12 +33,11 @@ public class Background : MonoBehaviour
     /// </summary>
     public void Initialize()
     {
-        return;
-
         _backGround = this.gameObject;
         _rectTransform = _backGround.GetComponent<RectTransform>();
         _backGroundImage = GetComponent<Image>();
 
+#if false
         // デフォルトの背景画像(顧客によって変わる)用スプライト作成
         var backGroundTexture2D = AssetBundleManager.Instance.LoadTexture2DFromResourcePack("Background");
         if (backGroundTexture2D == null)
@@ -52,6 +51,9 @@ public class Background : MonoBehaviour
             Debug.LogError("Background.Initialize error: Background sprite is null.");
             return;
         }
+#else
+        var defaultSprite = Resources.Load<Sprite>("Images/background");
+#endif
 
         // テレイグジスタンスモード中の背景画像(固定)用スプライト作成
         var telexistenceSprite = Resources.Load<Sprite>("Images/bg_telexistence");

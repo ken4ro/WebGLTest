@@ -1,0 +1,13 @@
+ManifestFileVersion: 0
+CRC: 3074229972
+AssetBundleManifest:
+  AssetBundleInfos:
+    Info_0:
+      Name: una
+      Dependencies: {}
+    Info_1:
+      Name: una2d_rugby
+      Dependencies: {}
+    Info_2:
+      Name: una2d
+      Dependencies: {}

@@ -8,6 +8,7 @@ using Live2D.Cubism.Core;
 using Live2D.Cubism.Framework;
 using Live2D.Cubism.Framework.Motion;
 using Cysharp.Threading.Tasks;
+using Live2D.Cubism.Framework.MouthMovement;
 
 /// <summary>
 /// キャラクター管理クラス(キャラクターオブジェクトにアタッチ)
@@ -86,6 +87,18 @@ public class CharacterManager : SingletonMonoBehaviour<CharacterManager>
     private Vector3[] _characterPositions = null;
     private Quaternion[] _characterRotations = null;
 
+    // 口パク
+    private CubismMouthController _mouthController = null;
+    private CubismAutoMouthInput _autoMouthInput = null;
+
+    protected override void Awake()
+    {
+        base.Awake();
+
+        _mouthController = this.gameObject.GetComponent<CubismMouthController>();
+        _autoMouthInput = this.gameObject.GetComponent<CubismAutoMouthInput>();
+    }
+
     void OnEnable()
     {
         // キャラクターモデルアニメーション初期化
@@ -139,11 +152,12 @@ public class CharacterManager : SingletonMonoBehaviour<CharacterManager>
                     break;
             }
         }
-        Debug.Log($"_characterModel = {_characterModel}, GlobalState.Instance.CurrentCharacterModel = {GlobalState.Instance.CurrentCharacterModel.Value}");
     }
 
     async void Start()
     {
+        StopAutoLipSync();
+
         // アイドルモーション中の各ボーンの座標を保持しておく
         // TODO: キャラクターモデルにアイドルモーションに繋がるようなデフォルトポーズを設定してもらう
         await UniTask.Delay(100);
@@ -252,6 +266,19 @@ public class CharacterManager : SingletonMonoBehaviour<CharacterManager>
     /// </summary>
     /// <param name="faceInfo"></param>
     public void FaceUpdate(FaceInfoManager.FaceInfo faceInfo) => _characterModel.FaceUpdate(faceInfo);
+
+    public void StartAutoLipSync()
+    {
+        _mouthController.MouthOpening = 0;
+        _autoMouthInput.enabled = true;
+    }
+
+    public void StopAutoLipSync()
+    {
+        _autoMouthInput.enabled = false;
+        _mouthController.MouthOpening = 0;
+    }
+
 
     private void GetTransforms()
     {

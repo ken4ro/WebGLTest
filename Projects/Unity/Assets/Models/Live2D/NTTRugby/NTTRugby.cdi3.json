@@ -1,0 +1,451 @@
+{
+	"Version": 3,
+	"Parameters": [
+		{
+			"Id": "ParamBreath",
+			"GroupId": "",
+			"Name": "呼吸"
+		},
+		{
+			"Id": "SMILE",
+			"GroupId": "",
+			"Name": "笑い目切り替え"
+		},
+		{
+			"Id": "MAYU_SAD",
+			"GroupId": "",
+			"Name": "眉困り切り替え"
+		},
+		{
+			"Id": "MAYU_ANGRY",
+			"GroupId": "",
+			"Name": "眉怒り切り替え"
+		},
+		{
+			"Id": "ParamEyeLOpen",
+			"GroupId": "",
+			"Name": "左目　開閉"
+		},
+		{
+			"Id": "ParamEyeROpen",
+			"GroupId": "",
+			"Name": "右目　開閉"
+		},
+		{
+			"Id": "ParamCheek",
+			"GroupId": "",
+			"Name": "笑顔"
+		},
+		{
+			"Id": "ParamEyeBallX",
+			"GroupId": "",
+			"Name": "目玉 X"
+		},
+		{
+			"Id": "ParamEyeBallY",
+			"GroupId": "",
+			"Name": "目玉 Y"
+		},
+		{
+			"Id": "ParamBrowLY",
+			"GroupId": "",
+			"Name": "左眉　上下"
+		},
+		{
+			"Id": "ParamBrowRY",
+			"GroupId": "",
+			"Name": "右眉　上下"
+		},
+		{
+			"Id": "ParamBrowLAngle",
+			"GroupId": "",
+			"Name": "左眉　角度"
+		},
+		{
+			"Id": "ParamBrowRAngle",
+			"GroupId": "",
+			"Name": "右眉　角度"
+		},
+		{
+			"Id": "ParamMouthForm",
+			"GroupId": "",
+			"Name": "口　変形"
+		},
+		{
+			"Id": "ParamMouthOpenY",
+			"GroupId": "",
+			"Name": "口　開閉"
+		},
+		{
+			"Id": "MOUTH_UP_DOWN",
+			"GroupId": "",
+			"Name": "口角上下"
+		},
+		{
+			"Id": "Param45",
+			"GroupId": "",
+			"Name": "全体の角度"
+		},
+		{
+			"Id": "Param13",
+			"GroupId": "",
+			"Name": "全体の位置"
+		},
+		{
+			"Id": "ParamAngleX",
+			"GroupId": "",
+			"Name": "角度 X"
+		},
+		{
+			"Id": "ParamAngleY",
+			"GroupId": "",
+			"Name": "角度 Y"
+		},
+		{
+			"Id": "ParamAngleZ",
+			"GroupId": "",
+			"Name": "角度 Z"
+		},
+		{
+			"Id": "Param46",
+			"GroupId": "",
+			"Name": "首の回転"
+		},
+		{
+			"Id": "ParamBodyAngleX",
+			"GroupId": "",
+			"Name": "体の回転　X"
+		},
+		{
+			"Id": "ParamBodyAngleY",
+			"GroupId": "",
+			"Name": "体の回転　Y"
+		},
+		{
+			"Id": "ParamBodyAngleZ",
+			"GroupId": "",
+			"Name": "体の回転　Z"
+		},
+		{
+			"Id": "Param38",
+			"GroupId": "",
+			"Name": "上半身上下"
+		},
+		{
+			"Id": "Param28",
+			"GroupId": "",
+			"Name": "腰上下"
+		},
+		{
+			"Id": "Param39",
+			"GroupId": "",
+			"Name": "右脚曲げ"
+		},
+		{
+			"Id": "Param42",
+			"GroupId": "",
+			"Name": "右脚曲げ2"
+		},
+		{
+			"Id": "Param40",
+			"GroupId": "",
+			"Name": "左脚曲げ"
+		},
+		{
+			"Id": "Param41",
+			"GroupId": "",
+			"Name": "左脚曲げ2"
+		},
+		{
+			"Id": "Param49",
+			"GroupId": "",
+			"Name": "足描画順"
+		},
+		{
+			"Id": "TOUMEI_ARM_R",
+			"GroupId": "ParamGroup2",
+			"Name": "腕切り替えA"
+		},
+		{
+			"Id": "Param18",
+			"GroupId": "ParamGroup2",
+			"Name": "腕切り替えB"
+		},
+		{
+			"Id": "Param19",
+			"GroupId": "ParamGroup2",
+			"Name": "腕切り替えC"
+		},
+		{
+			"Id": "Param43",
+			"GroupId": "ParamGroup2",
+			"Name": "袖切り替えA"
+		},
+		{
+			"Id": "Param44",
+			"GroupId": "ParamGroup2",
+			"Name": "袖切り替えB"
+		},
+		{
+			"Id": "Param26",
+			"GroupId": "ParamGroup2",
+			"Name": "右上腕差分表示順"
+		},
+		{
+			"Id": "PARAM_ARM_R",
+			"GroupId": "ParamGroup2",
+			"Name": "右上腕回転"
+		},
+		{
+			"Id": "Param20",
+			"GroupId": "ParamGroup2",
+			"Name": "右前腕回転"
+		},
+		{
+			"Id": "Param21",
+			"GroupId": "ParamGroup2",
+			"Name": "右手回転"
+		},
+		{
+			"Id": "Param32",
+			"GroupId": "ParamGroup2",
+			"Name": "右袖回転"
+		},
+		{
+			"Id": "Param16",
+			"GroupId": "ParamGroup2",
+			"Name": "親指曲げA"
+		},
+		{
+			"Id": "Param11",
+			"GroupId": "ParamGroup2",
+			"Name": "人差し指曲げA"
+		},
+		{
+			"Id": "Param17",
+			"GroupId": "ParamGroup2",
+			"Name": "その他指曲げA"
+		},
+		{
+			"Id": "Param22",
+			"GroupId": "ParamGroup2",
+			"Name": "親指曲げB"
+		},
+		{
+			"Id": "Param24",
+			"GroupId": "ParamGroup2",
+			"Name": "その他指B"
+		},
+		{
+			"Id": "Param47",
+			"GroupId": "ParamGroup2",
+			"Name": "右手X"
+		},
+		{
+			"Id": "Param54",
+			"GroupId": "ParamGroup2",
+			"Name": "右前腕の長さ"
+		},
+		{
+			"Id": "TOUMEI_ARM_L",
+			"GroupId": "ParamGroup",
+			"Name": "腕切り替えA"
+		},
+		{
+			"Id": "Param14",
+			"GroupId": "ParamGroup",
+			"Name": "腕切り替えB"
+		},
+		{
+			"Id": "Param15",
+			"GroupId": "ParamGroup",
+			"Name": "腕切り替えC"
+		},
+		{
+			"Id": "Param2",
+			"GroupId": "ParamGroup",
+			"Name": "袖切り替えA"
+		},
+		{
+			"Id": "Param3",
+			"GroupId": "ParamGroup",
+			"Name": "袖切り替えB"
+		},
+		{
+			"Id": "Param27",
+			"GroupId": "ParamGroup",
+			"Name": "左上腕差分表示順"
+		},
+		{
+			"Id": "PARAM_ARM_L",
+			"GroupId": "ParamGroup",
+			"Name": "左上腕回転"
+		},
+		{
+			"Id": "Param33",
+			"GroupId": "ParamGroup",
+			"Name": "左前腕回転"
+		},
+		{
+			"Id": "Param34",
+			"GroupId": "ParamGroup",
+			"Name": "左手回転"
+		},
+		{
+			"Id": "Param29",
+			"GroupId": "ParamGroup",
+			"Name": "左袖回転"
+		},
+		{
+			"Id": "Param35",
+			"GroupId": "ParamGroup",
+			"Name": "親指回転A"
+		},
+		{
+			"Id": "Param36",
+			"GroupId": "ParamGroup",
+			"Name": "人差し指A"
+		},
+		{
+			"Id": "Param37",
+			"GroupId": "ParamGroup",
+			"Name": "その他指A"
+		},
+		{
+			"Id": "Param30",
+			"GroupId": "ParamGroup",
+			"Name": "親指曲げB"
+		},
+		{
+			"Id": "Param31",
+			"GroupId": "ParamGroup",
+			"Name": "その他指曲げB"
+		},
+		{
+			"Id": "Param48",
+			"GroupId": "ParamGroup",
+			"Name": "左手X"
+		},
+		{
+			"Id": "Param53",
+			"GroupId": "ParamGroup",
+			"Name": "左前腕の長さ"
+		},
+		{
+			"Id": "Param12",
+			"GroupId": "",
+			"Name": "袖揺れL"
+		},
+		{
+			"Id": "Param23",
+			"GroupId": "",
+			"Name": "袖揺れR"
+		},
+		{
+			"Id": "Param8",
+			"GroupId": "",
+			"Name": "あほげ揺れ1"
+		},
+		{
+			"Id": "Param9",
+			"GroupId": "",
+			"Name": "あほげ揺れ2"
+		},
+		{
+			"Id": "Param10",
+			"GroupId": "",
+			"Name": "あほげ揺れ3"
+		},
+		{
+			"Id": "ParamHairFront",
+			"GroupId": "",
+			"Name": "髪揺れ　前"
+		},
+		{
+			"Id": "Param",
+			"GroupId": "",
+			"Name": "髪揺れ　前2"
+		},
+		{
+			"Id": "ParamHairSide",
+			"GroupId": "",
+			"Name": "髪揺れ　横"
+		},
+		{
+			"Id": "Param4",
+			"GroupId": "",
+			"Name": "髪揺れ　横2"
+		},
+		{
+			"Id": "Param5",
+			"GroupId": "",
+			"Name": "髪揺れ　横3"
+		},
+		{
+			"Id": "ParamHairBack",
+			"GroupId": "",
+			"Name": "髪揺れ　後"
+		},
+		{
+			"Id": "Param6",
+			"GroupId": "",
+			"Name": "髪揺れ　後2"
+		},
+		{
+			"Id": "Param7",
+			"GroupId": "",
+			"Name": "髪揺れ　後3"
+		},
+		{
+			"Id": "Param25",
+			"GroupId": "",
+			"Name": "胸揺れ"
+		}
+	],
+	"ParameterGroups": [
+		{
+			"Id": "ParamGroup2",
+			"GroupId": "",
+			"Name": "右腕"
+		},
+		{
+			"Id": "ParamGroup",
+			"GroupId": "",
+			"Name": "左腕"
+		}
+	],
+	"Parts": [
+		{
+			"Id": "Part8",
+			"Name": "NTTComラグビー部_統合.psd"
+		},
+		{
+			"Id": "Part",
+			"Name": "パーツ分け"
+		},
+		{
+			"Id": "Part2",
+			"Name": "表情*"
+		},
+		{
+			"Id": "Part3",
+			"Name": "表情（中にパーツ分けしたものが"
+		},
+		{
+			"Id": "Part4",
+			"Name": "*左目"
+		},
+		{
+			"Id": "Part5",
+			"Name": "*右目"
+		},
+		{
+			"Id": "Part6",
+			"Name": "※怒り眉"
+		},
+		{
+			"Id": "Part7",
+			"Name": "※哀しみ眉"
+		}
+	]
+}

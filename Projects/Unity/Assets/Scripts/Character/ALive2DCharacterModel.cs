@@ -5,6 +5,7 @@ using DG.Tweening;
 using Live2D.Cubism.Core;
 using Live2D.Cubism.Framework;
 using Cysharp.Threading.Tasks;
+using System.IO;
 
 public abstract class ALive2DCharacterModel : ICharacterModel
 {
@@ -93,7 +94,7 @@ public abstract class ALive2DCharacterModel : ICharacterModel
         var motionClips = _motionController.animationClips;
         for (var i = 0; i < motionClips.Length; i++)
         {
-            if (Enum.TryParse(motionClips[i].name, true, out AnimationType result))
+            if (Enum.TryParse(Path.GetFileNameWithoutExtension(motionClips[i].name), true, out AnimationType result))
             {
                 _motionClipsTimeTable[(AnimationType)i] = motionClips[i].length;
             }
@@ -105,7 +106,7 @@ public abstract class ALive2DCharacterModel : ICharacterModel
         var facialClips = _facialController.animationClips;
         for (var i = 0; i < facialClips.Length; i++)
         {
-            if (Enum.TryParse(facialClips[i].name, true, out FacialType result))
+            if (Enum.TryParse(Path.GetFileNameWithoutExtension(facialClips[i].name), true, out FacialType result))
             {
                 _facialClipsTimeTable[(FacialType)i] = facialClips[i].length;
             }

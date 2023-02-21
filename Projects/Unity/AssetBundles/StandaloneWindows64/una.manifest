@@ -1,0 +1,47 @@
+ManifestFileVersion: 0
+CRC: 283093093
+Hashes:
+  AssetFileHash:
+    serializedVersion: 2
+    Hash: 64859f797d745a34e41cd6d68d370b3a
+  TypeTreeHash:
+    serializedVersion: 2
+    Hash: 93948c242568d691369151e0c5b1273d
+HashAppended: 0
+ClassTypes:
+- Class: 1
+  Script: {instanceID: 0}
+- Class: 4
+  Script: {instanceID: 0}
+- Class: 74
+  Script: {instanceID: 0}
+- Class: 82
+  Script: {instanceID: 0}
+- Class: 91
+  Script: {instanceID: 0}
+- Class: 95
+  Script: {instanceID: 0}
+- Class: 114
+  Script: {fileID: 11500000, guid: a85b9a6e44a24eb449277518a4d52a07, type: 3}
+- Class: 114
+  Script: {fileID: 11500000, guid: 928dd75a60ad37e46804da1f3fc3cfcc, type: 3}
+- Class: 114
+  Script: {fileID: 11500000, guid: e9956f165549c1d4c84c491d0b305439, type: 3}
+- Class: 114
+  Script: {fileID: 11500000, guid: b0b97b38f2f1fd24185315141a6c6a56, type: 3}
+- Class: 114
+  Script: {fileID: 11500000, guid: f43c520a9bad8a3489109c869f454576, type: 3}
+- Class: 114
+  Script: {fileID: 11500000, guid: 82aa5cb7a870de440baadff9083be41c, type: 3}
+- Class: 114
+  Script: {fileID: 11500000, guid: baedd976e12657241bf7ff2d1c685342, type: 3}
+- Class: 114
+  Script: {fileID: 11500000, guid: f9ac8d30c6a0d9642a11e5be4c440740, type: 3}
+- Class: 115
+  Script: {instanceID: 0}
+- Class: 137
+  Script: {instanceID: 0}
+SerializeReferenceClassIdentifiers: []
+Assets:
+- Assets/Prefabs/Una.prefab
+Dependencies: []

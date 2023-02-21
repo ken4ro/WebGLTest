@@ -11,17 +11,11 @@ public class Starting : IState
         // UIリセット
         await UIManager.Instance.Reset();
 
-        Debug.Log("Reset Completed");
-
         // キャラクター表示
         CharacterManager.Instance.Enable();
 
-        Debug.Log("Enable Completed");
-
         // チャットボット処理開始
         _ = BotManager.Instance.Request(isInit: true);
-
-        Debug.Log("Request Completed");
     }
 
     public void OnUpdate()

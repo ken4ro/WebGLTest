@@ -1,0 +1,87 @@
+ManifestFileVersion: 0
+CRC: 362049827
+Hashes:
+  AssetFileHash:
+    serializedVersion: 2
+    Hash: 9f82ceb0f8188a708d3ad9eff89e4796
+  TypeTreeHash:
+    serializedVersion: 2
+    Hash: 74423c4826d6bea74c8fffebc15786db
+HashAppended: 0
+ClassTypes:
+- Class: 1
+  Script: {instanceID: 0}
+- Class: 4
+  Script: {instanceID: 0}
+- Class: 21
+  Script: {instanceID: 0}
+- Class: 23
+  Script: {instanceID: 0}
+- Class: 28
+  Script: {instanceID: 0}
+- Class: 33
+  Script: {instanceID: 0}
+- Class: 48
+  Script: {instanceID: 0}
+- Class: 74
+  Script: {instanceID: 0}
+- Class: 82
+  Script: {instanceID: 0}
+- Class: 91
+  Script: {instanceID: 0}
+- Class: 95
+  Script: {instanceID: 0}
+- Class: 114
+  Script: {fileID: 11500000, guid: b26388f83a552b34592994aa9b47c643, type: 3}
+- Class: 114
+  Script: {fileID: 11500000, guid: 9c172444d4638384fb2ba920744553ec, type: 3}
+- Class: 114
+  Script: {fileID: 11500000, guid: 6f23db5ace4481b478f0f86b67746813, type: 3}
+- Class: 114
+  Script: {fileID: 11500000, guid: f718ba9eaf9cd9a48923922e5df94070, type: 3}
+- Class: 114
+  Script: {fileID: 11500000, guid: 2101f97e0e368014cba8f91aa17db33a, type: 3}
+- Class: 114
+  Script: {fileID: 11500000, guid: dafbb7ec1700e8147a48dbed2e4e543c, type: 3}
+- Class: 114
+  Script: {fileID: 11500000, guid: 967223d908bf07b4f90945995bdca68f, type: 3}
+- Class: 114
+  Script: {fileID: 11500000, guid: 084c42df15c721f42b28ff9d23a21c8a, type: 3}
+- Class: 114
+  Script: {fileID: 11500000, guid: 308e904e3f33207489a2c15b9b0b297b, type: 3}
+- Class: 114
+  Script: {fileID: 11500000, guid: a85b9a6e44a24eb449277518a4d52a07, type: 3}
+- Class: 114
+  Script: {fileID: 11500000, guid: c1c5b7f06ff29d743b309cb5d27cf48e, type: 3}
+- Class: 114
+  Script: {fileID: 11500000, guid: 634a4bf59fbb8aa42bdaf044f0107bb3, type: 3}
+- Class: 114
+  Script: {fileID: 11500000, guid: c22ff7fc99d9f09489c1c3b5e22d0d08, type: 3}
+- Class: 114
+  Script: {fileID: 11500000, guid: a6f4adbb68873874f8ea675c6a9adca3, type: 3}
+- Class: 114
+  Script: {fileID: 11500000, guid: 096038fb2be401645bb42481542ffef7, type: 3}
+- Class: 114
+  Script: {fileID: 11500000, guid: b7106950a06563f4a893b4e239e2e1ac, type: 3}
+- Class: 114
+  Script: {fileID: 11500000, guid: b0d59af3a12d9274982db5c26b991c8d, type: 3}
+- Class: 115
+  Script: {instanceID: 0}
+SerializeReferenceClassIdentifiers:
+- AssemblyName: Assembly-CSharp
+  ClassName: Live2D.Cubism.Framework.Physics.CubismPhysicsInput
+- AssemblyName: Assembly-CSharp
+  ClassName: Live2D.Cubism.Framework.Physics.CubismPhysicsNormalization
+- AssemblyName: Assembly-CSharp
+  ClassName: Live2D.Cubism.Framework.Physics.CubismPhysicsNormalizationTuplet
+- AssemblyName: Assembly-CSharp
+  ClassName: Live2D.Cubism.Framework.Physics.CubismPhysicsOutput
+- AssemblyName: Assembly-CSharp
+  ClassName: Live2D.Cubism.Framework.Physics.CubismPhysicsParticle
+- AssemblyName: Assembly-CSharp
+  ClassName: Live2D.Cubism.Framework.Physics.CubismPhysicsRig
+- AssemblyName: Assembly-CSharp
+  ClassName: Live2D.Cubism.Framework.Physics.CubismPhysicsSubRig
+Assets:
+- Assets/Prefabs/Una2D_Rugby.prefab
+Dependencies: []

@@ -68,7 +68,6 @@ namespace Live2D.Cubism.Framework.MouthMovement
                 return;
             }
 
-
             // Progress time.
             T += (Time.deltaTime * Timescale);
 

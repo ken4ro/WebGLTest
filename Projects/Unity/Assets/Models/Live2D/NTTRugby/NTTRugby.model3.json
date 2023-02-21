@@ -1,0 +1,24 @@
+{
+	"Version": 3,
+	"FileReferences": {
+		"Moc": "NTTRugby.moc3",
+		"Textures": [
+			"NTTRugby.2048/texture_00.png",
+			"NTTRugby.2048/texture_01.png"
+		],
+		"Physics": "NTTRugby.physics3.json",
+		"DisplayInfo": "NTTRugby.cdi3.json"
+	},
+	"Groups": [
+		{
+			"Target": "Parameter",
+			"Name": "LipSync",
+			"Ids": []
+		},
+		{
+			"Target": "Parameter",
+			"Name": "EyeBlink",
+			"Ids": []
+		}
+	]
+}

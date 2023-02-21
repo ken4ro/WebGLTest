@@ -209,7 +209,6 @@ public abstract class A3DCharacterModel : ICharacterModel
 
     public async UniTask ChangeAnimation(AnimationType animationType)
     {
-        Debug.Log($"ChangeAnimation _animator = {_animator}, _motionController = {_motionController}");
         if (_animator.runtimeAnimatorController != _motionController)
         {
             SetAnimatorController(_motionController);

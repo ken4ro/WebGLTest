@@ -13672,7 +13672,6 @@ MonoBehaviour:
   pushableCocoaIcon: {fileID: 1123934185}
   moviePlayerPanel: {fileID: 1381487381}
   fullScreenPanel: {fileID: 2757722}
-  webCameraPanel: {fileID: 0}
   receivedDocumentPanel: {fileID: 672208915}
   callingPanel: {fileID: 313490909}
   errorDisplayPanel: {fileID: 558101646}

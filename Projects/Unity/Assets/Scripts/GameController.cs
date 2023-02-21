@@ -81,6 +81,7 @@ public class GameController : SingletonMonoBehaviour<GameController>
         GlobalState.Instance.CurrentCharacterModel.Value = CharacterModel.Una2D;
 
         // アバター読み込み
+        //await AssetBundleManager.Instance.LoadAvatarAssetBundleFromStreamingAssets();
         AssetBundleManager.Instance.LoadAvatarAssetBundle();
 #else
         // 使用キャラクターセット
@@ -109,9 +110,9 @@ public class GameController : SingletonMonoBehaviour<GameController>
         });
 #else
         // 1秒後に実行（仮）
-        //await UniTask.Delay(millisecondsDelay: 1000);
+        await UniTask.Delay(millisecondsDelay: 1000);
         // ボット処理開始
-        //StartBotProcess();
+        StartBotProcess();
 #endif
     }
 

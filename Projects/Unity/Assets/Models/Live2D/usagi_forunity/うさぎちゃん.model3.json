@@ -1,0 +1,23 @@
+{
+	"Version": 3,
+	"FileReferences": {
+		"Moc": "うさぎちゃん.moc3",
+		"Textures": [
+			"うさぎちゃん.2048/texture_00.png"
+		],
+		"Physics": "うさぎちゃん.physics3.json",
+		"DisplayInfo": "うさぎちゃん.cdi3.json"
+	},
+	"Groups": [
+		{
+			"Target": "Parameter",
+			"Name": "EyeBlink",
+			"Ids": []
+		},
+		{
+			"Target": "Parameter",
+			"Name": "LipSync",
+			"Ids": []
+		}
+	]
+}

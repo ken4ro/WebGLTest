@@ -222,7 +222,7 @@ public class WebServerManager : SingletonBase<WebServerManager>
             else
             {
                 var ret = www.downloadHandler.text;
-                Debug.Log($"Request download handler text: {ret}");
+                //Debug.Log($"Request download handler text: {ret}");
                 return ret;
             }
         }

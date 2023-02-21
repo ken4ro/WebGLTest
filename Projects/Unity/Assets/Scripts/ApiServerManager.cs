@@ -105,7 +105,6 @@ public class ApiServerManager : SingletonBase<ApiServerManager>
             else
             {
                 var ret = www.downloadHandler.text;
-                Debug.Log($"RequestFirstNode download handler text: {ret}");
                 return ret;
             }
         }
@@ -141,7 +140,6 @@ public class ApiServerManager : SingletonBase<ApiServerManager>
             else
             {
                 var ret = www.downloadHandler.text;
-                Debug.Log($"RequestNextNode download handler text: {ret}");
                 return ret;
             }
         }
