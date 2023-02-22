@@ -6,6 +6,7 @@ using UnityEngine.UI;
 using Cysharp.Threading.Tasks;
 using UniRx;
 using static GlobalState;
+using static SignageSettings;
 
 /// <summary>
 // 主にゲーム全体のステート管理を担う
@@ -74,6 +75,9 @@ public class GameController : SingletonMonoBehaviour<GameController>
         BotManager.Instance.OnStartRequest += OnStartBotRequest;
         BotManager.Instance.OnCompleteRequest += OnCompleteBotRequest;
         BotManager.Instance.OnNoMatch += OnNoMatchBotRequest;
+        UIManager.Instance.OnSelectLanguage += SelectLanguage;
+        UIManager.Instance.OnSelectWord += SelectWord;
+        UIManager.Instance.OnClickScreenSaver += ClickScreenSaver;
 
 #if UNITY_EDITOR || !UNITY_WEBGL // CORS 対策が落ち着くまで無効化
 
@@ -172,6 +176,48 @@ public class GameController : SingletonMonoBehaviour<GameController>
 
         // ボット処理失敗状態へ移行
         GlobalState.Instance.CurrentState.Value = State.LoadingError;
+    }
+
+    // UI 上で言語が変更された
+    private async void SelectLanguage(Language language)
+    {
+        // 音声入力とボタン入力モードで処理タイミングの同期を取るため、頭で実行する
+        CurrentLanguage.Value = language;
+
+        // 音声認識キャンセル
+        await StreamingSpeechToText.Instance.CancelRecognition();
+
+        GlobalState.Instance.CurrentState.Value = State.Starting;
+
+        // アラビア語特例処理
+        if (language == Language.Arabic)
+        {
+            UIManager.Instance.RightToLeft();
+        }
+    }
+
+    // UI 上で選択肢中の単語が選択された
+    private async void SelectWord(string text)
+    {
+        await SetUserMessageFromExceptVoice(text);
+    }
+
+    // UI 上でスクリーンセーバーが解除された
+    private void ClickScreenSaver()
+    {
+        // 先頭から開始
+        GlobalState.Instance.CurrentState.Value = State.Starting;
+    }
+
+    private async UniTask SetUserMessageFromExceptVoice(string text)
+    {
+        if (GlobalState.Instance.CurrentState.Value == State.Speakable)
+        {
+            // 音声認識キャンセル
+            //await StreamingSpeechToText.Instance.CancelRecognition();
+            // 選択文字列を音声入力結果として渡す
+            StreamingSpeechToText.Instance.SetRecognitionCompleteText(text);
+        }
     }
 
     private void LoadCharacterObject()

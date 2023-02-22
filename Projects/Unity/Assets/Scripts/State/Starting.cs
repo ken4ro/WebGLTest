@@ -6,8 +6,6 @@ public class Starting : IState
 {
     public async void OnEnter()
     {
-        Debug.Log("State Starting OnEnter");
-
         // UIリセット
         await UIManager.Instance.Reset();
 

@@ -10,6 +10,8 @@ public class LoadingComplete : IState
 {
     public async void OnEnter()
     {
+        StreamingSpeechToText.Instance.OnStartRecording += StartStreamingSpeechToText;
+
         //スクリプトだけ先んじて処理
         SettingHub.Instance.ResetSetting();
         var scripts = BotManager.Instance.GetScripts();
@@ -90,6 +92,13 @@ public class LoadingComplete : IState
 
     public void OnExit()
     {
+        StreamingSpeechToText.Instance.OnStartRecording -= StartStreamingSpeechToText;
+    }
 
+    // ストリーミング音声認識が開始した
+    private void StartStreamingSpeechToText()
+    {
+        // 発話可能状態へ移行
+        GlobalState.Instance.CurrentState.Value = GlobalState.State.Speakable;
     }
 }

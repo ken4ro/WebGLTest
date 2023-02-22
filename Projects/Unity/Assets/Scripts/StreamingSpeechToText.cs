@@ -465,6 +465,11 @@ public class StreamingSpeechToText : SingletonBase<StreamingSpeechToText>
     /// <param name="text"></param>
     public void SetRecognitionCompleteText(string text)
     {
+        // 結果を格納
+        RecognitionCompleteText = text;
+
+        // イベント通知
+        OnStreamingDataComplete?.Invoke(RecognitionCompleteText);
     }
 
     // ストリーミング音声認識を一度実行
