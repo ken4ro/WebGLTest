@@ -114,9 +114,9 @@ public class GameController : SingletonMonoBehaviour<GameController>
         });
 #else
         // 1秒後に実行（仮）
-        await UniTask.Delay(millisecondsDelay: 1000);
+        //await UniTask.Delay(millisecondsDelay: 1000);
         // ボット処理開始
-        StartBotProcess();
+        //StartBotProcess();
 #endif
     }
 

@@ -1,23 +1,22 @@
-import { useEffect } from "react";
-import styled from "styled-components";
+import { useEffect, useState } from "react";
+// import styled from "styled-components";
 import { useUnity } from "../hooks/useUnity";
+import { Button } from "@mui/material";
+import styled from "@emotion/styled";
 
 const unityBuildRoot = "./Build";
 const buildName = "docs";
 
 let unityInstanceRef = null;
 
-const ClickStartBtn = () => {
-    console.log("ClickStartBtn");
-    unityInstanceRef.current.SendMessage("GameManager", "StartBotProcess");
-};
-
 export const UnityCanvas = (props) => {
+    // Canvasの大きさをセット
     const { width, height } = props;
     const canvas = document.createElement("canvas");
     canvas.style.width = width;
     canvas.style.height = height;
 
+    // Unityスクリプト読み込み
     useEffect(() => {
         const scriptSrc = `${unityBuildRoot}/${buildName}.loader.js`;
         const root = document.getElementById("root");
@@ -27,6 +26,7 @@ export const UnityCanvas = (props) => {
         root.appendChild(scriptTag);
     }, []);
 
+    // Unityインスタンス生成
     const { instanceRef, containerRef } = useUnity({
         canvas,
         unityBuildRoot,
@@ -34,11 +34,19 @@ export const UnityCanvas = (props) => {
     });
     unityInstanceRef = instanceRef;
 
+    // ボタン設定
+    const [startBtnEnabled, setStartBtnEnabled] = useState(true);
+    const ClickStartBtn = () => {
+        console.log("ClickStartBtn");
+        setStartBtnEnabled(false);
+        unityInstanceRef.current.SendMessage("GameManager", "StartBotProcess");
+    };
+    
     return (
         <>
             <SCanvasTitle>Unity Canvas</SCanvasTitle>
-            <button onClick={ClickStartBtn}>Start</button>
             <SCanvas ref={containerRef} width={width} height={height} />;
+            <SButton variant="contained" disabled={!startBtnEnabled} onClick={ClickStartBtn}>Start</SButton>
         </>
     );
 };
@@ -53,6 +61,14 @@ const SCanvasTitle = styled.div`
 const SCanvas = styled.div`
     width: ${(props) => props.width};
     height: ${(props) => props.height};
+    margin-top: 10px;
     margin-left: auto;
     margin-right: auto;
 `;
+
+const SButton = styled(Button)`
+    display: block;
+    /* margin-top: 10px; */
+    margin-left: auto;
+    margin-right: auto;
+`
