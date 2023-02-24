@@ -54,9 +54,17 @@ public partial class BotManager : SingletonBase<BotManager>
         Five,
     }
 
+    public enum BotResponseStatus
+    {
+        Success,
+        BadRequest,
+        ParseError,
+        NoMatch,
+    }
+
     public class BotRequestResult
     {
-        public HttpStatusCode Status { get; set; }
+        public BotResponseStatus Status { get; set; }
 
         public string result { get; set; }
     }
@@ -115,26 +123,8 @@ public partial class BotManager : SingletonBase<BotManager>
 
         // Botサービスリセット
         var resetResponse = await _botServiceProcessor.Reset();
-        switch (resetResponse.Status)
-        {
-            case HttpStatusCode.RequestTimeout:
-                // リクエストタイムアウト
-                RequestTimeout();
-                return;
-            case HttpStatusCode.BadRequest:
-                // リクエストパラメータ不正
-                BadRequest();
-                return;
-            case HttpStatusCode.Unauthorized:
-                // 認証エラー
-                Unauthorized();
-                return;
-        }
 
         IsInitialized = true;
-
-        // シナリオの初期化が即走るので、アニメーションを途切れさせないようにする(処理のフローよりも見栄え重視)
-        //GlobalState.Instance.CurrentProcess.Value = GlobalState.Process.Waiting;
 
         await Request(true, "init");
     }
@@ -145,13 +135,11 @@ public partial class BotManager : SingletonBase<BotManager>
     /// <param name="init"></param>
     /// <param name="text"></param>
     /// <returns></returns>
-    public async UniTask<bool> Request(bool isInit, string inputText = null)
+    public async UniTask Request(bool isInit, string inputText = null)
     {
         if (!IsInitialized)
         {
-            Debug.Log("BotManager not initialized");
-
-            return false;
+            Debug.LogError("BotManager not initialized");
         }
 
         // イベント通知
@@ -160,22 +148,19 @@ public partial class BotManager : SingletonBase<BotManager>
         // リクエスト
         var response = await _botServiceProcessor.Request(isInit, inputText);
 
-        if (response.Status == HttpStatusCode.RequestTimeout)
+        switch (response.Status)
         {
-            // リクエストタイムアウト
-            RequestTimeout();
-
-            return false;
-        }
-
-        if (response.Status == HttpStatusCode.NotFound || response.result == "NOMATCH")
-        {
-            // 答えがマッチしなかった
-
-            // イベント通知
-            OnNoMatch?.Invoke();
-
-            return true;
+            case BotResponseStatus.Success:
+                break;
+            case BotResponseStatus.BadRequest:
+                break;
+            case BotResponseStatus.ParseError:
+                break;
+            case BotResponseStatus.NoMatch:
+                OnNoMatch?.Invoke();
+                return;
+            default:
+                break;
         }
 
         // レスポンス取得
@@ -189,25 +174,18 @@ public partial class BotManager : SingletonBase<BotManager>
         {
             // JSON パースエラー
             UnrecognizedResponse();
-
-            return false;
         }
         Response = responseObj;
 
         // イベント通知
         OnCompleteRequest?.Invoke();
-
-        return true;
     }
 
     /// <summary>
     /// 空リクエスト送信
     /// </summary>
     /// <returns></returns>
-    public async UniTask<bool> RequestEmpty()
-    {
-        return await Request(false, "");
-    }
+    public async UniTask RequestEmpty() => await Request(false, "");
 
     /// <summary>
     /// リクエスト結果からシーン種別を取得
@@ -301,9 +279,6 @@ public partial class BotManager : SingletonBase<BotManager>
     {
         switch (Settings.ChatbotService)
         {
-            case ChatbotServices.Repl:
-                _botServiceProcessor = new ReplAIService();
-                break;
             case ChatbotServices.Dialogflow:
                 _botServiceProcessor = new DialogflowService();
                 break;

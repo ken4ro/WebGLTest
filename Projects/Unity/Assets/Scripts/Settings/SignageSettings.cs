@@ -27,12 +27,10 @@ public class SignageSettings
 
     public enum ChatbotServices
     {
-        Repl,
         Dialogflow,
         CAIWeb,
         CAIFile,
         CAIAsset
-
     }
 
     public enum ScreenSaverTypes
@@ -96,7 +94,7 @@ public class SignageSettings
             }
             catch
             {
-                ChatbotService = ChatbotServices.Repl;
+                ChatbotService = ChatbotServices.CAIWeb;
             }
 
             //スクリーンセーバー

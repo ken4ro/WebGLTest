@@ -41,7 +41,7 @@ public class SpeakingComplete : IState
                 Debug.Log($"Translated text: {text}");
             }
             // 発話したテキストをBotに投げる
-            var ret = await BotManager.Instance.Request(false, text);
+            await BotManager.Instance.Request(false, text);
         }
     }
 

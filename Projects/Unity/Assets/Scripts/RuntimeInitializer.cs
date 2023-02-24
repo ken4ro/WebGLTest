@@ -36,7 +36,7 @@ public class RuntimeInitializer
             ConnectionType = "local",
             WebRtcApiKey = "2f691d96-67af-4841-bb87-b0167b88d751",
             BotRequestMethod = "button",
-            FontSize = 54,
+            FontSize = 48,
             AcceptableAnimation = "simple",
             AudioCodec = ApplicationSettings.AudioCodecType.G722,
             VideoCodec = ApplicationSettings.VideoCodecType.H264,

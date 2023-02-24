@@ -80,7 +80,6 @@ public class GameController : SingletonMonoBehaviour<GameController>
         UIManager.Instance.OnClickScreenSaver += ClickScreenSaver;
 
 #if UNITY_EDITOR || !UNITY_WEBGL // CORS 対策が落ち着くまで無効化
-
         // 使用キャラクターセット
         GlobalState.Instance.CurrentCharacterModel.Value = CharacterModel.Una2D;
 
@@ -106,17 +105,19 @@ public class GameController : SingletonMonoBehaviour<GameController>
 
         // 指定時間待機
 #if false
-        var offsetSec = Global.Instance.ApplicationGlobalSettings.StartOffsetSec;
+        var offsetSec = GlobalState.Instance.ApplicationGlobalSettings.StartOffsetSec;
         Observable.Timer(TimeSpan.FromSeconds(offsetSec)).Subscribe(_ =>
         {
             // ボット処理開始
-            Global.Instance.CurrentState.Value = State.Starting;
+            GlobalState.Instance.CurrentState.Value = State.Starting;
         });
 #else
-        // 1秒後に実行（仮）
-        //await UniTask.Delay(millisecondsDelay: 1000);
-        // ボット処理開始
+        //await UniTask.Delay(GlobalState.Instance.ApplicationGlobalSettings.StartOffsetSec * 1000);
         //StartBotProcess();
+        //await UniTask.Delay(6000);
+        //SetSpeakingText("お問い");
+        //await UniTask.Delay(2000);
+        //SetUserMessage("お問い合わせ");
 #endif
     }
 
@@ -139,6 +140,24 @@ public class GameController : SingletonMonoBehaviour<GameController>
     {
         // ボット処理開始
         GlobalState.Instance.CurrentState.Value = State.Starting;
+    }
+
+    // ユーザーメッセージをセット
+    public void SetUserMessage(string text)
+    {
+        // 音声認識の最終文字列としてセット
+        StreamingSpeechToText.Instance.RecognitionCompleteText = text;
+
+        GlobalState.Instance.CurrentState.Value = State.SpeakingComplete;
+    }
+
+    // 発話中文字列をセット
+    public void SetSpeakingText(string text)
+    {
+        // 発話中文字列を表示
+        UIManager.Instance.SetSpeakingText(text);
+
+        GlobalState.Instance.CurrentState.Value = State.Speaking;
     }
 
     // 現在の処理状態が変更された際に一度だけ呼ばれる
@@ -197,9 +216,9 @@ public class GameController : SingletonMonoBehaviour<GameController>
     }
 
     // UI 上で選択肢中の単語が選択された
-    private async void SelectWord(string text)
+    private void SelectWord(string text)
     {
-        await SetUserMessageFromExceptVoice(text);
+        SetUserMessage(text);
     }
 
     // UI 上でスクリーンセーバーが解除された
@@ -207,17 +226,6 @@ public class GameController : SingletonMonoBehaviour<GameController>
     {
         // 先頭から開始
         GlobalState.Instance.CurrentState.Value = State.Starting;
-    }
-
-    private async UniTask SetUserMessageFromExceptVoice(string text)
-    {
-        if (GlobalState.Instance.CurrentState.Value == State.Speakable)
-        {
-            // 音声認識キャンセル
-            //await StreamingSpeechToText.Instance.CancelRecognition();
-            // 選択文字列を音声入力結果として渡す
-            StreamingSpeechToText.Instance.SetRecognitionCompleteText(text);
-        }
     }
 
     private void LoadCharacterObject()

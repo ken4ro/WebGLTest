@@ -19,18 +19,10 @@ public partial class WebAIService : IBotService
     /// <summary>
     /// リクエスト失敗時テキスト
     /// </summary>
-    public string NoMatchText => "よく分かりませんでした";
+    public string NoMatchText => "よく分かりませんでした。もう一度お試しください。";
 
     // ユーザートークン
     public string UserToken { get; private set; } = "";
-
-    public enum BotResponseStatus
-    {
-        Success,
-        BadRequest,
-        ParseError,
-        NoMatch,
-    }
 
     // フローID
     private static readonly string FlowID = "fba931ed-0a78-43a8-830f-22a17e4352ad-25b95b05-9622-4554-9965-ca4dbcd4bddb";
@@ -67,9 +59,9 @@ public partial class WebAIService : IBotService
     public async UniTask<BotRequestResult> Request(bool isInit, string inputText)
     {
         var ret = new BotRequestResult();
+        var responseStatus = BotResponseStatus.Success;
 
         // ボットリクエスト
-        BotResponseStatus responseStatus;
         string responseString;
         if (isInit)
         {
@@ -81,11 +73,15 @@ public partial class WebAIService : IBotService
             var json = JsonUtility.ToJson(requestFirstNodeJsonObject);
             responseString = await ApiServerManager.Instance.RequestFirstNode(UserToken, json);
             var requestFirstNodeResponseJsonObject = JsonUtility.FromJson<RequestFirstNodeResponseJson>(responseString);
-            if (requestFirstNodeResponseJsonObject.response.ToString() == ".")
+            if (requestFirstNodeResponseJsonObject.response.Text.Jp == null)
             {
                 responseStatus = BotResponseStatus.NoMatch;
+                responseString = NoMatchText;
             }
-            responseString = JsonUtility.ToJson(requestFirstNodeResponseJsonObject.response);
+            else
+            {
+                responseString = JsonUtility.ToJson(requestFirstNodeResponseJsonObject.response);
+            }
         }
         else
         {
@@ -99,14 +95,18 @@ public partial class WebAIService : IBotService
             var requestFlowJson = JsonUtility.ToJson(requestFlowJsonObject);
             responseString = await ApiServerManager.Instance.RequestNextNode(UserToken, requestFlowJson);
             var requestNextNodeResponseJsonObject = JsonUtility.FromJson<RequestNextNodeResponseJson>(responseString);
-            if (requestNextNodeResponseJsonObject.response.ToString() == ".")
+            if (requestNextNodeResponseJsonObject.response.Text.Jp == null)
             {
                 responseStatus = BotResponseStatus.NoMatch;
+                responseString = NoMatchText;
             }
-            responseString = JsonUtility.ToJson(requestNextNodeResponseJsonObject.response);
+            else
+            {
+                responseString = JsonUtility.ToJson(requestNextNodeResponseJsonObject.response);
+            }
         }
 
-        ret.Status = HttpStatusCode.OK;
+        ret.Status = responseStatus;
         ret.result = responseString;
         return ret;
     }

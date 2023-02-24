@@ -398,7 +398,7 @@ public class StreamingSpeechToText : SingletonBase<StreamingSpeechToText>
     /// <summary>
     /// ストリーミング音声認識最終結果
     /// </summary>
-    public string RecognitionCompleteText { get; private set; } = "";
+    public string RecognitionCompleteText { get; set; } = "";
 
     /// <summary>
     /// 音声認識言語コード
