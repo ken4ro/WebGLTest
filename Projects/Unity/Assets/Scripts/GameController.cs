@@ -112,8 +112,8 @@ public class GameController : SingletonMonoBehaviour<GameController>
             GlobalState.Instance.CurrentState.Value = State.Starting;
         });
 #else
-        //await UniTask.Delay(GlobalState.Instance.ApplicationGlobalSettings.StartOffsetSec * 1000);
-        //StartBotProcess();
+        await UniTask.Delay(GlobalState.Instance.ApplicationGlobalSettings.StartOffsetSec * 1000);
+        StartBotProcess();
         //await UniTask.Delay(6000);
         //SetSpeakingText("お問い");
         //await UniTask.Delay(2000);

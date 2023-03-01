@@ -1,9 +1,16 @@
 const SpeechRecognitionPlugin =
 {
-    StartRecognition: function()
+    StartSpeechRecognition: function()
     {
-        console.log("StartRecognition");
-        const event = new Event("recognition");
+        console.log("SpeechRecognitionPlugin: StartRecognition");
+        const event = new Event("speechrecognition_start");
+        window.dispatchEvent(event);
+    },
+
+    StopSpeechRecognition: function()
+    {
+        console.log("SpeechRecognitionPlugin: StopRecognition");
+        const event = new Event("speechrecognition_end")
         window.dispatchEvent(event);
     }
 };

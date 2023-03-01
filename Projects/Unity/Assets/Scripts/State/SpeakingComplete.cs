@@ -18,6 +18,9 @@ public class SpeakingComplete : IState
 
     public async void OnEnter()
     {
+        // 音声認識終了
+        JSHelper.StopSpeechRecognition();
+
         // 選択肢をリセット
         UIManager.Instance.ResetSelectMessage();
 

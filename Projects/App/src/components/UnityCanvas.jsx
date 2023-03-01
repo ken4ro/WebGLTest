@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { useUnity } from "../hooks/useUnity";
 import { Button } from "@mui/material";
 import styled from "@emotion/styled";
-import SpeechRecognition, { useSpeechRecognition } from 'react-speech-recognition';
+import SpeechRecognition, { useSpeechRecognition } from "react-speech-recognition";
 
 const unityBuildRoot = "./Build";
 const buildName = "docs";
@@ -50,14 +50,14 @@ export const UnityCanvas = (props) => {
     const ClickRecognitionBtn = () => {
         setRecognitionBtnEnabled(false);
         SpeechRecognition.startListening();
-    }
-    
+    };
+
     // 音声認識開始イベント購読
     window.addEventListener("recognition", function (e) {
         setRecognitionBtnEnabled(false);
         SpeechRecognition.startListening();
     });
-    
+
     // 音声認識中の処理
     useEffect(() => {
         if (transcript !== "") {
@@ -69,7 +69,7 @@ export const UnityCanvas = (props) => {
 
     // 音声認識終了時の処理
     useEffect(() => {
-        if (transcript !== "" && listening === false ) {
+        if (transcript !== "" && listening === false) {
             // 音声認識完了時の最終文字列をUnity側に送信
             unityInstanceRef.current.SendMessage("GameManager", "SetUserMessage", transcript);
         }
@@ -79,15 +79,19 @@ export const UnityCanvas = (props) => {
     if (!browserSupportsSpeechRecognition) {
         console.log("Browser doesn't support speech recognition.");
         return <span>Browser doesn't support speech recognition.</span>;
-    };
+    }
 
     return (
         <>
             <SCanvasTitle>Unity Canvas</SCanvasTitle>
             <SCanvas ref={containerRef} width={width} height={height} />;
-            <SButton variant="contained" disabled={!startBtnEnabled} onClick={ClickStartBtn}>シナリオ開始</SButton>
-            <SButton variant="contained" disabled={!recognitionBtnEnabled} onClick={ClickRecognitionBtn}>音声認識開始</SButton>
-            <SLabel>Microphone: {listening ? 'on' : 'off'}</SLabel>
+            <SButton variant="contained" disabled={!startBtnEnabled} onClick={ClickStartBtn}>
+                シナリオ開始
+            </SButton>
+            <SButton variant="contained" disabled={!recognitionBtnEnabled} onClick={ClickRecognitionBtn}>
+                音声認識開始
+            </SButton>
+            <SLabel>Microphone: {listening ? "on" : "off"}</SLabel>
             <SLabel>transcript: {transcript}</SLabel>
         </>
     );
@@ -114,9 +118,9 @@ const SButton = styled(Button)`
     /* margin-top: 10px; */
     margin-left: auto;
     margin-right: auto;
-`
+`;
 
 const SLabel = styled.div`
     text-align: center;
     margin-top: 10px;
-`
+`;

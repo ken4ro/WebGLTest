@@ -21,7 +21,7 @@ public class Speakable : IState
         UIManager.Instance.SetCharacterSelectMessage(selectObjects);
 
         // 音声認識開始
-        JSHelper.StartRecognition();
+        JSHelper.StartSpeechRecognition();
     }
 
     public void OnUpdate()

@@ -10,10 +10,14 @@ public class Operating : IState
 
     public void OnEnter()
     {
-        // 未実装
+        // 接続
+        JSHelper.WebRTCConnect();
 
         Observable.Timer(TimeSpan.FromSeconds(TimeoutTimeSec)).Subscribe(_ =>
         {
+            // 10秒で切断
+            JSHelper.WebRTCDisconnect();
+
             GlobalState.Instance.CurrentState.Value = GlobalState.State.Starting;
         });
     }
