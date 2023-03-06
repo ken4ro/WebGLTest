@@ -11,6 +11,7 @@ export const SoraCanvas = () => {
     const [connect, setConnect] = useState(false);
     const [sendrecv, setSendrecv] = useState(null);
     const [node, setNode] = useState(null);
+    const initRef = useRef(false);
     const remoteVideoRef = useRef(null);
     const remoteVideoIdRef = useRef(null);
     const volumeTextRef = useRef(null);
@@ -31,6 +32,12 @@ export const SoraCanvas = () => {
     };
 
     useEffect(() => {
+        // 開発時はStrictModeにより2度呼ばれるので回避
+        if (process.env.NODE_ENV === "development" && !initRef.current) {
+            initRef.current = true;
+            return;
+        }
+
         // Soraインスタンス生成
         const sendrecv = SoraProvider();
         setSendrecv(sendrecv);
@@ -49,13 +56,19 @@ export const SoraCanvas = () => {
             remoteVideoRef.current.srcObject = stream;
             remoteVideoIdRef.current.innerText = stream.id;
             // 接続相手のマイク音量をUnityに送信
-            const node = await GetVolumeNode(stream);
-            node.port.onmessage = (event) => {
-                const volume = event.data.volume;
-                unityInstanceRef.current.SendMessage("GameManager", "SetVoiceVolume", volume * 10);
-                volumeTextRef.current.innerText = volume;
-            };
-            setNode(node);
+            if (event.track.kind === "audio") {
+                console.log("audio track1");
+                const node = await GetVolumeNode(stream);
+                console.log("audio track2");
+                node.port.onmessage = (event) => {
+                    const volume = event.data.volume;
+                    unityInstanceRef.current.SendMessage("GameManager", "SetVoiceVolume", volume * 10);
+                    volumeTextRef.current.innerText = volume;
+                };
+                console.log("audio track3");
+                setNode(node);
+                console.log("audio track4");
+            }
         });
 
         // 接続したチャネルIDからMediaStreamが削除された
@@ -82,6 +95,7 @@ export const SoraCanvas = () => {
         const Disconnect = async () => {
             // mediastream切断
             console.log("on webrtc_dicconnect event");
+            await sendrecv.disconnect();
             remoteVideoRef.current.srcObject = null;
             setConnect(false);
         };
@@ -95,6 +109,7 @@ export const SoraCanvas = () => {
         return () => {
             // WebRTCイベント購読解除
             console.log("removeEventListener webrtc_connect");
+            sendrecv.on("track", () => {});
             window.removeEventListener("webrtc_connect", Connect);
             window.removeEventListener("webrtc_disconnect", Disconnect);
         };
