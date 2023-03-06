@@ -21,15 +21,6 @@ export const SoraCanvas = () => {
         const mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: true });
         await sendrecv.connect(mediaStream);
         setConnect(true);
-        if (node === null) {
-            console.log("ClickStartSendRecv: node is null!");
-        } else {
-            node.port.onmessage = (event) => {
-                const volume = event.data.volume;
-                unityInstanceRef.current.SendMessage("GameManager", "SetVoiceVolume", volume * 10);
-                volumeTextRef.current.innerText = volume;
-            };
-        }
     };
 
     // Stopボタン処理
@@ -37,13 +28,6 @@ export const SoraCanvas = () => {
         // mediastream切断
         await sendrecv.disconnect();
         setConnect(false);
-        if (node == null) {
-            console.log("ClickStopSendRecv: node is null!");
-        } else {
-            node.port.onmessage = (event) => {
-                volumeTextRef.current.innerText = "";
-            };
-        }
     };
 
     useEffect(() => {
@@ -66,6 +50,11 @@ export const SoraCanvas = () => {
             remoteVideoIdRef.current.innerText = stream.id;
             // 接続相手のマイク音量をUnityに送信
             const node = await GetVolumeNode(stream);
+            node.port.onmessage = (event) => {
+                const volume = event.data.volume;
+                unityInstanceRef.current.SendMessage("GameManager", "SetVoiceVolume", volume * 10);
+                volumeTextRef.current.innerText = volume;
+            };
             setNode(node);
         });
 
@@ -74,6 +63,9 @@ export const SoraCanvas = () => {
             // リモートビデオ再生停止
             console.log(`Remove mediastream track: ${event.target.id}`);
             remoteVideoRef.current.srcObject = null;
+            node.port.onmessage = (event) => {
+                volumeTextRef.current.innerText = "";
+            };
             setNode(null);
         });
 
