@@ -65,8 +65,8 @@ export const SoraCanvas = () => {
                 // 接続相手のマイク音量をUnityに送信
                 const node = await GetVolumeNode(stream);
                 console.log("audio track1");
-                node.port.onmessage = (event) => {
-                    const volume = event.data.volume;
+                node.port.onmessage = (ev) => {
+                    const volume = ev.data.volume;
                     unityInstanceRef.current.SendMessage("GameManager", "SetVoiceVolume", volume * 10);
                     volumeTextRef.current.innerText = volume;
                 };
