@@ -1,73 +1,89 @@
 import styled from "@emotion/styled";
 import { useEffect, useRef, useState } from "react";
-import { useSora } from "../hooks/useSora";
 import { Button, ButtonGroup } from "@mui/material";
-import { AudioProcess } from "../util/AudioProcess";
+import { GetVolumeNode } from "../util/GetVolumeNode";
 import { unityInstanceRef } from "./UnityCanvas";
+import { SoraProvider } from "../util/SoraProvider";
 
 let count = 0;
 export const SoraCanvas = () => {
     console.log(`SoraCanvas render count = ${count++}`);
-    const [connect, setIsConnect] = useState(false);
+    const [connect, setConnect] = useState(false);
+    const [sendrecv, setSendrecv] = useState(null);
+    const [node, setNode] = useState(null);
     const remoteVideoRef = useRef(null);
     const remoteVideoIdRef = useRef(null);
     const volumeTextRef = useRef(null);
 
-    // 接続したチャネルIDにMediaStreamが追加された
-    const { sendrecv } = useSora();
-    sendrecv.on("track", async (event) => {
-        const stream = event.streams[0];
-        if (!stream) return;
-        console.log(`Add mediastream track: ${stream.id}`);
-        remoteVideoRef.current.style.border = "1px solid red";
-        remoteVideoRef.current.autoplay = true;
-        remoteVideoRef.current.playsinline = true;
-        remoteVideoRef.current.controls = true;
-        remoteVideoRef.current.width = "160";
-        remoteVideoRef.current.height = "120";
-        remoteVideoRef.current.srcObject = stream;
-        remoteVideoIdRef.current.innerText = stream.id;
-        // 接続相手のマイク音量をUnityに送信
-        const node = await AudioProcess(stream);
-        node.port.onmessage = (event) => {
-            if (connect === true) {
-                const volume = event.data.volume;
-                unityInstanceRef.current.SendMessage("GameManager", "SetVoiceVolume", volume * 10);
-                volumeTextRef.current.innerText = volume;
-            }
-        };
-    });
-
-    // 接続したチャネルIDからMediaStreamが削除された
-    sendrecv.on("removetrack", (event) => {
-        // リモートビデオ再生停止
-        console.log(`Remove mediastream track: ${event.target.id}`);
-        remoteVideoRef.current.srcObject = null;
-    });
-
     // Startボタン処理
     const ClickStartSendRecv = async () => {
         // mediastream接続
-        const mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+        const mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: true });
         await sendrecv.connect(mediaStream);
-        setIsConnect(true);
+        setConnect(true);
+        if (node === null) {
+            console.log("ClickStartSendRecv: node is null!");
+        } else {
+            node.port.onmessage = (event) => {
+                const volume = event.data.volume;
+                unityInstanceRef.current.SendMessage("GameManager", "SetVoiceVolume", volume * 10);
+                volumeTextRef.current.innerText = volume;
+            };
+        }
     };
 
     // Stopボタン処理
     const ClickStopSendRecv = async () => {
         // mediastream切断
         await sendrecv.disconnect();
-        setIsConnect(false);
+        setConnect(false);
+        if (node == null) {
+            console.log("ClickStopSendRecv: node is null!");
+        } else {
+            node.port.onmessage = (event) => {
+                volumeTextRef.current.innerText = "";
+            };
+        }
     };
 
     useEffect(() => {
+        // Soraインスタンス生成
+        const sendrecv = SoraProvider();
+        setSendrecv(sendrecv);
+
+        // 接続したチャネルIDにMediaStreamが追加された
+        sendrecv.on("track", async (event) => {
+            const stream = event.streams[0];
+            if (!stream) return;
+            console.log(`Add mediastream track: ${stream.id}`);
+            remoteVideoRef.current.style.border = "1px solid red";
+            remoteVideoRef.current.autoplay = true;
+            remoteVideoRef.current.playsinline = true;
+            remoteVideoRef.current.controls = true;
+            remoteVideoRef.current.width = "160";
+            remoteVideoRef.current.height = "120";
+            remoteVideoRef.current.srcObject = stream;
+            remoteVideoIdRef.current.innerText = stream.id;
+            // 接続相手のマイク音量をUnityに送信
+            const node = await GetVolumeNode(stream);
+            setNode(node);
+        });
+
+        // 接続したチャネルIDからMediaStreamが削除された
+        sendrecv.on("removetrack", (event) => {
+            // リモートビデオ再生停止
+            console.log(`Remove mediastream track: ${event.target.id}`);
+            remoteVideoRef.current.srcObject = null;
+            setNode(null);
+        });
+
         // WebRTC接続ハンドラ
         const Connect = async () => {
             // mediastream接続
             console.log("on webrtc_connect event");
-            const mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+            const mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: true });
             await sendrecv.connect(mediaStream);
-            setIsConnect(true);
+            setConnect(true);
         };
 
         // WebRTC切断ハンドラ
@@ -75,7 +91,7 @@ export const SoraCanvas = () => {
             // mediastream切断
             console.log("on webrtc_dicconnect event");
             remoteVideoRef.current.srcObject = null;
-            setIsConnect(false);
+            setConnect(false);
         };
 
         // WebRTCイベント購読(Unityから発行)
