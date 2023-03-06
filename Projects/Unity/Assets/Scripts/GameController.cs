@@ -112,8 +112,8 @@ public class GameController : SingletonMonoBehaviour<GameController>
             GlobalState.Instance.CurrentState.Value = State.Starting;
         });
 #else
-        await UniTask.Delay(GlobalState.Instance.ApplicationGlobalSettings.StartOffsetSec * 1000);
-        StartBotProcess();
+        //await UniTask.Delay(GlobalState.Instance.ApplicationGlobalSettings.StartOffsetSec * 1000);
+        //StartBotProcess();
         //await UniTask.Delay(6000);
         //SetSpeakingText("お問い");
         //await UniTask.Delay(2000);
@@ -135,6 +135,35 @@ public class GameController : SingletonMonoBehaviour<GameController>
     {
         _states[(int)GlobalState.Instance.CurrentState.Value].OnUpdate();
     }
+
+    public float[] ConvertToFloat(byte[] buf)
+    {
+        // IEEE Float
+        float[] ret = new float[buf.Length / 4];
+
+        for (int i = 0; i < buf.Length - buf.Length % 4; i += 4)
+        {
+            float v = BitConverter.ToSingle(buf, i);
+            ret[i / 4] = v;
+        }
+        return ret;
+    }
+
+    #region for React
+
+    public class AudioVolumeJson
+    {
+        public float Volume;
+    }
+
+    public void SetVoiceVolume(float volume)
+    {
+        Debug.Log($"SetVoiceVolume: volume = {volume}");
+        //var volume = JsonUtility.FromJson<AudioVolumeJson>(json).Volume;
+        CharacterManager.Instance.SetMouseOpenYParameter(volume);
+    }
+
+    #endregion for React
 
     public void StartBotProcess()
     {

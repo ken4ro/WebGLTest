@@ -8,7 +8,7 @@ import SpeechRecognition, { useSpeechRecognition } from "react-speech-recognitio
 const unityBuildRoot = "./Build";
 const buildName = "docs";
 
-let unityInstanceRef = null;
+export let unityInstanceRef = null;
 
 export const UnityCanvas = (props) => {
     // Canvasの大きさをセット

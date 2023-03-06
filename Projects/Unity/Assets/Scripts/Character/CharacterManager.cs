@@ -90,6 +90,12 @@ public class CharacterManager : SingletonMonoBehaviour<CharacterManager>
     // 口パク
     private CubismMouthController _mouthController = null;
     private CubismAutoMouthInput _autoMouthInput = null;
+    private CubismParameter _mouthOpenYParameter = null;
+    private float _mouthOpenYValue = 0.0f;
+    private float _power = 20.0f;
+    private float _threshold = 0.1f;
+    private float _currentVolume = 0.0f;
+    private float _velocity = 0.0f;
 
     protected override void Awake()
     {
@@ -97,6 +103,19 @@ public class CharacterManager : SingletonMonoBehaviour<CharacterManager>
 
         _mouthController = this.gameObject.GetComponent<CubismMouthController>();
         _autoMouthInput = this.gameObject.GetComponent<CubismAutoMouthInput>();
+        _mouthOpenYParameter = GameObject.Find("ParamMouthOpenY").GetComponent<CubismParameter>();
+
+        _mouthController.enabled = false;
+        _autoMouthInput.enabled = false;
+    }
+
+    void LateUpdate()
+    {
+        //float targetVolume = _mouthOpenYValue * _power;
+        float targetVolume = _mouthOpenYValue;
+        targetVolume = targetVolume < _threshold ? 0 : targetVolume;
+        _currentVolume = Mathf.SmoothDamp(_currentVolume, targetVolume, ref _velocity, 0.05f);
+        _mouthOpenYParameter.Value = Mathf.Clamp01(_currentVolume);
     }
 
     void OnEnable()
@@ -270,15 +289,21 @@ public class CharacterManager : SingletonMonoBehaviour<CharacterManager>
     public void StartAutoLipSync()
     {
         _mouthController.MouthOpening = 0;
+        _mouthController.enabled = true;
         _autoMouthInput.enabled = true;
     }
 
     public void StopAutoLipSync()
     {
+        _mouthController.enabled = false;
         _autoMouthInput.enabled = false;
         _mouthController.MouthOpening = 0;
     }
 
+    public void SetMouseOpenYParameter(float value)
+    {
+        _mouthOpenYValue = value;
+    }
 
     private void GetTransforms()
     {

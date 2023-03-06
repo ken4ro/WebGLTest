@@ -1,4 +1,3 @@
-import { useEffect, useRef, useState } from "react";
 import Sora from "sora-js-sdk";
 
 const channelID = "test@ken4ro#43071663";

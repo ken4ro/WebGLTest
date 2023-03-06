@@ -2,6 +2,8 @@ import styled from "@emotion/styled";
 import { useEffect, useRef, useState } from "react";
 import { useSora } from "../hooks/useSora";
 import { Button, ButtonGroup } from "@mui/material";
+import { AudioProcess } from "../util/AudioProcess";
+import { unityInstanceRef } from "./UnityCanvas";
 
 let count = 0;
 export const SoraCanvas = () => {
@@ -9,11 +11,11 @@ export const SoraCanvas = () => {
     const [connect, setIsConnect] = useState(false);
     const remoteVideoRef = useRef(null);
     const remoteVideoIdRef = useRef(null);
-    const { sendrecv } = useSora();
+    const volumeTextRef = useRef(null);
 
     // 接続したチャネルIDにMediaStreamが追加された
-    sendrecv.on("track", (event) => {
-        // リモートビデオ再生
+    const { sendrecv } = useSora();
+    sendrecv.on("track", async (event) => {
         const stream = event.streams[0];
         if (!stream) return;
         console.log(`Add mediastream track: ${stream.id}`);
@@ -25,6 +27,15 @@ export const SoraCanvas = () => {
         remoteVideoRef.current.height = "120";
         remoteVideoRef.current.srcObject = stream;
         remoteVideoIdRef.current.innerText = stream.id;
+        // 接続相手のマイク音量をUnityに送信
+        const node = await AudioProcess(stream);
+        node.port.onmessage = (event) => {
+            if (connect === true) {
+                const volume = event.data.volume;
+                unityInstanceRef.current.SendMessage("GameManager", "SetVoiceVolume", volume * 10);
+                volumeTextRef.current.innerText = volume;
+            }
+        };
     });
 
     // 接続したチャネルIDからMediaStreamが削除された
@@ -37,7 +48,7 @@ export const SoraCanvas = () => {
     // Startボタン処理
     const ClickStartSendRecv = async () => {
         // mediastream接続
-        const mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: true });
+        const mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
         await sendrecv.connect(mediaStream);
         setIsConnect(true);
     };
@@ -54,7 +65,7 @@ export const SoraCanvas = () => {
         const Connect = async () => {
             // mediastream接続
             console.log("on webrtc_connect event");
-            const mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: true });
+            const mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
             await sendrecv.connect(mediaStream);
             setIsConnect(true);
         };
@@ -95,6 +106,9 @@ export const SoraCanvas = () => {
                 <br />
                 <SVideo ref={remoteVideoRef}></SVideo>
                 <p ref={remoteVideoIdRef}>Remote id</p>
+                <p>
+                    Volume: <span ref={volumeTextRef} />
+                </p>
             </SVideoLayout>
         </SContainer>
     );
