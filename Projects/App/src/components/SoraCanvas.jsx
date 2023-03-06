@@ -45,29 +45,36 @@ export const SoraCanvas = () => {
         // 接続したチャネルIDにMediaStreamが追加された
         sendrecv.on("track", async (event) => {
             const stream = event.streams[0];
-            if (!stream) return;
-            console.log(`Add mediastream track: ${stream.id}`);
-            remoteVideoRef.current.style.border = "1px solid red";
-            remoteVideoRef.current.autoplay = true;
-            remoteVideoRef.current.playsinline = true;
-            remoteVideoRef.current.controls = true;
-            remoteVideoRef.current.width = "160";
-            remoteVideoRef.current.height = "120";
-            remoteVideoRef.current.srcObject = stream;
-            remoteVideoIdRef.current.innerText = stream.id;
-            // 接続相手のマイク音量をUnityに送信
-            if (event.track.kind === "audio") {
-                console.log("audio track1");
+            if (!stream) {
+                console.log(`on track error!`);
+                return;
+            }
+            if (event.track.kind === "video") {
+                // 接続相手のカメラを描画
+                console.log(`Add mediastream video track: ${stream.id}`);
+                remoteVideoRef.current.style.border = "1px solid red";
+                remoteVideoRef.current.autoplay = true;
+                remoteVideoRef.current.playsinline = true;
+                remoteVideoRef.current.controls = true;
+                remoteVideoRef.current.width = "160";
+                remoteVideoRef.current.height = "120";
+                remoteVideoRef.current.srcObject = stream;
+                remoteVideoIdRef.current.innerText = stream.id;
+            } else if (event.track.kind === "audio") {
+                console.log(`Add mediastream audio track: ${stream.id}`);
+                // 接続相手のマイク音量をUnityに送信
                 const node = await GetVolumeNode(stream);
-                console.log("audio track2");
+                console.log("audio track1");
                 node.port.onmessage = (event) => {
                     const volume = event.data.volume;
                     unityInstanceRef.current.SendMessage("GameManager", "SetVoiceVolume", volume * 10);
                     volumeTextRef.current.innerText = volume;
                 };
-                console.log("audio track3");
+                console.log("audio track2");
                 setNode(node);
-                console.log("audio track4");
+                console.log("audio track3");
+            } else {
+                console.log(`track is ${event.track.kind}`);
             }
         });
 
