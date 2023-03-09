@@ -25,10 +25,10 @@ public partial class WebAIService : IBotService
     public string UserToken { get; private set; } = "";
 
     // フローID
-    private static readonly string FlowID = "fba931ed-0a78-43a8-830f-22a17e4352ad-25b95b05-9622-4554-9965-ca4dbcd4bddb";
+    private static readonly string FlowID = "d017cfa7-9570-4247-9218-dedc763d4977-00478dc6-bb12-44e7-85c2-ff22d40f3907";
 
     // ログインID
-    private static readonly string LoginID = "user01user01user01";
+    private static readonly string LoginID = "71cf0d26-ddab-4744-82b5-f9e55b694e49-cd814c74-d4dd-49b6-b301-5236b33cc855-61ef3cd3-ace1-4d67-938f-e40a032351bf-c8fa9cdd-cbf7-4e5d-96ed-923c22c5914d";
 
     // ログインパスワ－ド
     private static readonly string LoginPassword = "passpasspass";
@@ -42,8 +42,8 @@ public partial class WebAIService : IBotService
         var jsonObject = new RequestUserTokenJson()
         {
             login_id = LoginID,
-            login_type = "basic",
-            password = LoginPassword
+            login_type = "anonymous",
+            //password = LoginPassword
         };
         var json = JsonUtility.ToJson(jsonObject);
         var ret = await ApiServerManager.Instance.RequestUserToken(json);
