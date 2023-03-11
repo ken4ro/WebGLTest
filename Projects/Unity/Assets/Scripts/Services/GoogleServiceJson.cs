@@ -1,9 +1,5 @@
 ﻿using System;
-
 using UnityEngine;
-
-using Newtonsoft.Json;
-
 
 public static partial class GoogleService
 {
@@ -36,137 +32,106 @@ public static partial class GoogleService
     [Serializable]
     public class GoogleSpeechToTextRequest
     {
-        [JsonProperty("config")]
-        public GoogleSpeechToTextRequestConfig Config;
-        [JsonProperty("audio")]
-        public GoogleSpeechToTextRequestAudio Audio;
+        public GoogleSpeechToTextRequestConfig config;
+        public GoogleSpeechToTextRequestAudio audio;
     }
 
     [Serializable]
     public class GoogleSpeechToTextRequestConfig
     {
-        [JsonProperty("encoding")]
-        public string Encoding;
-        [JsonProperty("sampleRateHertz")]
-        public int SampleRateHertz;
-        [JsonProperty("languageCode")]
-        public string LanguageCode;
-        [JsonProperty("enableWordTimeOffsets")]
-        public bool EnableWordTimeOffsets;
+        public string encoding;
+        public int sampleRateHertz;
+        public string languageCode;
+        public bool enableWordTimeOffsets;
     }
 
     [Serializable]
     public class GoogleSpeechToTextRequestAudio
     {
-        [JsonProperty("content")]
-        public string Content;
+        public string content;
     }
 
     [Serializable]
     public class GoogleSpeechToTextResponse
     {
-        [JsonProperty("results")]
-        public GoogleSpeechToTextResponseResults[] Results;
+        public GoogleSpeechToTextResponseResults[] results;
     }
 
     [Serializable]
     public class GoogleSpeechToTextResponseResults
     {
-        [JsonProperty("alternatives")]
-        public GoogleSpeechToTextResponseResultsAlternatives[] Alternatives;
+        public GoogleSpeechToTextResponseResultsAlternatives[] alternatives;
     }
 
     [Serializable]
     public class GoogleSpeechToTextResponseResultsAlternatives
     {
-        [JsonProperty("transcript")]
-        public string Transcript;
-        [JsonProperty("confidence")]
-        public float Confidence;
+        public string transcript;
+        public float confidence;
     }
 
     [Serializable]
     public class GoogleTextToSpeechRequest
     {
-        [JsonProperty("input")]
-        public GoogleTextToSpeechRequestInput Input;
-        [JsonProperty("voice")]
-        public GoogleTextToSpeechRequestVoice Voice;
-        [JsonProperty("audioConfig")]
-        public GoogleTextToSpeechRequestAudioConfig AudioConfig;
+        public GoogleTextToSpeechRequestInput input;
+        public GoogleTextToSpeechRequestVoice voice;
+        public GoogleTextToSpeechRequestAudioConfig audioConfig;
     }
 
     [Serializable]
     public class GoogleTextToSpeechRequestInput
     {
-        [JsonProperty("text")]
-        public string Text;
+        public string text;
     }
 
     [Serializable]
     public class GoogleTextToSpeechRequestVoice
     {
-        [JsonProperty("languageCode")]
-        public string LanguageCode;
-        [JsonProperty("name")]
-        public string Name;
-        [JsonProperty("ssmlGender")]
-        public string SsmlGender;
+        public string languageCode;
+        public string name;
+        public string ssmlGender;
     }
 
     [Serializable]
     public class GoogleTextToSpeechRequestAudioConfig
     {
-        [JsonProperty("audioEncoding")]
-        public string AudioEncoding;
-        [JsonProperty("sampleRateHertz")]
-        public int SampleRateHertz;
+        public string audioEncoding;
+        public int sampleRateHertz;
     }
 
     [Serializable]
     public class GoogleTextToSpeechResponse
     {
-        [JsonProperty("audioContent")]
-        public string AudioContent;
+        public string audioContent;
     }
 
     [Serializable]
     public class GoogleTranslationRequest
     {
-        [JsonProperty("q")]
-        public string Q;
-        [JsonProperty("target")]
-        public string Target;
-        [JsonProperty("format")]
-        public string Format;
-        [JsonProperty("source")]
-        public string Source;
-        [JsonProperty("model")]
-        public string Model;
-        [JsonProperty("key")]
-        public string Key;
+        public string q;
+        public string target;
+        public string format;
+        public string source;
+        public string model;
+        public string key;
     }
 
     [Serializable]
     public class GoogleTranslationResponse
     {
-        [JsonProperty("data")]
-        public GoogleTranslationResponseData Data;
+        public GoogleTranslationResponseData data;
     }
 
     [Serializable]
     public class GoogleTranslationResponseData
     {
-        [JsonProperty("translations")]
-        public GoogleTranslationResponseDataTranslations[] Translations;
+        public GoogleTranslationResponseDataTranslations[] translations;
     }
 
     [Serializable]
     public class GoogleTranslationResponseDataTranslations
     {
-        [JsonProperty("detectedSourceLanguage")]
-        public string DetectedSourceLanguage;
-        [JsonProperty("translatedText")]
-        public string TranslatedText;
+        public string detectedSourceLanguage;
+        public string translatedText;
     }
 }

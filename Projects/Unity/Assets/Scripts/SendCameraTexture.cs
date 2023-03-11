@@ -49,7 +49,7 @@ public class SendCameraTexture : MonoBehaviour
 
     void Update()
     {
-        if (!ConnectionManager.Instance.IsAvailable) return;
+        //if (!ConnectionManager.Instance.IsAvailable) return;
 
         if (isCaptureActive)
         {
@@ -63,7 +63,7 @@ public class SendCameraTexture : MonoBehaviour
     {
         Graphics.Blit(source, destination);
 
-        if (!ConnectionManager.Instance.IsAvailable) return;
+        //if (!ConnectionManager.Instance.IsAvailable) return;
 
         // カメラテクスチャをGPUリクエスト
         _tmpRenderTexture.Release();
@@ -108,7 +108,7 @@ public class SendCameraTexture : MonoBehaviour
                             // 送信
                             foreach (var sd in sendDataList)
                             {
-                                ConnectionManager.Instance.Send(DataType.Capture, sd).Forget();
+                                //ConnectionManager.Instance.Send(DataType.Capture, sd).Forget();
                             }
                             break;
                         case ApplicationSettings.VideoCodecType.MWEBP:

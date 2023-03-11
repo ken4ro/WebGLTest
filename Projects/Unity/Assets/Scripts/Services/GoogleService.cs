@@ -4,7 +4,6 @@ using System.Net;
 using System.Net.Http;
 using System.Text;
 using UnityEngine;
-using Newtonsoft.Json;
 using Cysharp.Threading.Tasks;
 
 public static partial class GoogleService
@@ -126,19 +125,19 @@ public static partial class GoogleService
         var base64File = Convert.ToBase64String(audioData);
         var requestObj = new GoogleSpeechToTextRequest
         {
-            Config = new GoogleSpeechToTextRequestConfig
+            config = new GoogleSpeechToTextRequestConfig
             {
-                Encoding = "LINEAR16",
-                SampleRateHertz = SpeechToTextSampleRateHertz,
-                LanguageCode = GetLanguageCodeForSpeechToText(language),
-                EnableWordTimeOffsets = false
+                encoding = "LINEAR16",
+                sampleRateHertz = SpeechToTextSampleRateHertz,
+                languageCode = GetLanguageCodeForSpeechToText(language),
+                enableWordTimeOffsets = false
             },
-            Audio = new GoogleSpeechToTextRequestAudio
+            audio = new GoogleSpeechToTextRequestAudio
             {
-                Content = base64File
+                content = base64File
             }
         };
-        var requestJson = JsonConvert.SerializeObject(requestObj);
+        var requestJson = JsonUtility.ToJson(requestObj);
         var requestBody = new StringContent(requestJson, Encoding.UTF8, "application/json");
         // リクエスト開始
         var response = await HttpRequest.RequestJsonAsync(HttpRequestType.POST, SpeechToTextRequestUrl + Settings.ApiKey, null, requestBody);
@@ -147,16 +146,16 @@ public static partial class GoogleService
             // 成功
             var responseJson = response.Json;
             //Debug.Log("GoogleService.SpeechToText request succeeded. response json: ");
-            var responseJsonObj = JsonConvert.DeserializeObject<GoogleSpeechToTextResponse>(responseJson);
-            if (responseJsonObj != null && responseJsonObj.Results != null && responseJsonObj.Results.Length > 0)
+            var responseJsonObj = JsonUtility.FromJson<GoogleSpeechToTextResponse>(responseJson);
+            if (responseJsonObj != null && responseJsonObj.results != null && responseJsonObj.results.Length > 0)
             {
                 //var transcript = responseJsonObj.Results[0].Alternatives[0].Transcript;
                 //ret.AppendLine(transcript);
-                foreach (var result in responseJsonObj.Results)
+                foreach (var result in responseJsonObj.results)
                 {
-                    foreach (var alternative in result.Alternatives)
+                    foreach (var alternative in result.alternatives)
                     {
-                        ret.AppendLine(alternative.Transcript);
+                        ret.AppendLine(alternative.transcript);
                     }
                 }
             }
@@ -179,16 +178,16 @@ public static partial class GoogleService
     {
         // リクエストボディ作成
         var requestObj = new GoogleTextToSpeechRequest();
-        requestObj.Input = new GoogleTextToSpeechRequestInput();
-        requestObj.Input.Text = text;
-        requestObj.Voice = new GoogleTextToSpeechRequestVoice();
-        requestObj.Voice.LanguageCode = GetLanguageCodeForTextToSpeech(language);
-        requestObj.Voice.Name = GetVoiceName(language);
-        requestObj.Voice.SsmlGender = TextToSpeechGender;
-        requestObj.AudioConfig = new GoogleTextToSpeechRequestAudioConfig();
-        requestObj.AudioConfig.AudioEncoding = TextToSpeechAudioEncoding;
-        requestObj.AudioConfig.SampleRateHertz = TextToSpeechSampleRateHertz;
-        var requestJson = JsonConvert.SerializeObject(requestObj);
+        requestObj.input = new GoogleTextToSpeechRequestInput();
+        requestObj.input.text = text;
+        requestObj.voice = new GoogleTextToSpeechRequestVoice();
+        requestObj.voice.languageCode = GetLanguageCodeForTextToSpeech(language);
+        requestObj.voice.name = GetVoiceName(language);
+        requestObj.voice.ssmlGender = TextToSpeechGender;
+        requestObj.audioConfig = new GoogleTextToSpeechRequestAudioConfig();
+        requestObj.audioConfig.audioEncoding = TextToSpeechAudioEncoding;
+        requestObj.audioConfig.sampleRateHertz = TextToSpeechSampleRateHertz;
+        var requestJson = JsonUtility.ToJson(requestObj);
         var requestBody = new StringContent(requestJson, Encoding.UTF8, "application/json");
         // リクエスト開始
 #if false
@@ -215,8 +214,8 @@ public static partial class GoogleService
         return null;
 #else
         var response = await WebServerManager.Instance.Request(TextToSpeechRequestUrl + Settings.ApiKey, "POST", requestJson);
-        var responseObj = JsonConvert.DeserializeObject<GoogleTextToSpeechResponse>(response);
-        var audioData = Convert.FromBase64String(responseObj.AudioContent);
+        var responseObj = JsonUtility.FromJson<GoogleTextToSpeechResponse>(response);
+        var audioData = Convert.FromBase64String(responseObj.audioContent);
         return audioData;
 #endif
     }
@@ -237,13 +236,13 @@ public static partial class GoogleService
         var targetLanguageCode = GetLanguageCodeForTranslation(targetLanguage);
         var requestObj = new GoogleTranslationRequest
         {
-            Q = text,
-            Target = targetLanguageCode,
-            Format = "text",
-            Source = srcLanguageCode
+            q = text,
+            target = targetLanguageCode,
+            format = "text",
+            source = srcLanguageCode
         };
         //requestObj.Key = "";
-        var requestJson = JsonConvert.SerializeObject(requestObj);
+        var requestJson = JsonUtility.ToJson(requestObj);
         var requestBody = new StringContent(requestJson, Encoding.UTF8, "application/json");
         // リクエスト開始
         var response = await HttpRequest.RequestJsonAsync(HttpRequestType.POST, TranslationRequestUrl + Settings.ApiKey, null, requestBody);
@@ -253,12 +252,12 @@ public static partial class GoogleService
             var responseJson = response.Json;
             //Debug.Log("GoogleService.Translation request succeeded. response json: ");
             //Debug.Log(responseJson);
-            var responseObj = JsonConvert.DeserializeObject<GoogleTranslationResponse>(responseJson);
-            if (responseObj != null && responseObj.Data != null && responseObj.Data.Translations != null)
+            var responseObj = JsonUtility.FromJson<GoogleTranslationResponse>(responseJson);
+            if (responseObj != null && responseObj.data != null && responseObj.data.translations != null)
             {
-                foreach (var translation in responseObj.Data.Translations)
+                foreach (var translation in responseObj.data.translations)
                 {
-                    ret.Append(translation.TranslatedText);
+                    ret.Append(translation.translatedText);
                 }
             }
             else

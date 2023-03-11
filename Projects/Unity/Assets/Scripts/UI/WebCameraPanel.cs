@@ -29,7 +29,7 @@ public class WebCameraPanel : MonoBehaviour
 
     void Update()
     {
-        if (!ConnectionManager.Instance.IsAvailable) return;
+        //if (!ConnectionManager.Instance.IsAvailable) return;
 
         if (_gpuRequest.Count == 0)
         {
@@ -111,7 +111,7 @@ public class WebCameraPanel : MonoBehaviour
                             // 送信
                             foreach (var sd in sendDataList)
                             {
-                                ConnectionManager.Instance.Send(DataType.Camera, sd).Forget();
+                                //ConnectionManager.Instance.Send(DataType.Camera, sd).Forget();
                             }
                             break;
                         case ApplicationSettings.VideoCodecType.MWEBP:

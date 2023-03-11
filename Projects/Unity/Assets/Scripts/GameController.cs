@@ -22,11 +22,6 @@ public class GameController : SingletonMonoBehaviour<GameController>
     public SynchronizationContext MainContext { get; private set; } = null;
 
     /// <summary>
-    /// クライアント(ユーザー or オペレーター)
-    /// </summary>
-    public IClient Client { get; private set; } = null;
-
-    /// <summary>
     /// 現在の待機時間[s]
     /// </summary>
     public float CurrentIdleTimeSec { get; set; } = 0.0f;
@@ -52,10 +47,6 @@ public class GameController : SingletonMonoBehaviour<GameController>
 
         // メインスレッド同期用コンテキストを取得しておく
         MainContext = SynchronizationContext.Current;
-
-        // クライアント初期化
-        Client = new UserClient();
-        Client.Initialize();
 
         // 全Stateセット
         _states.Add(new Waiting());
