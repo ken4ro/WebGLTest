@@ -23,7 +23,7 @@ export const useUnity = (props) => {
             }
         };
     }, [retryCount]);
-    
+
     const handleStart = () => {
         const { current } = containerRef;
         if (!current) {
@@ -40,9 +40,9 @@ export const useUnity = (props) => {
                 companyName: "DefaultCompany",
                 productName: "telexistence_test_avatar",
                 productVersion: "0.1",
-                dataUrl: `${unityBuildRoot}/${buildName}.data`,
-                frameworkUrl: `${unityBuildRoot}/${buildName}.framework.js`,
-                codeUrl: `${unityBuildRoot}/${buildName}.wasm`,
+                dataUrl: `${unityBuildRoot}/${buildName}.data.unityweb`,
+                frameworkUrl: `${unityBuildRoot}/${buildName}.framework.js.unityweb`,
+                codeUrl: `${unityBuildRoot}/${buildName}.wasm.unityweb`,
                 streamingAssetsUrl: "StreamingAssets",
             })
             .then((instance) => {
