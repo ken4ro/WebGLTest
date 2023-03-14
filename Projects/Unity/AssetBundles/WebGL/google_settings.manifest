@@ -1,0 +1,17 @@
+ManifestFileVersion: 0
+CRC: 3083974714
+Hashes:
+  AssetFileHash:
+    serializedVersion: 2
+    Hash: c9f7ed43348e1efc6c0f7403bc15ef01
+  TypeTreeHash:
+    serializedVersion: 2
+    Hash: 5ad585dd02dfb5016c0dad519eab8f49
+HashAppended: 0
+ClassTypes:
+- Class: 49
+  Script: {instanceID: 0}
+SerializeReferenceClassIdentifiers: []
+Assets:
+- Assets/GoogleServiceSettings.json
+Dependencies: []

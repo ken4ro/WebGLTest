@@ -54,7 +54,8 @@ public class TextToSpeechAudioCache
     /// <returns>Task<AudioClip></returns>
     public async UniTask<AudioClip> GetCacheFile()
     {
-        using (UnityWebRequest www = UnityWebRequestMultimedia.GetAudioClip("file:///" + filePath, AudioType.WAV))
+        //using (UnityWebRequest www = UnityWebRequestMultimedia.GetAudioClip("file:///" + filePath, AudioType.WAV))
+        using (UnityWebRequest www = UnityWebRequestMultimedia.GetAudioClip(filePath, AudioType.WAV))
         {
             await www.SendWebRequest();
             if (www.isNetworkError)
@@ -113,8 +114,16 @@ public class TextToSpeechAudioCache
         return hashStr;
     }
 
+    public string GetFilePath() => filePath;
+
     private static string InitDir()
     {
+        var dir = Application.streamingAssetsPath + CACHE_DIR;
+        if (dir.LastIndexOf("/") != dir.Length - 1)
+        {
+            dir += "/";
+        }
+#if false
         var dir = Application.dataPath + CACHE_DIR;
         if (!File.Exists(dir))
         {
@@ -124,6 +133,7 @@ public class TextToSpeechAudioCache
         {
             dir += "/";
         }
+#endif
         return dir;
     }
 }

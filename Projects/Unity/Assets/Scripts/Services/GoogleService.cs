@@ -50,45 +50,23 @@ public static partial class GoogleService
     /// 設定ファイル読み込み
     /// </summary>
     /// <returns></returns>
-    public static void ImportSettings()
+    public static async UniTask ImportSettings()
     {
-#if false
-        // 設定ファイル読み込み
-        var settingFileAsset = AssetBundleManager.Instance.LoadTextAssetFromResourcePack("GoogleServiceSettings");
-        if (settingFileAsset == null)
-        {
-            Debug.LogError("GoogleService setting file load error.");
-            return;
-        }
-        var settingJson = settingFileAsset.text.Trim(new char[] { '\uFEFF' });
-        Settings = JsonUtility.FromJson<GoogleServiceSettings>(settingJson);
-
-        // サービスアカウントファイル読み込み
-        var serviceAccountFileAsset = AssetBundleManager.Instance.ResourcePackAssetBundle.LoadAsset<TextAsset>(Path.GetFileNameWithoutExtension(Settings.ServiceAccountFilePath));
-        if (serviceAccountFileAsset == null)
-        {
-            Debug.LogError("GoogleService service account file load error.");
-            return;
-        }
-        CredentialFileData = serviceAccountFileAsset.bytes;
-        //var serviceAccountJson = serviceAccountFileAsset.text.Trim(new char[] { '\uFEFF' });
-        //File.WriteAllText(Settings.ServiceAccountFilePath, serviceAccountJson);
-        //CredentialFilePath = Settings.ServiceAccountFilePath;
-#else
-        // オンメモリで値を設定(WebGL暫定対応)
+        await AssetBundleManager.Instance.LoadGoogleSettingsAssetBundleFromStreamingAssets();
+        var settingsJson = AssetBundleManager.Instance.GoogleSettingsAssetBundle.LoadAsset<TextAsset>("GoogleServiceSettings").text;
+        var settings = JsonUtility.FromJson<GoogleServiceSettings>(settingsJson);
         Settings = new GoogleServiceSettings()
         {
-            ApiKey = "AIzaSyBh-rg5shUlThS07CqxUHRTqbRmE7CK-lQ",
-            ServiceAccountFilePath = "google_service_account"
+            ApiKey = settings.ApiKey,
+            ServiceAccountFilePath = settings.ServiceAccountFilePath
         };
-        var serviceAccountFileAsset = Resources.Load<TextAsset>(Settings.ServiceAccountFilePath);
-        if (serviceAccountFileAsset == null)
-        {
-            Debug.LogError("GoogleService service account file load error.");
-            return;
-        }
-        CredentialFileData = serviceAccountFileAsset.bytes;
-#endif
+        //var serviceAccountFileAsset = Resources.Load<TextAsset>(Settings.ServiceAccountFilePath);
+        //if (serviceAccountFileAsset == null)
+        //{
+        //    Debug.LogError("GoogleService service account file load error.");
+        //    return;
+        //}
+        //CredentialFileData = serviceAccountFileAsset.bytes;
     }
 
     /// <summary>
@@ -401,4 +379,5 @@ public static partial class GoogleService
         }
         return voiceName;
     }
+
 }

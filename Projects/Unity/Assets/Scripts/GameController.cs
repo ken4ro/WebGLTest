@@ -43,7 +43,7 @@ public class GameController : SingletonMonoBehaviour<GameController>
         CurrentScreenSaverType = SignageSettings.Settings.ScreenSaver;
 
         // GoogleService 設定ファイル読み込み
-        GoogleService.ImportSettings();
+        _ = GoogleService.ImportSettings();
 
         // メインスレッド同期用コンテキストを取得しておく
         MainContext = SynchronizationContext.Current;
@@ -70,29 +70,11 @@ public class GameController : SingletonMonoBehaviour<GameController>
         UIManager.Instance.OnSelectWord += SelectWord;
         UIManager.Instance.OnClickScreenSaver += ClickScreenSaver;
 
-#if UNITY_EDITOR || !UNITY_WEBGL // CORS 対策が落ち着くまで無効化
-        // 使用キャラクターセット
-        GlobalState.Instance.CurrentCharacterModel.Value = CharacterModel.Una2D;
-
-        // アバター読み込み
-        //await AssetBundleManager.Instance.LoadAvatarAssetBundleFromStreamingAssets();
-        AssetBundleManager.Instance.LoadAvatarAssetBundle();
-#else
         // 使用キャラクターセット
         GlobalState.Instance.CurrentCharacterModel.Value = CharacterModel.Una2D;
 
         // アバター読み込み
         await AssetBundleManager.Instance.LoadAvatarAssetBundleFromStreamingAssets();
-#endif
-
-        // キャラクターオブジェクト作成
-        LoadCharacterObject();
-
-        // キャラクター表示
-        CharacterManager.Instance.Enable();
-
-        // ボット処理初期化
-        BotManager.Instance.Initialize();
 
         // 指定時間待機
 #if false
@@ -110,6 +92,18 @@ public class GameController : SingletonMonoBehaviour<GameController>
         //await UniTask.Delay(2000);
         //SetUserMessage("お問い合わせ");
 #endif
+    }
+
+    void Start()
+    {
+        // キャラクターオブジェクト作成
+        LoadCharacterObject();
+
+        // キャラクター表示
+        CharacterManager.Instance.Enable();
+
+        // ボット処理初期化
+        BotManager.Instance.Initialize();
     }
 
     void OnApplicationQuit()

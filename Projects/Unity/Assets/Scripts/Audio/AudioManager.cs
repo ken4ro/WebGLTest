@@ -464,18 +464,30 @@ public class AudioManager : SingletonMonoBehaviour<AudioManager>
     {
         string key = $"{SignageSettings.CurrentTextToSpeechEngine.ToString()}_{text}";
         var audioCache = new TextToSpeechAudioCache(key);
+#if UNITY_EDITOR || !UNITY_WEBGL
         if (audioCache != null && audioCache.IsCached())
         {
+            Debug.Log($"GetWebAudioClip: from cache file path = {audioCache.GetFilePath()}");
             // キャッシュから取得
             return await audioCache.GetCacheFile();
         }
+#else
+        // WebGLの場合はファイル存在チェックが出来ないので、ファイルがある前提で...
+        if (audioCache != null)
+        {
+            Debug.Log($"GetWebAudioClip: from StreamingAssets file path = {audioCache.GetFilePath()}");
+            // キャッシュから取得
+            return await audioCache.GetCacheFile();
+        }
+#endif
         else
         {
+            Debug.Log($"GetWebAudioClip: from web file path = {audioCache.GetFilePath()}");
             // 新規で音声合成して取得
             AudioClip audioClip = null;
             byte[] audioData = null;
             int audioDataLength = 0;
-            switch (SignageSettings.CurrentTextToSpeechEngine)
+            switch (type)
             {
                 // Google Cloud Text-to-Speech
                 case TextToSpeechEngine.Google:
@@ -501,8 +513,10 @@ public class AudioManager : SingletonMonoBehaviour<AudioManager>
                 default:
                     break;
             }
+#if UNITY_EDITOR || !UNITY_WEBGL
             // 音声ファイル保存
-            //audioCache.SaveFile(audioData);
+            audioCache.SaveFile(audioData);
+#endif
 
             return audioClip;
         }

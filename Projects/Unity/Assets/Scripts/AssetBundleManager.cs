@@ -29,6 +29,11 @@ public class AssetBundleManager : SingletonBase<AssetBundleManager>
     public AssetBundle AvatarAssetBundle { get; set; } = null;
 
     /// <summary>
+    /// GoogleSettings用アセットバンドル
+    /// </summary>
+    public AssetBundle GoogleSettingsAssetBundle { get; set; } = null;
+
+    /// <summary>
     /// リソースパック用アセットバンドル
     /// </summary>
     public AssetBundle ResourcePackAssetBundle { get; set; } = null;
@@ -56,11 +61,13 @@ public class AssetBundleManager : SingletonBase<AssetBundleManager>
     {
         if (AvatarAssetBundle == null)
         {
-            var avatarAssetBundlePath = Path.Combine(Application.streamingAssetsPath, "avatar.bundle");
 #if !UNITY_EDITOR && UNITY_WEBGL
-            AvatarAssetBundle = await LoadAssetBundleWithWebRequestAsync(avatarAssetBundlePath);
+            var assetBundlePath = Path.Combine(Application.streamingAssetsPath, "avatar_webgl.bundle");
+            AvatarAssetBundle = await LoadAssetBundleWithWebRequestAsync(assetBundlePath);
 #else
-            AvatarAssetBundle = await LoadAssetBundleAsync(avatarAssetBundlePath);
+            var assetBundlePath = Path.Combine(Application.streamingAssetsPath, "avatar_windows.bundle");
+            //AvatarAssetBundle = await LoadAssetBundleAsync(avatarAssetBundlePath);
+            AvatarAssetBundle = await LoadAssetBundleWithWebRequestAsync(assetBundlePath);
 #endif
         }
         if (AvatarAssetBundle != null)
@@ -70,6 +77,28 @@ public class AssetBundleManager : SingletonBase<AssetBundleManager>
         else
         {
             Debug.Log($"LoadAvatarAssetBundleFromStreamingAssets failed.");
+        }
+    }
+
+    public async UniTask LoadGoogleSettingsAssetBundleFromStreamingAssets()
+    {
+        if (GoogleSettingsAssetBundle == null)
+        {
+            var assetBundlePath = Path.Combine(Application.streamingAssetsPath, "google_settings.bundle");
+#if !UNITY_EDITOR && UNITY_WEBGL
+            GoogleSettingsAssetBundle = await LoadAssetBundleWithWebRequestAsync(assetBundlePath);
+#else
+            //GoogleSettingsAssetBundle = await LoadAssetBundleAsync(avatarAssetBundlePath);
+            GoogleSettingsAssetBundle = await LoadAssetBundleWithWebRequestAsync(assetBundlePath);
+#endif
+        }
+        if (GoogleSettingsAssetBundle != null)
+        {
+            Debug.Log($"LoadGoogleSettingsAssetBundleFromStreamingAssets completed.");
+        }
+        else
+        {
+            Debug.Log($"LoadGoogleSettingsAssetBundleFromStreamingAssets failed.");
         }
     }
 
