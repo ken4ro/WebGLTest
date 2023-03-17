@@ -288,6 +288,7 @@ public class CharacterManager : SingletonMonoBehaviour<CharacterManager>
 
     public void StartAutoLipSync()
     {
+        Debug.Log("StartAutoLipSync");
         _mouthController.MouthOpening = 0;
         _mouthController.enabled = true;
         _autoMouthInput.enabled = true;
@@ -295,6 +296,7 @@ public class CharacterManager : SingletonMonoBehaviour<CharacterManager>
 
     public void StopAutoLipSync()
     {
+        Debug.Log("StopAutoLipSync");
         _mouthController.enabled = false;
         _autoMouthInput.enabled = false;
         _mouthController.MouthOpening = 0;

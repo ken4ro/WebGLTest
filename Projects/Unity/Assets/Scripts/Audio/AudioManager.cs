@@ -387,8 +387,14 @@ public class AudioManager : SingletonMonoBehaviour<AudioManager>
         // 再生
         _audioSourceForCharacter.loop = false;
         _audioSourceForCharacter.Play();
+        while (audioClip.loadState != AudioDataLoadState.Loaded)
+        {
+            Debug.Log($"audioClip loadState = {audioClip.loadState}");
+            await UniTask.Delay(10);
+        }
         // 再生終了まで待つ
         var audioClipLengthMs = (int)TimeSpan.FromSeconds(audioClip.length).TotalMilliseconds;
+        Debug.Log($"audioClip length = {audioClip.length}, samples = {audioClip.samples}, msec = = {audioClipLengthMs}");
         await UniTask.Delay(audioClipLengthMs);
         // オートリップシンク終了
         CharacterManager.Instance.StopAutoLipSync();
