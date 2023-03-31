@@ -62,6 +62,16 @@ public class FaceInfoManager : SingletonMonoBehaviour<FaceInfoManager>
         _faceInfoQueue.Enqueue(faceInfoObj);
     }
 
+    public void FaceInfoReceived(string faceInfoJson)
+    {
+        if (!_isEnable) return;
+
+        _lastReceivedTime = Time.time;
+        var faceInfoObj = JsonUtility.FromJson<FaceInfo>(faceInfoJson);
+        _faceInfoQueue.Enqueue(faceInfoObj);
+        Debug.Log($"FaceInfoReceived: yaw = {faceInfoObj.Yaw}, pitch = {faceInfoObj.Pitch}, roll = {faceInfoObj.Roll}");
+    }
+
     // For Serialize/Deserialize
 
     [Serializable]

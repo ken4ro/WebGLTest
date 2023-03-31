@@ -134,7 +134,7 @@ public class GameController : SingletonMonoBehaviour<GameController>
         return ret;
     }
 
-    #region for React
+    #region for JavaScript
 
     public class AudioVolumeJson
     {
@@ -148,7 +148,34 @@ public class GameController : SingletonMonoBehaviour<GameController>
         CharacterManager.Instance.SetMouseOpenYParameter(volume);
     }
 
-    #endregion for React
+    public class FaceInfoJson
+    {
+        public float Yaw;
+        public float Pitch;
+        public float Roll;
+        public double BodyYaw;
+        public double BodyPitch;
+        public double BodyRoll;
+    }
+
+    private bool _isCharacterAnimation = true;
+    public void SetFaceInfo(string faceInfoJson)
+    {
+        if (_isCharacterAnimation)
+        {
+            _isCharacterAnimation = false;
+            // キャラクターアニメーション無効化
+            CharacterManager.Instance.DisableAnimation();
+            // アイドルモーション時のキャラクタートランスフォームをセット
+            CharacterManager.Instance.SetTransformsForIdle();
+            // 顔認識有効
+            FaceInfoManager.Instance.Enable();
+        }
+
+        FaceInfoManager.Instance.FaceInfoReceived(faceInfoJson);
+    }
+
+    #endregion for JavaScript
 
     public void StartBotProcess()
     {

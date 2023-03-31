@@ -9,6 +9,13 @@
     </head>
     <body>
         <noscript>You need to enable JavaScript to run this app.</noscript>
+        <script type="text/javascript">
+            async function onOpenCvReady() {
+                document.getElementById('status').innerHTML = 'OpenCV.js is ready.';
+                window.cv = await window.cv;
+            }
+        </script>
+        <script async src="./opencv.js" onload="onOpenCvReady();" type="text/javascript"></script>
         <!-- <canvas id="unity-canvas" width="960" height="540"></canvas>
         <script>
             var canvas = document.querySelector("#unity-canvas");
@@ -39,6 +46,7 @@
             };
             document.body.appendChild(script);
         </script> -->
+        <p id="status">opencv.js is loading...</div>
         <div id="root"></div>
     </body>
 </html>
