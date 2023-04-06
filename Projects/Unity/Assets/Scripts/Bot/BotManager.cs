@@ -81,11 +81,11 @@ public partial class BotManager : SingletonBase<BotManager>
     private List<string> _selectImages = new List<string>(MaxSelectCount);
 
     private List<BotResponseOption> _options = new List<BotResponseOption>();
-
+    
     /// <summary>
     /// 初期化
     /// </summary>
-    public void Initialize()
+    public async UniTask Initialize()
     {
         IsInitialized = false;
 
@@ -94,7 +94,7 @@ public partial class BotManager : SingletonBase<BotManager>
         CreateChatbotServiceProcessor();
 
         // チャットボットサービス初期化
-        _botServiceProcessor.Initialize();
+        await _botServiceProcessor.Initialize();
 
         // 言語月処理用クラス生成
         // 動的に変わるので監視対象
@@ -277,21 +277,7 @@ public partial class BotManager : SingletonBase<BotManager>
 
     private void CreateChatbotServiceProcessor()
     {
-        switch (Settings.ChatbotService)
-        {
-            case ChatbotServices.Dialogflow:
-                _botServiceProcessor = new DialogflowService();
-                break;
-            case ChatbotServices.CAIAsset:
-            case ChatbotServices.CAIFile:
-                _botServiceProcessor = new LocalAIService();
-                break;
-            case ChatbotServices.CAIWeb:
-                _botServiceProcessor = new WebAIService();
-                break;
-            default:
-                break;
-        }
+        _botServiceProcessor = new WebAIService();
     }
 
     private void CreateBotLanguageProcessor(Language language)

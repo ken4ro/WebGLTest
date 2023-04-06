@@ -107,93 +107,9 @@ public class GlobalState : SingletonBase<GlobalState>
     public static readonly string ReplErrorText = "シナリオの初期化に失敗しました。";
 
     /// <summary>
-    /// アプリケーション設定
+    /// ユーザー設定
     /// </summary>
-    public ApplicationSettings ApplicationGlobalSettings
-    {
-        get { return _applicationGlobalSettings; }
-        set
-        {
-            if (value == null)
-            {
-                Debug.LogError("設定ファイルが正しく読み込まれませんでした");
-#if UNITY_EDITOR
-                UnityEditor.EditorApplication.isPlaying = false;
-#elif UNITY_STANDALONE
-                UnityEngine.Application.Quit();
-#endif
-                return;
-            }
-
-            _applicationGlobalSettings = value;
-            // 接続種別
-            if (value.ConnectionType != null)
-            {
-                if (Enum.TryParse(value.ConnectionType, true, out ConnectionType result))
-                {
-                    if (CurrentConnectionType == null)
-                    {
-                        CurrentConnectionType = new ReactiveProperty<ConnectionType>(result);
-                    }
-                    else
-                    {
-                        CurrentConnectionType.Value = result;
-                    }
-                }
-                else
-                {
-                    Debug.LogError("Invalid connection type. Check ApplicationSettings.json");
-                }
-            }
-            // Bot リクエスト手法
-            if (value.BotRequestMethod != null)
-            {
-                if (Enum.TryParse(value.BotRequestMethod, true, out BotRequestMethod requestMethod))
-                {
-                    CurrentBotRequestMethod = requestMethod;
-                }
-                else
-                {
-                    Debug.LogError("Invalid bot request method. Check ApplicationSettings.json");
-                }
-            }
-            // 受付中アニメーション種別
-            if (value.AcceptableAnimation != null)
-            {
-                if (Enum.TryParse(value.AcceptableAnimation, true, out AcceptableAnimationType animationType))
-                {
-                    CurrentAcceptableAnimationType = animationType;
-                }
-                else
-                {
-                    Debug.LogError("Invalid acceptable animation type. Check ApplicationSettings.json");
-                }
-            }
-            // ビデオ解像度
-            if (value.VideoResolution != null)
-            {
-                switch (value.VideoResolution)
-                {
-                    case "1080p":
-                        VideoResolution = new VideoResolutionWH { Width = 1920, Height = 1080 };
-                        break;
-                    case "720p":
-                        VideoResolution = new VideoResolutionWH { Width = 1280, Height = 720 };
-                        break;
-                    case "480p":
-                        VideoResolution = new VideoResolutionWH { Width = 720, Height = 480 };
-                        break;
-                    case "360p":
-                        VideoResolution = new VideoResolutionWH { Width = 640, Height = 360 };
-                        break;
-                    default:
-                        Debug.LogError($"未対応の解像度です: {value.VideoResolution}");
-                        break;
-                }
-            }
-        }
-    }
-    private ApplicationSettings _applicationGlobalSettings;
+    public UserSettings UserSettings { get; set; }
 
     /// <summary>
     /// 現在のキャラクターモデル

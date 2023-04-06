@@ -22,7 +22,7 @@ public class ActionManager : SingletonBase<ActionManager>
         {
             case "return":
                 // n秒後に再スタート
-                TimerTask = Observable.Timer(TimeSpan.FromSeconds(SettingHub.Instance.Signage.Cache.ReturnWaitTime)).Subscribe(_ =>
+                TimerTask = Observable.Timer(TimeSpan.FromSeconds(GlobalState.Instance.UserSettings.Bot.ReturnSec)).Subscribe(_ =>
                 {
                     GlobalState.Instance.CurrentState.Value = GlobalState.State.Starting;
                 });
@@ -30,7 +30,7 @@ public class ActionManager : SingletonBase<ActionManager>
                 return;
             case "delay":
                 // n秒後に空リクエスト送信
-                TimerTask = Observable.Timer(TimeSpan.FromSeconds(SettingHub.Instance.Signage.Cache.DelayTime)).Subscribe(_ =>
+                TimerTask = Observable.Timer(TimeSpan.FromSeconds(GlobalState.Instance.UserSettings.Bot.ActionDelaySec)).Subscribe(_ =>
                 {
                     BotManager.Instance.RequestEmpty().Forget();
                 });
@@ -46,7 +46,7 @@ public class ActionManager : SingletonBase<ActionManager>
                 break;
             case "telexistence":
                 // 遠隔対話モード
-                if (GlobalState.Instance.ApplicationGlobalSettings.EnableRecordingAgreement == "true")
+                if (GlobalState.Instance.UserSettings.UI.RecordingAgreementEnable == "true")
                 {
                     // 録音確認画面を表示
                     GlobalState.Instance.CurrentState.Value = GlobalState.State.PreOperating;
@@ -65,15 +65,7 @@ public class ActionManager : SingletonBase<ActionManager>
                 break;
         }
 
-        if (GlobalState.Instance.CurrentBotRequestMethod == GlobalState.BotRequestMethod.Button)
-        {
-            // 発話可能状態へダイレクトに移行
-            GlobalState.Instance.CurrentState.Value = GlobalState.State.Speakable;
-        }
-        else
-        {
-            // ストリーミング音声認識開始要求
-            var runTask = StreamingSpeechToText.Instance.RunOneShotTask();
-        }
+        // 発話可能状態へ移行
+        GlobalState.Instance.CurrentState.Value = GlobalState.State.Speakable;
     }
 }

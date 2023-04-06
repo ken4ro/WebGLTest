@@ -62,21 +62,6 @@ public partial class BotManager : SingletonBase<BotManager>
         return list;
     }
 
-
-    /// <summary>
-    /// イメージアクセスタイプ取得
-    /// </summary>
-    /// <returns></returns>
-    public ImageAccessTypes GetImageAccessType()
-    {      
-        try
-        {
-            var idx = Array.Find(Response.Options, p => p.Type == "imageAccessType");
-            return idx == null ? SettingHub.Instance.Signage.Cache.ImageAccessType : (ImageAccessTypes)Enum.Parse(typeof(ImageAccessTypes), idx.ParameterArray[0]);
-        }
-        catch { return SettingHub.Instance.Signage.Cache.ImageAccessType; }
-    }
-
     public static string GetSelectParameter(List<BotResponseOption> options, OptionTypes type)
     {
         var str = type.ToString();

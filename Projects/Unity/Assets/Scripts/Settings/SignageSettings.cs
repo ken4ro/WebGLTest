@@ -141,17 +141,6 @@ public class SignageSettings
     public static ReactiveProperty<Language> CurrentLanguage { get; set; }
 
     /// <summary>
-    /// 選択中の音声合成エンジン
-    /// </summary>
-    public static TextToSpeechEngine CurrentTextToSpeechEngine
-    {
-        get
-        {
-            return Settings.LanguageVoiceMap[CurrentLanguage.Value];
-        }
-    }
-
-    /// <summary>
     /// 選択中の言語を初期化
     /// </summary>
     public static void InitializeCurrentLanguage()
@@ -172,34 +161,15 @@ public class SignageSettings
     /// </summary>
     public static void LoadSettings()
     {
-#if false
-        var settingFileAsset = AssetBundleManager.Instance.LoadTextAssetFromResourcePack("SignageSettings");
-        if (settingFileAsset == null)
-        {
-            Debug.LogError("Signage setting file load error.");
-            return;
-        }
-        var json = settingFileAsset.text.Trim(new char[] { '\uFEFF' });
-        Settings = JsonUtility.FromJson<SignageSetting>(json);
-#else
         // オンメモリで値を設定(WebGL暫定対応)
         Settings = new SignageSetting()
         {
-            BaseTextSpeed = 30,
-            ChatbotService = ChatbotServices.CAIWeb,
-            DelayTime = 5,
-            ImageAccessType = ImageAccessTypes.UnityAsset,
-            InputLimitTime = 60,
             LanguageVoiceMap = new Dictionary<Language, TextToSpeechEngine>()
             {
                 { Language.Japanese, TextToSpeechEngine.Google },
                 { Language.English, TextToSpeechEngine.Google },
             },
-            RestartWaitTime = 60,
-            ReturnWaitTime = 6,
-            ScreenSaver = ScreenSaverTypes.None
         };
-#endif
 
         InitializeCurrentLanguage();
     }

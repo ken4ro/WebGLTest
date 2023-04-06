@@ -107,6 +107,8 @@ public class CharacterManager : SingletonMonoBehaviour<CharacterManager>
 
         _mouthController.enabled = false;
         _autoMouthInput.enabled = false;
+
+        AudioManager.Instance.SetAudioSourceForCharacter();
     }
 
     void LateUpdate()

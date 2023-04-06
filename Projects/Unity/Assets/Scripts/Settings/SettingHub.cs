@@ -33,54 +33,6 @@ public class SettingHub : SingletonBase<SettingHub>
     }
     #endregion
 
-    #region application
-    /// <summary>
-    /// アプリケーションセッティング
-    /// </summary>
-    public class ApplicationNode
-    {
-        public ApplicationNode() => ResetSetting();
-        public ApplicationSettings Cache { get; set; }
-        public ApplicationSettings Master { get => GlobalState.Instance.ApplicationGlobalSettings; set => GlobalState.Instance.ApplicationGlobalSettings = value; }
-
-        /// <summary>
-        /// リフレッシュ
-        /// </summary>
-        public void ResetSetting() => Cache = GlobalState.Instance.ApplicationGlobalSettings.Clone();
-
-    }
-    public ApplicationNode Application = new ApplicationNode();
-
-    public enum ApplicationTags { FontSize, SignalingUserName, SignalingUserPassword }
-
-    /// <summary>
-    /// アプリケーション設定上書き
-    /// </summary>
-    /// <param name="accessType"></param>
-    /// <param name="tag"></param>
-    /// <param name="value"></param>
-    public void OverwriteApplication(AccessTypes accessType, ApplicationTags tag, string value)
-    {
-        var block = accessType == AccessTypes.Cache ? Application.Cache : Application.Master;
-        switch (tag)
-        {
-            case ApplicationTags.FontSize:
-                block.FontSize = int.Parse(value);
-                break;
-
-            case ApplicationTags.SignalingUserName:
-                block.SignalingUserName = value;
-                break;
-
-            case ApplicationTags.SignalingUserPassword:
-                block.SignalingUserPassword = value;
-                break;
-        }
-    }
-
-    #endregion
-
-
     #region system
 
     public class SystemNode
@@ -96,7 +48,6 @@ public class SettingHub : SingletonBase<SettingHub>
 
     }
     public SystemNode System = new SystemNode();
-
 
     /// <summary>
     /// システム変数上書き
@@ -124,7 +75,6 @@ public class SettingHub : SingletonBase<SettingHub>
 
     #endregion
 
-
     #region signage
     /// <summary>
     /// サイネージセッティング
@@ -138,8 +88,6 @@ public class SettingHub : SingletonBase<SettingHub>
         public void ResetSetting() => Cache = SignageSettings.Settings.Clone();
     }
     public SignageNode Signage = new SignageNode();
-
-
     public enum SignageTags { BaseTextSpeed, InputLimitTime, RestartWaitTime, ReturnWaitTime, DelayTime }
     public enum SystemTags { CurrentLanguage, PreSendPayload }
 
@@ -176,7 +124,6 @@ public class SettingHub : SingletonBase<SettingHub>
         }
     }
 
-
     #endregion
 
     #region variableReplace
@@ -203,7 +150,6 @@ public class SettingHub : SingletonBase<SettingHub>
 
     }
 
-
     #endregion
 
     /// <summary>
@@ -211,13 +157,9 @@ public class SettingHub : SingletonBase<SettingHub>
     /// </summary>
     public void ResetSetting()
     {
-        Application.ResetSetting();
         Signage.ResetSetting();
         Variable.ResetSetting();
         System.ResetSetting();
     }
     
-
-
-
 }

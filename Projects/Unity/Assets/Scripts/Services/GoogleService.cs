@@ -50,23 +50,12 @@ public static partial class GoogleService
     /// 設定ファイル読み込み
     /// </summary>
     /// <returns></returns>
-    public static async UniTask ImportSettings()
+    public static void ImportSettings()
     {
-        await AssetBundleManager.Instance.LoadGoogleSettingsAssetBundleFromStreamingAssets();
-        var settingsJson = AssetBundleManager.Instance.GoogleSettingsAssetBundle.LoadAsset<TextAsset>("GoogleServiceSettings").text;
-        var settings = JsonUtility.FromJson<GoogleServiceSettings>(settingsJson);
         Settings = new GoogleServiceSettings()
         {
-            ApiKey = settings.ApiKey,
-            ServiceAccountFilePath = settings.ServiceAccountFilePath
+            ApiKey = GlobalState.Instance.UserSettings.GoogleKey,
         };
-        //var serviceAccountFileAsset = Resources.Load<TextAsset>(Settings.ServiceAccountFilePath);
-        //if (serviceAccountFileAsset == null)
-        //{
-        //    Debug.LogError("GoogleService service account file load error.");
-        //    return;
-        //}
-        //CredentialFileData = serviceAccountFileAsset.bytes;
     }
 
     /// <summary>

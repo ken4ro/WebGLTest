@@ -5,12 +5,12 @@ using UnityEngine;
 using UnityEngine.UI;
 using UniRx;
 using DG.Tweening;
+using Cysharp.Threading.Tasks;
 using static GlobalState;
 using static Background;
 using static BotManager;
 using static SignageSettings;
 using static CharacterMessage;
-using Cysharp.Threading.Tasks;
 
 public class UIManager : SingletonMonoBehaviour<UIManager>
 {
@@ -100,11 +100,6 @@ public class UIManager : SingletonMonoBehaviour<UIManager>
     [SerializeField] PushableCocoaIcon pushableCocoaIcon = null;
 
     /// <summary>
-    /// 動画再生用パネル
-    /// </summary>
-    [SerializeField] MoviePlayPanel moviePlayerPanel = null;
-
-    /// <summary>
     /// フルスクリーンパネル
     /// </summary>
     [SerializeField] FullScreenPanel fullScreenPanel = null;
@@ -125,16 +120,6 @@ public class UIManager : SingletonMonoBehaviour<UIManager>
     [SerializeField] ErrorDisplayPanel errorDisplayPanel = null;
 
     /// <summary>
-    /// ミュート用マイクボタン
-    /// </summary>
-    [SerializeField] Image micBtn = null;
-
-    /// <summary>
-    /// ミュート用マイクアイコン
-    /// </summary>
-    [SerializeField] Image micIcon = null;
-
-    /// <summary>
     /// 言語グループ
     /// </summary>
     [SerializeField] CanvasGroup languageGroup = null;
@@ -148,11 +133,6 @@ public class UIManager : SingletonMonoBehaviour<UIManager>
     /// 録音確認画面
     /// </summary>
     [SerializeField] RecordingCheckPanel recordingCheckPanel = null;
-
-    /// <summary>
-    /// 要アップデートボタン
-    /// </summary>
-    [SerializeField] Image updateRequiredBtn = null;
 
     // メインスレッド同期用コンテキスト(いずれ必要になりそう)
     private SynchronizationContext _mainContext = null;
@@ -177,7 +157,6 @@ public class UIManager : SingletonMonoBehaviour<UIManager>
         pushableCocoaIcon.Initialize();
         callingPanel.Initialize();
         errorDisplayPanel.Initialize();
-        moviePlayerPanel.Initialize();
         fullScreenPanel.Initialize();
         recordingCheckPanel.Initialize();
 
@@ -185,20 +164,10 @@ public class UIManager : SingletonMonoBehaviour<UIManager>
         languageWindow.OnSelectLanguage += SelectLanguage;
         characterMessage.OnClickSelectWord += SelectWord;
         characterMessage.OnImageClick += ClickThumbnailPanel;
-        moviePlayerPanel.OnClick += ClickScreenSaver;
         fullScreenPanel.OnClick += ClickFullScreenPanel;
         recordingCheckPanel.OnClickYesBtn += AgreeRecording;
         recordingCheckPanel.OnClickNoBtn += RejectRecording;
-        
-        // 言語変更を監視
-        _changeLanguageObserver = CurrentLanguage.Subscribe(x => { ChangeLanguage(x); });
-
-        // 入力モード別処理
-        if (GlobalState.Instance.CurrentBotRequestMethod != BotRequestMethod.Button)
-        {
-            // マイクのミュート状態を監視
-            AudioManager.Instance.OnMicMute += ChangeMicMute;
-        }
+       
     }
 
     protected override void OnDestroy()
@@ -207,7 +176,6 @@ public class UIManager : SingletonMonoBehaviour<UIManager>
         languageWindow.OnSelectLanguage -= SelectLanguage;
         characterMessage.OnClickSelectWord -= SelectWord;
         characterMessage.OnImageClick -= ClickThumbnailPanel;
-        moviePlayerPanel.OnClick -= ClickScreenSaver;
         fullScreenPanel.OnClick -= ClickFullScreenPanel;
         recordingCheckPanel.OnClickYesBtn -= AgreeRecording;
         recordingCheckPanel.OnClickNoBtn -= RejectRecording;
@@ -215,6 +183,14 @@ public class UIManager : SingletonMonoBehaviour<UIManager>
         _changeLanguageObserver.Dispose();
 
         base.OnDestroy();
+    }
+
+    /// <summary>
+    /// 言語変更を監視
+    /// </summary>
+    public void SetLanguageObserver()
+    {
+        _changeLanguageObserver = CurrentLanguage.Subscribe(x => { ChangeLanguage(x); });
     }
 
     /// <summary>
@@ -238,13 +214,17 @@ public class UIManager : SingletonMonoBehaviour<UIManager>
         DisableReceivedDocumentPanel();
         // オペレーター呼び出し画面
         DisableCallingPanel();
-        // マイクボタン
-        DisableMicBtn();
         // 言語ウィンドウ
         DisableLanguagePanel();
         //フルスクリーンパネル
         DisableFullScreenPanel();
     }
+
+    /// <summary>
+    /// キャラクターメッセージのフォントサイズをセット
+    /// </summary>
+    /// <param name="size"></param>
+    public void SetFontSize(int size) => characterMessage.SetFontSize(size);
 
     /// <summary>
     /// 背景画像遷移
@@ -384,16 +364,6 @@ public class UIManager : SingletonMonoBehaviour<UIManager>
     #endregion
 
     /// <summary>
-    /// 動画再生用パネルフェードイン
-    /// </summary>
-    public void FadeInMoviePlayerPanel() => moviePlayerPanel.FadeIn();
-
-    /// <summary>
-    /// 動画再生用パネルフェードアウト
-    /// </summary>
-    public void FadeOutMoviePlayerPanel() => moviePlayerPanel.FadeOut();
-
-    /// <summary>
     /// 受領資料表示用パネルを有効にする
     /// </summary>
     public void EnableReceivedDocumentPanel() => receivedDocumentPanel.Enable();
@@ -412,26 +382,6 @@ public class UIManager : SingletonMonoBehaviour<UIManager>
     /// オペレーター呼び出し画面を無効にする
     /// </summary>
     public void DisableCallingPanel() => callingPanel.Disable();
-
-    /// <summary>
-    /// マイクアイコンを表示する
-    /// </summary>
-    public void EnableMicBtn() => micBtn.gameObject.SetActive(true);
-
-    /// <summary>
-    /// マイクアイコンを非表示にする
-    /// </summary>
-    public void DisableMicBtn() => micBtn.gameObject.SetActive(false);
-
-    /// <summary>
-    /// 要アップデートアイコンを表示する
-    /// </summary>
-    public void EnableUpdateRequiredBtn() => updateRequiredBtn.gameObject.SetActive(true);
-
-    /// <summary>
-    /// 要アップデートアイコンを非表示にする
-    /// </summary>
-    public void DisableUpdateRequiredBtn() => updateRequiredBtn.gameObject.SetActive(false);
 
     /// <summary>
     /// 言語パネルを表示する
@@ -496,16 +446,16 @@ public class UIManager : SingletonMonoBehaviour<UIManager>
     /// <param name="selectTexts"></param>
     /// <param name="selectImageName"></param>
     /// <returns></returns>
-    public async UniTask SetCharacterMessage(string message, bool isAnim, ImageAccessTypes imageType, string imageFileName, string fullImageFileName)
+    public async UniTask SetCharacterMessage(string message, bool isAnim, string imageFileName, string fullImageFileName)
     {
         if (!String.IsNullOrEmpty(fullImageFileName))
         {
-            var tex = await GraphicsHelper.LoadImage(imageType, fullImageFileName);
+            var tex = GraphicsHelper.LoadImage(fullImageFileName);
             fullScreenPanel.SetImage(tex);
         }
         characterMessage.EnablePanelEvent(String.IsNullOrEmpty(fullImageFileName) ? false : true);
 
-        await characterMessage.SetCharacterMessage(message, isAnim, imageType, imageFileName);
+        await characterMessage.SetCharacterMessage(message, isAnim, imageFileName);
     }
 
     /// <summary>
@@ -601,30 +551,6 @@ public class UIManager : SingletonMonoBehaviour<UIManager>
     public void ClickRecordingPanelBtnNo() => recordingCheckPanel.ClickNo();
 
     #region イベント
-
-    /// <summary>
-    /// マイクアイコンクリック
-    /// </summary>
-    public void OnClickMic()
-    {
-        AudioManager.Instance.MuteMic();
-    }
-
-    // マイクのミュート状態が変更された
-    private void ChangeMicMute(bool mute)
-    {
-        Resources.UnloadAsset(micBtn.sprite);
-        if (mute)
-        {
-            micIcon.sprite = Resources.Load<Sprite>("Images/Icon/icon_mic_off");
-            micBtn.color = new Color(240.0f / 255, 76.0f / 255, 102.0f / 255, 1.0f);
-        }
-        else
-        {
-            micIcon.sprite = Resources.Load<Sprite>("Images/Icon/icon_mic_on");
-            micBtn.color = new Color(14.0f / 255, 170.0f / 255, 157.0f / 255, 1.0f);
-        }
-    }
 
     // 発信がキャンセルされた
     private void CancelCalling()

@@ -365,7 +365,6 @@ public partial class BotManager
         var table = SettingHub.Instance.Variable.Cache.GetTable();
         table.Add("$language$", SignageSettings.CurrentLanguage.Value.ToString());
         table.Add("$talk$", StreamingSpeechToText.Instance.RecognitionCompleteText);
-        table.Add("$Application.SignalingUserName$", SettingHub.Instance.Application.Cache.SignalingUserName);
         return table.Aggregate(origin, (result, s) => result.Replace(s.Key, s.Value));
     }
 }

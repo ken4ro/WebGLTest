@@ -1,12 +1,13 @@
 ﻿using System;
+using System.Text;
 using System.Threading;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
 using Cysharp.Threading.Tasks;
 using UniRx;
 using static GlobalState;
 using static SignageSettings;
+using static ApiServerManager;
 
 /// <summary>
 // 主にゲーム全体のステート管理を担う
@@ -27,9 +28,12 @@ public class GameController : SingletonMonoBehaviour<GameController>
     public float CurrentIdleTimeSec { get; set; } = 0.0f;
 
     /// <summary>
-    /// スクリーンセーバー種別
+    /// スクリーンセーバーが有効か
     /// </summary>
-    public SignageSettings.ScreenSaverTypes CurrentScreenSaverType { get; set; } = SignageSettings.ScreenSaverTypes.None;
+    public string ScreenSaverEnable { get; set; }
+
+    // 初期化フラグ
+    private bool _isInitialized = false;
 
     // State管理
     private List<IState> _states = new List<IState>();
@@ -38,15 +42,57 @@ public class GameController : SingletonMonoBehaviour<GameController>
     {
         base.Awake();
 
-        // サイネージ設定ファイル読み込み
+        // ユーザー設定(Web版は現状 anonymous 固定)
+        GlobalState.Instance.UserSettings = new UserSettings()
+        {
+            LoginId = "724e242c-03fd-40b3-bcf1-a6071b613f86-b3608b4b-a347-467f-a2e0-5aa3cb3b9c78-3a8482bc-14a1-47ab-b192-1a4963b3858f-44966299-8d87-463d-a168-487cadf1ffd3",
+            LoginType = "anonymous",
+        };
+
+        // ユーザートークン取得
+        var userTokenJsonObject = new RequestUserTokenJson()
+        {
+            login_id = GlobalState.Instance.UserSettings.LoginId,
+            login_type = GlobalState.Instance.UserSettings.LoginType,
+            password = GlobalState.Instance.UserSettings.Password
+        };
+        var userTokenJson = JsonUtility.ToJson(userTokenJsonObject);
+        var responseUserTokenJson = await ApiServerManager.Instance.RequestUserTokenAsync(userTokenJson);
+        var responseUserTokenJsonObject = JsonUtility.FromJson<RequestUserTokenResponseJson>(responseUserTokenJson);
+        GlobalState.Instance.UserSettings.UserToken = Convert.ToBase64String(Encoding.UTF8.GetBytes(responseUserTokenJsonObject.access_token));
+        GlobalState.Instance.UserSettings.RefreshToken = Convert.ToBase64String(Encoding.UTF8.GetBytes(responseUserTokenJsonObject.refresh_token));
+        GlobalState.Instance.UserSettings.ExpiresIn = responseUserTokenJsonObject.expires_in;
+
+        // ユーザー設定取得
+        var userSettingsJson = await ApiServerManager.Instance.RequestUserSettingAsync(GlobalState.Instance.UserSettings.UserToken);
+        var userSettingsObject = JsonUtility.FromJson<RequestUserSettingsResponseJson>(userSettingsJson);
+        GlobalState.Instance.UserSettings.GoogleKey = userSettingsObject.google_key;
+        GlobalState.Instance.UserSettings.UI = new UserSettingsUI();
+        GlobalState.Instance.UserSettings.UI.RequestType = userSettingsObject.ui.request_type;
+        GlobalState.Instance.UserSettings.UI.FontSize = userSettingsObject.ui.font_size;
+        GlobalState.Instance.UserSettings.UI.WaitAnimationType = userSettingsObject.ui.wait_animation_type;
+        GlobalState.Instance.UserSettings.UI.RecordingAgreementEnable = userSettingsObject.ui.recording_agreement_enable;
+        GlobalState.Instance.UserSettings.UI.ScreensaverEnable = userSettingsObject.ui.screensaver_enable;
+        GlobalState.Instance.UserSettings.UI.TextSpeed = userSettingsObject.ui.text_speed;
+        GlobalState.Instance.UserSettings.UI.InputLimitSec = userSettingsObject.ui.input_limit_sec;
+        GlobalState.Instance.UserSettings.UI.Languages = userSettingsObject.ui.languages;
+        GlobalState.Instance.UserSettings.Bot = new UserSettingsBot();
+        GlobalState.Instance.UserSettings.Bot.ActionDelaySec = userSettingsObject.bot.action_delay_sec;
+        GlobalState.Instance.UserSettings.Bot.CcgFlowId = userSettingsObject.bot.ccg_flow_id;
+        GlobalState.Instance.UserSettings.Bot.RestartSec = userSettingsObject.bot.restart_sec;
+        GlobalState.Instance.UserSettings.Bot.ReturnSec = userSettingsObject.bot.return_sec;
+        GlobalState.Instance.UserSettings.Bot.ServiceType = userSettingsObject.bot.service_type;
+        GlobalState.Instance.UserSettings.Bot.StartDelaySec = userSettingsObject.bot.start_delay_sec;
+        GlobalState.Instance.UserSettings.Bot.VoiceType = userSettingsObject.bot.voice_type;
+        GlobalState.Instance.UserSettings.Rtc = new UserSettingsRtc();
+        GlobalState.Instance.UserSettings.Rtc.ServiceType = userSettingsObject.rtc.service_type;
+
+        // フォントサイズセット
+        UIManager.Instance.SetFontSize(GlobalState.Instance.UserSettings.UI.FontSize);
+
+        // その他設定
         SignageSettings.LoadSettings();
-        CurrentScreenSaverType = SignageSettings.Settings.ScreenSaver;
-
-        // GoogleService 設定ファイル読み込み
-        _ = GoogleService.ImportSettings();
-
-        // メインスレッド同期用コンテキストを取得しておく
-        MainContext = SynchronizationContext.Current;
+        GoogleService.ImportSettings();
 
         // 全Stateセット
         _states.Add(new Waiting());
@@ -60,6 +106,15 @@ public class GameController : SingletonMonoBehaviour<GameController>
         _states.Add(new Disconnect());
         _states.Add(new PreOperating());
         _states.Add(new Operating());
+
+        // 言語変更監視
+        UIManager.Instance.SetLanguageObserver();
+
+        // メインスレッド同期用コンテキストを取得しておく
+        MainContext = SynchronizationContext.Current;
+
+        // スクリーンセーバー設定
+        ScreenSaverEnable = GlobalState.Instance.UserSettings.UI.ScreensaverEnable;
 
         // イベント購読
         GlobalState.Instance.CurrentState.ObserveOnMainThread().Pairwise().Subscribe(x => OnStateChanged(x.Previous, x.Current)).AddTo(this.gameObject);
@@ -76,6 +131,15 @@ public class GameController : SingletonMonoBehaviour<GameController>
         // アバター読み込み
         await AssetBundleManager.Instance.LoadAvatarAssetBundleFromStreamingAssets();
 
+        // キャラクターオブジェクト作成
+        LoadCharacterObject();
+
+        // キャラクター表示
+        CharacterManager.Instance.Enable();
+
+        // ボット処理初期化
+        _ = BotManager.Instance.Initialize();
+
         // 指定時間待機
 #if false
         var offsetSec = GlobalState.Instance.ApplicationGlobalSettings.StartOffsetSec;
@@ -85,40 +149,33 @@ public class GameController : SingletonMonoBehaviour<GameController>
             GlobalState.Instance.CurrentState.Value = State.Starting;
         });
 #else
-        //await UniTask.Delay(GlobalState.Instance.ApplicationGlobalSettings.StartOffsetSec * 1000);
+        //await UniTask.Delay(GlobalState.Instance.UserSettings.Bot.StartDelaySec + 2 * 1000);
         //StartBotProcess();
         //await UniTask.Delay(6000);
         //SetSpeakingText("お問い");
         //await UniTask.Delay(2000);
         //SetUserMessage("お問い合わせ");
 #endif
-    }
 
-    void Start()
-    {
-        // キャラクターオブジェクト作成
-        LoadCharacterObject();
-
-        // キャラクター表示
-        CharacterManager.Instance.Enable();
-
-        // ボット処理初期化
-        BotManager.Instance.Initialize();
+        _isInitialized = true;
     }
 
     void OnApplicationQuit()
     {
-        // 各ゲームオブジェクトが破棄される前に行なければならない後始末
-        // 同期的に実行する(原則 await 禁止)
-
-        // 現在の状態の終了処理を呼んでおく
-        _states[(int)GlobalState.Instance.CurrentState.Value].OnExit();
+        if (_isInitialized)
+        {
+            // 現在の状態の終了処理を呼んでおく
+            _states[(int)GlobalState.Instance.CurrentState.Value].OnExit();
+        }
     }
 
     // Update is called once per frame
     void Update()
     {
-        _states[(int)GlobalState.Instance.CurrentState.Value].OnUpdate();
+        if (_isInitialized)
+        {
+            _states[(int)GlobalState.Instance.CurrentState.Value].OnUpdate();
+        }
     }
 
     public float[] ConvertToFloat(byte[] buf)
@@ -239,13 +296,10 @@ public class GameController : SingletonMonoBehaviour<GameController>
     }
 
     // UI 上で言語が変更された
-    private async void SelectLanguage(Language language)
+    private void SelectLanguage(Language language)
     {
         // 音声入力とボタン入力モードで処理タイミングの同期を取るため、頭で実行する
         CurrentLanguage.Value = language;
-
-        // 音声認識キャンセル
-        await StreamingSpeechToText.Instance.CancelRecognition();
 
         GlobalState.Instance.CurrentState.Value = State.Starting;
 
@@ -283,18 +337,6 @@ public class GameController : SingletonMonoBehaviour<GameController>
         {
             Debug.Log($"LoadCharacterObject: LoadAsset failed.");
         }
-        //switch (GlobalState.Instance.CurrentCharacterModel)
-        //{
-        //    case CharacterModel.Una3D:
-        //        characterObject = assetBundle.LoadAsset<GameObject>("Una");
-        //        break;
-        //    case CharacterModel.Una2D:
-        //        characterObject = assetBundle.LoadAsset<GameObject>("Una2D");
-        //        break;
-        //    case CharacterModel.Una2D_Rugby:
-        //        characterObject = assetBundle.LoadAsset<GameObject>("Una2D_Rugby");
-        //        break;
-        //}
         characterObject = Instantiate(characterObject);
         if (characterObject != null)
         {

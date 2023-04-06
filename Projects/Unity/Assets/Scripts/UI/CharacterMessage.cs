@@ -1,20 +1,15 @@
 ﻿using System;
-using System.IO;
-using System.Text;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.UI;
-using UnityEngine.Networking;
+using UnityEngine.Video;
 using UniRx;
 using TMPro;
 using DG.Tweening;
 using Coffee.UIExtensions;
-using static BotManager;
-using static GlobalState;
-using static SignageSettings;
-using UnityEngine.Video;
 using Cysharp.Threading.Tasks;
+using static BotManager;
+using static SignageSettings;
 
 public class CharacterMessage : MonoBehaviour
 {
@@ -73,9 +68,6 @@ public class CharacterMessage : MonoBehaviour
         _rectTransform = GetComponent<RectTransform>();
         _defaultPos = _rectTransform.localPosition;
         _pageIndex.Subscribe(x => PageChanged(x)).AddTo(gameObject);
-
-        // フォントサイズを設定ファイルから読み込む
-        messageText.fontSize = GlobalState.Instance.ApplicationGlobalSettings.FontSize;
     }
 
     /// <summary>
@@ -95,6 +87,15 @@ public class CharacterMessage : MonoBehaviour
     }
 
     /// <summary>
+    /// フォントサイズセット
+    /// </summary>
+    /// <param name="size"></param>
+    public void SetFontSize(int size)
+    {
+        messageText.fontSize = size;
+    }
+
+    /// <summary>
     /// キャラクターメッセージをセット
     /// </summary>
     /// <param name="message"></param>
@@ -103,10 +104,10 @@ public class CharacterMessage : MonoBehaviour
     /// <param name="imageFileName"></param>
     /// <param name="selectTexts"></param>
     /// <param name="selectImageFileName"></param>
-    public async UniTask SetCharacterMessage(string message, bool isAnim, ImageAccessTypes imageType, string imageFileName)
+    public async UniTask SetCharacterMessage(string message, bool isAnim, string imageFileName)
     {
         // 文字表示速度リセット
-        TextAnimationDelayTimeMs = SignageSettings.Settings.BaseTextSpeed;
+        TextAnimationDelayTimeMs = GlobalState.Instance.UserSettings.UI.TextSpeed;
         // 表示リセット
         ResetCharacterMessage();
         // 表示を有効化
@@ -114,7 +115,7 @@ public class CharacterMessage : MonoBehaviour
         // テキストセット
         await SetText(message, isAnim);
         // 画像セット
-        await SetImage(imageType, imageFileName);
+        await SetImage(imageFileName);
     }
 
     /// <summary>
@@ -245,9 +246,9 @@ public class CharacterMessage : MonoBehaviour
         }
     }
 
-    private async UniTask SetImage(ImageAccessTypes type, string filePath)
+    private async UniTask SetImage(string filePath)
     {
-        var texture2D = await GraphicsHelper.LoadImage(type, filePath);
+        var texture2D = GraphicsHelper.LoadImage(filePath);
         if (texture2D == null)
             return;
 

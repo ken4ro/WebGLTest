@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using static GlobalState;
@@ -34,9 +33,6 @@ public class SpeakingComplete : IState
             // 発話したテキストを表示
             UIManager.Instance.EnableUserMessage();
             UIManager.Instance.SetUserText(text);
-            // 言語切り替え
-            // v3では言語切替は音声入力では行わない
-            //ChangeLanguage(text);
             // 翻訳モードかつ日本語で無いなら翻訳する
             if (GlobalState.Instance.CurrentBotRequestMode.Value == BotRequestMode.Translation && CurrentLanguage.Value != Language.Japanese)
             {
@@ -58,20 +54,4 @@ public class SpeakingComplete : IState
 
     }
 
-    private void ChangeLanguage(string text)
-    {
-        foreach (var lang in Settings.LanguageVoiceMap.Keys)
-        {
-            if (!LanguagePhraseMap.ContainsKey(lang)) continue;
-
-            foreach (var phrase in LanguagePhraseMap[lang])
-            {
-                if (phrase.Contains(text.ToLower()))
-                {
-                    CurrentLanguage.Value = lang;
-                    return;
-                }
-            }
-        }
-    }
 }

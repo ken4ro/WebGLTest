@@ -21,34 +21,31 @@ public partial class WebAIService : IBotService
     /// </summary>
     public string NoMatchText => "よく分かりませんでした。もう一度お試しください。";
 
-    // ユーザートークン
-    public string UserToken { get; private set; } = "";
-
-    // フローID
-    private static readonly string FlowID = "d017cfa7-9570-4247-9218-dedc763d4977-00478dc6-bb12-44e7-85c2-ff22d40f3907";
-
-    // ログインID
-    private static readonly string LoginID = "71cf0d26-ddab-4744-82b5-f9e55b694e49-cd814c74-d4dd-49b6-b301-5236b33cc855-61ef3cd3-ace1-4d67-938f-e40a032351bf-c8fa9cdd-cbf7-4e5d-96ed-923c22c5914d";
-
-    // ログインパスワ－ド
-    private static readonly string LoginPassword = "passpasspass";
-
     /// <summary>
     /// 初期化
     /// </summary>
     public async UniTask Initialize()
     {
+        /*
         // ユーザートークン取得
         var jsonObject = new RequestUserTokenJson()
         {
-            login_id = LoginID,
-            login_type = "anonymous",
-            //password = LoginPassword
+            login_id = "kenken4ro",
+            login_type = "basic",
+            password = "00330033"
         };
         var json = JsonUtility.ToJson(jsonObject);
         var ret = await ApiServerManager.Instance.RequestUserToken(json);
         var responseJsonObject = JsonUtility.FromJson<RequestUserTokenResponseJson>(ret);
         UserToken = Convert.ToBase64String(Encoding.UTF8.GetBytes(responseJsonObject.access_token));
+        //var refreshToken = Convert.ToBase64String(Encoding.UTF8.GetBytes(responseJsonObject.refresh_token));
+        //var newToken = await ApiServerManager.Instance.UpdateUserToken(refreshToken);
+        //Debug.Log($"new token = {newToken}");
+        //UserToken = Convert.ToBase64String(Encoding.UTF8.GetBytes("ff614d48-edf6-41f6-a801-ef9d432ee009-71b02eee-8b3e-4129-b487-415cbd9e2cff-d8613f58-2321-4554-993e-9b093745d7cb"));
+        // ユーザー設定取得
+        var settings = await ApiServerManager.Instance.RequestUserSetting(UserToken);
+        Debug.Log($"UserSettings = {settings}");
+        */
     }
 
     public async UniTask<BotRequestResult> Reset()
@@ -68,10 +65,10 @@ public partial class WebAIService : IBotService
             // フローの初期ノードをリクエスト
             var requestFirstNodeJsonObject = new RequestFirstNodeJson()
             {
-                flow_id = FlowID
+                flow_id = GlobalState.Instance.UserSettings.Bot.CcgFlowId
             };
             var json = JsonUtility.ToJson(requestFirstNodeJsonObject);
-            responseString = await ApiServerManager.Instance.RequestFirstNode(UserToken, json);
+            responseString = await ApiServerManager.Instance.RequestFirstNodeAsync(GlobalState.Instance.UserSettings.UserToken, json);
             var requestFirstNodeResponseJsonObject = JsonUtility.FromJson<RequestFirstNodeResponseJson>(responseString);
             if (requestFirstNodeResponseJsonObject.response.Text.Jp == null)
             {
@@ -88,12 +85,12 @@ public partial class WebAIService : IBotService
             // 次のノードをリクエスト
             var requestFlowJsonObject = new RequestNextNodeJson()
             {
-                flow_id = FlowID,
+                flow_id = GlobalState.Instance.UserSettings.Bot.CcgFlowId,
                 utterance = inputText
                 //utterance = "もにょもにょ"
             };
             var requestFlowJson = JsonUtility.ToJson(requestFlowJsonObject);
-            responseString = await ApiServerManager.Instance.RequestNextNode(UserToken, requestFlowJson);
+            responseString = await ApiServerManager.Instance.RequestNextNodeAsync(GlobalState.Instance.UserSettings.UserToken, requestFlowJson);
             var requestNextNodeResponseJsonObject = JsonUtility.FromJson<RequestNextNodeResponseJson>(responseString);
             if (requestNextNodeResponseJsonObject.response.Text.Jp == null)
             {

@@ -1,10 +1,11 @@
 ﻿using System;
-
+using System.Text;
 using UnityEngine;
+using static ApiServerManager;
 
 public class RuntimeInitializer
 {
-    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSplashScreen)]
     private static void InitializeBeforeSceneLoad()
     {
         // コマンドライン引数解析
@@ -20,27 +21,22 @@ public class RuntimeInitializer
         }
 
 #if false
-        // アプリケーション設定ファイル読み込み
-        // 本番環境では json ファイルは使用せず(配置もしない)、encファイルを読み込む
-        GlobalState.Instance.ApplicationGlobalSettings = FileHelper.LoadConfigFileSync<ApplicationSettings>(ApplicationSettings.ApplicationSettingFilePath);
-#else
         // オンメモリで値を設定(WebGL暫定対応)
-        GlobalState.Instance.ApplicationGlobalSettings = new ApplicationSettings()
+        Settings = new SignageSetting()
         {
-            StartOffsetSec = 2,
-            CompanyCode = "nttcom_openhub",
-            FileServer = "https://xrccg.com:3000",
-            SignalingServer = "wss://tlx.xrccg.com:3001",
-            SignalingUserName = "user01",
-            SignalingUserPassword = "password",
-            ConnectionType = "local",
-            WebRtcApiKey = "2f691d96-67af-4841-bb87-b0167b88d751",
-            BotRequestMethod = "button",
-            FontSize = 48,
-            AcceptableAnimation = "simple",
-            AudioCodec = ApplicationSettings.AudioCodecType.G722,
-            VideoCodec = ApplicationSettings.VideoCodecType.H264,
-            VideoResolution = "360p"
+            BaseTextSpeed = 30,
+            ChatbotService = ChatbotServices.CAIWeb,
+            DelayTime = 5,
+            ImageAccessType = ImageAccessTypes.UnityAsset,
+            InputLimitTime = 60,
+            LanguageVoiceMap = new Dictionary<Language, TextToSpeechEngine>()
+            {
+                { Language.Japanese, TextToSpeechEngine.Google },
+                { Language.English, TextToSpeechEngine.Google },
+            },
+            RestartWaitTime = 60,
+            ReturnWaitTime = 6,
+            ScreenSaver = ScreenSaverTypes.None
         };
 #endif
 

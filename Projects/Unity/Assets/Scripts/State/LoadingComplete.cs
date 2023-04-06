@@ -4,7 +4,6 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using static BotManager;
-using static SignageSettings;
 
 public class LoadingComplete : IState
 {
@@ -13,7 +12,6 @@ public class LoadingComplete : IState
         StreamingSpeechToText.Instance.OnStartRecording += StartStreamingSpeechToText;
 
         //スクリプトだけ先んじて処理
-        SettingHub.Instance.ResetSetting();
         var scripts = BotManager.Instance.GetScripts();
         BotManager.Instance.ExecutionScript(scripts);
 
@@ -21,7 +19,6 @@ public class LoadingComplete : IState
         var voice = BotManager.Instance.GetVoice();
         var text = BotManager.Instance.GetText();
         var image = BotManager.Instance.GetImage();
-        var imageType = BotManager.Instance.GetImageAccessType();
         var motion = BotManager.Instance.GetMotion();
         var scene = BotManager.Instance.GetScene();
         var options = BotManager.Instance.GetOptions();
@@ -53,7 +50,7 @@ public class LoadingComplete : IState
         if (!string.IsNullOrEmpty(text))
         {
             var fullSizeImageName = BotManager.GetSelectParameter(options, OptionTypes.fullScreen);
-            uiTask = UIManager.Instance.SetCharacterMessage(text, true, imageType, image, fullSizeImageName);
+            uiTask = UIManager.Instance.SetCharacterMessage(text, true, image, fullSizeImageName);
         }
 
         // タスク実行

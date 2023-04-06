@@ -31,27 +31,22 @@ public class Speakable : IState
 
         //トップ画面でタイムアウト
         if (BotManager.Instance.CurrentHierarchy == BotManager.ScenarioHierarchy.Top &&
-            GameController.Instance.CurrentIdleTimeSec >= SignageSettings.Settings.RestartWaitTime)
+            GameController.Instance.CurrentIdleTimeSec >= GlobalState.Instance.UserSettings.Bot.RestartSec)
         {
-            switch (GameController.Instance.CurrentScreenSaverType)
+            if (GameController.Instance.ScreenSaverEnable =="true")
             {
-                case SignageSettings.ScreenSaverTypes.None:
-                    // プロセス移行無し
-                    break;
-                case SignageSettings.ScreenSaverTypes.Loop:
-                    // 再スタート
-                    GlobalState.Instance.CurrentState.Value = GlobalState.State.Starting;
-                    break;
-                case SignageSettings.ScreenSaverTypes.Movie:
-                    // 切断プロセスへ移行
-                    GlobalState.Instance.CurrentState.Value = GlobalState.State.DisConnect;
-                    break;
+                // 再スタート
+                GlobalState.Instance.CurrentState.Value = GlobalState.State.Starting;
+            }
+            else
+            {
+                // プロセス移行無し
             }
         }
 
         //トップ画面以外でタイムアウト
         else if (BotManager.Instance.CurrentHierarchy != BotManager.ScenarioHierarchy.Top &&
-            GameController.Instance.CurrentIdleTimeSec >= SignageSettings.Settings.InputLimitTime)
+            GameController.Instance.CurrentIdleTimeSec >= GlobalState.Instance.UserSettings.UI.InputLimitSec)
         {
 
             // ストリーミング音声認識をキャンセル
