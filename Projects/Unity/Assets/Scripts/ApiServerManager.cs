@@ -35,6 +35,9 @@ public class ApiServerManager : SingletonBase<ApiServerManager>
         try
         {
             await www.SendWebRequest();
+            Debug.Log($"RequestUserTokenAsync: Content-Type = {www.GetResponseHeader("Access-Control-Allow-Headers")}");
+            Debug.Log($"RequestUserTokenAsync: Access-Control-Allow-Headers = {www.GetResponseHeader("Access-Control-Allow-Origin")}");
+            Debug.Log($"RequestUserTokenAsync: Access-Control-Allow-Origin = {www.GetResponseHeader("Content-Type")}");
             if (www.result != UnityWebRequest.Result.Success)
             {
                 Debug.LogError($"RequestUserToken error result: {www.result}");
