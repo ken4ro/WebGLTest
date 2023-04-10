@@ -42,50 +42,8 @@ public class GameController : SingletonMonoBehaviour<GameController>
     {
         base.Awake();
 
-        // ユーザー設定(Web版は現状 anonymous 固定)
-        GlobalState.Instance.UserSettings = new UserSettings()
-        {
-            LoginId = "724e242c-03fd-40b3-bcf1-a6071b613f86-b3608b4b-a347-467f-a2e0-5aa3cb3b9c78-3a8482bc-14a1-47ab-b192-1a4963b3858f-44966299-8d87-463d-a168-487cadf1ffd3",
-            LoginType = "anonymous",
-        };
-
-        // ユーザートークン取得
-        var userTokenJsonObject = new RequestUserTokenJson()
-        {
-            login_id = GlobalState.Instance.UserSettings.LoginId,
-            login_type = GlobalState.Instance.UserSettings.LoginType,
-            password = GlobalState.Instance.UserSettings.Password
-        };
-        var userTokenJson = JsonUtility.ToJson(userTokenJsonObject);
-        var responseUserTokenJson = await ApiServerManager.Instance.RequestUserTokenAsync(userTokenJson);
-        var responseUserTokenJsonObject = JsonUtility.FromJson<RequestUserTokenResponseJson>(responseUserTokenJson);
-        GlobalState.Instance.UserSettings.UserToken = Convert.ToBase64String(Encoding.UTF8.GetBytes(responseUserTokenJsonObject.access_token));
-        GlobalState.Instance.UserSettings.RefreshToken = Convert.ToBase64String(Encoding.UTF8.GetBytes(responseUserTokenJsonObject.refresh_token));
-        GlobalState.Instance.UserSettings.ExpiresIn = responseUserTokenJsonObject.expires_in;
-
         // ユーザー設定取得
-        var userSettingsJson = await ApiServerManager.Instance.RequestUserSettingAsync(GlobalState.Instance.UserSettings.UserToken);
-        var userSettingsObject = JsonUtility.FromJson<RequestUserSettingsResponseJson>(userSettingsJson);
-        GlobalState.Instance.UserSettings.GoogleKey = userSettingsObject.google_key;
-        GlobalState.Instance.UserSettings.UI = new UserSettingsUI();
-        GlobalState.Instance.UserSettings.UI.RequestType = userSettingsObject.ui.request_type;
-        GlobalState.Instance.UserSettings.UI.FontSize = userSettingsObject.ui.font_size;
-        GlobalState.Instance.UserSettings.UI.WaitAnimationType = userSettingsObject.ui.wait_animation_type;
-        GlobalState.Instance.UserSettings.UI.RecordingAgreementEnable = userSettingsObject.ui.recording_agreement_enable;
-        GlobalState.Instance.UserSettings.UI.ScreensaverEnable = userSettingsObject.ui.screensaver_enable;
-        GlobalState.Instance.UserSettings.UI.TextSpeed = userSettingsObject.ui.text_speed;
-        GlobalState.Instance.UserSettings.UI.InputLimitSec = userSettingsObject.ui.input_limit_sec;
-        GlobalState.Instance.UserSettings.UI.Languages = userSettingsObject.ui.languages;
-        GlobalState.Instance.UserSettings.Bot = new UserSettingsBot();
-        GlobalState.Instance.UserSettings.Bot.ActionDelaySec = userSettingsObject.bot.action_delay_sec;
-        GlobalState.Instance.UserSettings.Bot.CcgFlowId = userSettingsObject.bot.ccg_flow_id;
-        GlobalState.Instance.UserSettings.Bot.RestartSec = userSettingsObject.bot.restart_sec;
-        GlobalState.Instance.UserSettings.Bot.ReturnSec = userSettingsObject.bot.return_sec;
-        GlobalState.Instance.UserSettings.Bot.ServiceType = userSettingsObject.bot.service_type;
-        GlobalState.Instance.UserSettings.Bot.StartDelaySec = userSettingsObject.bot.start_delay_sec;
-        GlobalState.Instance.UserSettings.Bot.VoiceType = userSettingsObject.bot.voice_type;
-        GlobalState.Instance.UserSettings.Rtc = new UserSettingsRtc();
-        GlobalState.Instance.UserSettings.Rtc.ServiceType = userSettingsObject.rtc.service_type;
+        await GetUserSettings();
 
         // フォントサイズセット
         UIManager.Instance.SetFontSize(GlobalState.Instance.UserSettings.UI.FontSize);
@@ -95,17 +53,7 @@ public class GameController : SingletonMonoBehaviour<GameController>
         GoogleService.ImportSettings();
 
         // 全Stateセット
-        _states.Add(new Waiting());
-        _states.Add(new Starting());
-        _states.Add(new Loading());
-        _states.Add(new LoadingComplete());
-        _states.Add(new LoadingError());
-        _states.Add(new Speakable());
-        _states.Add(new Speaking());
-        _states.Add(new SpeakingComplete());
-        _states.Add(new Disconnect());
-        _states.Add(new PreOperating());
-        _states.Add(new Operating());
+        SetAllStates();
 
         // 言語変更監視
         UIManager.Instance.SetLanguageObserver();
@@ -140,21 +88,12 @@ public class GameController : SingletonMonoBehaviour<GameController>
         // ボット処理初期化
         _ = BotManager.Instance.Initialize();
 
+#if UNITY_EDITOR || !UNITY_WEBGL // ブラウザルールにより自動で開始しない。デバッグ用
         // 指定時間待機
-#if false
-        var offsetSec = GlobalState.Instance.ApplicationGlobalSettings.StartOffsetSec;
-        Observable.Timer(TimeSpan.FromSeconds(offsetSec)).Subscribe(_ =>
-        {
-            // ボット処理開始
-            GlobalState.Instance.CurrentState.Value = State.Starting;
-        });
-#else
-        //await UniTask.Delay(GlobalState.Instance.UserSettings.Bot.StartDelaySec + 2 * 1000);
-        //StartBotProcess();
-        //await UniTask.Delay(6000);
-        //SetSpeakingText("お問い");
-        //await UniTask.Delay(2000);
-        //SetUserMessage("お問い合わせ");
+        await UniTask.Delay(GlobalState.Instance.UserSettings.Bot.StartDelaySec * 1000);
+
+        // Bot処理開始
+        StartBotProcess();
 #endif
 
         _isInitialized = true;
@@ -178,20 +117,7 @@ public class GameController : SingletonMonoBehaviour<GameController>
         }
     }
 
-    public float[] ConvertToFloat(byte[] buf)
-    {
-        // IEEE Float
-        float[] ret = new float[buf.Length / 4];
-
-        for (int i = 0; i < buf.Length - buf.Length % 4; i += 4)
-        {
-            float v = BitConverter.ToSingle(buf, i);
-            ret[i / 4] = v;
-        }
-        return ret;
-    }
-
-    #region for JavaScript
+#region for JavaScript
 
     public class AudioVolumeJson
     {
@@ -232,7 +158,7 @@ public class GameController : SingletonMonoBehaviour<GameController>
         FaceInfoManager.Instance.FaceInfoReceived(faceInfoJson);
     }
 
-    #endregion for JavaScript
+#endregion for JavaScript
 
     public void StartBotProcess()
     {
@@ -351,4 +277,73 @@ public class GameController : SingletonMonoBehaviour<GameController>
         var frontCanvasIndex = GameObject.Find("FrontCanvas").transform.GetSiblingIndex();
         characterObject.transform.SetSiblingIndex(frontCanvasIndex);
     }
+
+    private void SetAllStates()
+    {
+        _states.Add(new Waiting());
+        _states.Add(new Starting());
+        _states.Add(new Loading());
+        _states.Add(new LoadingComplete());
+        _states.Add(new LoadingError());
+        _states.Add(new Speakable());
+        _states.Add(new Speaking());
+        _states.Add(new SpeakingComplete());
+        _states.Add(new Disconnect());
+        _states.Add(new PreOperating());
+        _states.Add(new Operating());
+    }
+
+    private async UniTask GetUserSettings()
+    {
+        // ユーザー基本設定(Web版は現状 anonymous ID固定)
+        GlobalState.Instance.UserSettings = new UserSettings()
+        {
+            LoginId = "724e242c-03fd-40b3-bcf1-a6071b613f86-b3608b4b-a347-467f-a2e0-5aa3cb3b9c78-3a8482bc-14a1-47ab-b192-1a4963b3858f-44966299-8d87-463d-a168-487cadf1ffd3",
+            LoginType = "anonymous",
+        };
+
+        // ユーザートークン取得
+        await GetUserToken(GlobalState.Instance.UserSettings.LoginId, GlobalState.Instance.UserSettings.LoginType, GlobalState.Instance.UserSettings.Password);
+
+        // ユーザー設定取得
+        var userSettingsJson = await ApiServerManager.Instance.RequestUserSettingAsync(GlobalState.Instance.UserSettings.UserToken);
+        var userSettingsObject = JsonUtility.FromJson<RequestUserSettingsResponseJson>(userSettingsJson);
+        GlobalState.Instance.UserSettings.GoogleKey = userSettingsObject.google_key;
+        GlobalState.Instance.UserSettings.UI = new UserSettingsUI();
+        GlobalState.Instance.UserSettings.UI.RequestType = userSettingsObject.ui.request_type;
+        GlobalState.Instance.UserSettings.UI.FontSize = userSettingsObject.ui.font_size;
+        GlobalState.Instance.UserSettings.UI.WaitAnimationType = userSettingsObject.ui.wait_animation_type;
+        GlobalState.Instance.UserSettings.UI.RecordingAgreementEnable = userSettingsObject.ui.recording_agreement_enable;
+        GlobalState.Instance.UserSettings.UI.ScreensaverEnable = userSettingsObject.ui.screensaver_enable;
+        GlobalState.Instance.UserSettings.UI.TextSpeed = userSettingsObject.ui.text_speed;
+        GlobalState.Instance.UserSettings.UI.InputLimitSec = userSettingsObject.ui.input_limit_sec;
+        GlobalState.Instance.UserSettings.UI.Languages = userSettingsObject.ui.languages;
+        GlobalState.Instance.UserSettings.Bot = new UserSettingsBot();
+        GlobalState.Instance.UserSettings.Bot.ActionDelaySec = userSettingsObject.bot.action_delay_sec;
+        GlobalState.Instance.UserSettings.Bot.CcgFlowId = userSettingsObject.bot.ccg_flow_id;
+        GlobalState.Instance.UserSettings.Bot.RestartSec = userSettingsObject.bot.restart_sec;
+        GlobalState.Instance.UserSettings.Bot.ReturnSec = userSettingsObject.bot.return_sec;
+        GlobalState.Instance.UserSettings.Bot.ServiceType = userSettingsObject.bot.service_type;
+        GlobalState.Instance.UserSettings.Bot.StartDelaySec = userSettingsObject.bot.start_delay_sec;
+        GlobalState.Instance.UserSettings.Bot.VoiceType = userSettingsObject.bot.voice_type;
+        GlobalState.Instance.UserSettings.Rtc = new UserSettingsRtc();
+        GlobalState.Instance.UserSettings.Rtc.ServiceType = userSettingsObject.rtc.service_type;
+    }
+
+    private async UniTask GetUserToken(string id, string type, string pass)
+    {
+        var userTokenJsonObject = new RequestUserTokenJson()
+        {
+            login_id = id,
+            login_type = type,
+            password = pass
+        };
+        var userTokenJson = JsonUtility.ToJson(userTokenJsonObject);
+        var responseUserTokenJson = await ApiServerManager.Instance.RequestUserTokenAsync(userTokenJson);
+        var responseUserTokenJsonObject = JsonUtility.FromJson<RequestUserTokenResponseJson>(responseUserTokenJson);
+        GlobalState.Instance.UserSettings.UserToken = Convert.ToBase64String(Encoding.UTF8.GetBytes(responseUserTokenJsonObject.access_token));
+        GlobalState.Instance.UserSettings.RefreshToken = Convert.ToBase64String(Encoding.UTF8.GetBytes(responseUserTokenJsonObject.refresh_token));
+        GlobalState.Instance.UserSettings.ExpiresIn = responseUserTokenJsonObject.expires_in;
+    }
+
 }

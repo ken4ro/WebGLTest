@@ -7,7 +7,7 @@ function App() {
         <>
             <UnityCanvas width="1280px" height="720px" />
             {/* <SoraCanvas /> */}
-            <OpenCVCanvas />
+            {/* <OpenCVCanvas /> */}
         </>
     );
 }
