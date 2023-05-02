@@ -1,5 +1,6 @@
-import { OpenCVCanvas } from "./components/OpenCVCanvas";
-import { SoraCanvas } from "./components/SoraCanvas";
+import React from "react";
+// import { OpenCVCanvas } from "./components/OpenCVCanvas";
+// import { SoraCanvas } from "./components/SoraCanvas";
 import { UnityCanvas } from "./components/UnityCanvas";
 
 function App() {

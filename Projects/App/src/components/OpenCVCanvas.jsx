@@ -6,14 +6,14 @@ import { GetYawPitchRoll } from "../util/OpenCVProvider";
 import { InitMediaPipe, UpdateFaceLandmarks } from "../util/MediaPipeProvider";
 
 let isInit = false;
-const sleep = (waitTime) => new Promise((resolve) => setTimeout(resolve, waitTime));
-export const OpenCVCanvas = (props) => {
+const sleep = (waitTime) => new Promise((resolve) => window.setTimeout(resolve, waitTime));
+export const OpenCVCanvas = () => {
     const videoRef = useRef();
     const canvasRef = useRef();
     const requestAnimationRef = useRef();
 
     const FaceRecognition = async () => {
-        requestAnimationRef.current = requestAnimationFrame(FaceRecognition);
+        requestAnimationRef.current = window.requestAnimationFrame(FaceRecognition);
         // 特徴点検出
         const face = await UpdateFaceLandmarks(videoRef.current);
         if (face === null) return;
@@ -41,7 +41,7 @@ export const OpenCVCanvas = (props) => {
             bodyPitch: pitch * 0.3,
             bodyRoll: roll * 0.3,
         };
-        console.log(`yaw = ${yaw}, pitch = ${pitch}, roll = ${roll}`);
+        window.console.log(`yaw = ${yaw}, pitch = ${pitch}, roll = ${roll}`);
         unityInstanceRef.current.SendMessage("GameManager", "SetFaceInfo", JSON.stringify(faceInfo));
     };
 
@@ -56,20 +56,20 @@ export const OpenCVCanvas = (props) => {
             isInit = true;
         }
         return () => {
-            cancelAnimationFrame(requestAnimationRef.current);
+            window.cancelAnimationFrame(requestAnimationRef.current);
         };
     }, []);
 
     const Init = async () => {
         // MediaPipe初期化
         await InitMediaPipe();
-        console.log("InitMediaPipe Complete");
+        window.console.log("InitMediaPipe Complete");
     };
 
     // WebCamera開始
     const startVideo = async () => {
         // mediastream接続
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: false, video: true });
+        const stream = await window.navigator.mediaDevices.getUserMedia({ audio: false, video: true });
         let video = videoRef.current;
         video.srcObject = stream;
         await video.play();
@@ -77,7 +77,7 @@ export const OpenCVCanvas = (props) => {
 
     // WebCamera終了
     const stopVideo = async () => {
-        cancelAnimationFrame(requestAnimationRef.current);
+        window.cancelAnimationFrame(requestAnimationRef.current);
         videoRef.current.pause();
         videoRef.current.srcObject.getTracks()[0].stop();
         videoRef.current.srcObject = null;

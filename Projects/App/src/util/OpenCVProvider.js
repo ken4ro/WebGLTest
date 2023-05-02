@@ -1,5 +1,5 @@
 export const GetYawPitchRoll = async (canvas, { nose, leftEye, rightEye, jaw, leftMouth, rightMouth, leftOutline, rightOutline }) => {
-    const cv = await window.cv;
+    const cv = window.cv;
 
     // capture model points
     const detectPoints = [

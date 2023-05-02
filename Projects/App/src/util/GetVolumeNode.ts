@@ -1,4 +1,4 @@
-export const GetVolumeNode = async (mediaStream) => {
+export const GetVolumeNode = async (mediaStream: MediaStream) => {
     const audioContext = new AudioContext();
     // 開発時とデプロイ時でパスが違う。しかもhomepageタグと連動していない。要検討...
     try {

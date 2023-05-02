@@ -1,10 +1,15 @@
 import { useEffect, useRef, useState } from "react";
 
-export const useUnity = (props) => {
-    const { canvas, unityBuildRoot, buildName } = props;
-    const [retryCount, setRetryCount] = useState(0);
-    const containerRef = useRef(null);
-    const instanceRef = useRef(null);
+type Props = {
+    canvas: HTMLCanvasElement;
+    unityBuildRoot: string;
+    buildName: string;
+};
+
+export const useUnity = ({ canvas, unityBuildRoot, buildName }: Props) => {
+    const [retryCount, setRetryCount] = useState<number>(0);
+    const containerRef = useRef<HTMLDivElement | null>(null);
+    const instanceRef = useRef<UnityInstance>();
 
     useEffect(() => {
         if (!window.createUnityInstance) {
@@ -30,7 +35,7 @@ export const useUnity = (props) => {
             return;
         }
 
-        current.innnerHTML = "";
+        current.innerHTML = "";
         // canvas.setAttribute("id", `unity-canvas-${buildName}`);
         canvas.setAttribute("id", `unity-canvas`);
         current.appendChild(canvas);

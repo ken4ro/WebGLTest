@@ -1,39 +1,46 @@
+/* eslint-disable @typescript-eslint/no-empty-function */
+import React from "react";
 import styled from "@emotion/styled";
 import { useEffect, useRef, useState } from "react";
 import { Button, ButtonGroup } from "@mui/material";
 import { GetVolumeNode } from "../util/GetVolumeNode";
 import { unityInstanceRef } from "./UnityCanvas";
 import { SoraProvider } from "../util/SoraProvider";
+import { ConnectionPublisher } from "sora-js-sdk";
 
 let count = 0;
 export const SoraCanvas = () => {
-    console.log(`SoraCanvas render count = ${count++}`);
-    const [connect, setConnect] = useState(false);
-    const [sendrecv, setSendrecv] = useState(null);
-    const [node, setNode] = useState(null);
-    const initRef = useRef(false);
-    const remoteVideoRef = useRef(null);
-    const remoteVideoIdRef = useRef(null);
-    const volumeTextRef = useRef(null);
+    window.console.log(`SoraCanvas render count = ${count++}`);
+    const [connect, setConnect] = useState<boolean>(false);
+    const [sendrecv, setSendrecv] = useState<ConnectionPublisher>();
+    const [node, setNode] = useState<AudioWorkletNode>();
+    const initRef = useRef<boolean>(false);
+    const remoteVideoRef = useRef<HTMLVideoElement>(null);
+    const remoteVideoIdRef = useRef<HTMLParagraphElement>(null);
+    const volumeTextRef = useRef<HTMLSpanElement>(null);
 
     // Startボタン処理
     const ClickStartSendRecv = async () => {
         // mediastream接続
-        const mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: true });
-        await sendrecv.connect(mediaStream);
+        const mediaStream = await window.navigator.mediaDevices.getUserMedia({ audio: true, video: true });
+        if (sendrecv) {
+            await sendrecv.connect(mediaStream);
+        }
         setConnect(true);
     };
 
     // Stopボタン処理
     const ClickStopSendRecv = async () => {
         // mediastream切断
-        await sendrecv.disconnect();
+        if (sendrecv) {
+            await sendrecv.disconnect();
+        }
         setConnect(false);
     };
 
     useEffect(() => {
         // 開発時はStrictModeにより2度呼ばれるので回避
-        if (process.env.NODE_ENV === "development" && !initRef.current) {
+        if (window.process.env.NODE_ENV === "development" && !initRef.current) {
             initRef.current = true;
             return;
         }
@@ -46,28 +53,36 @@ export const SoraCanvas = () => {
         sendrecv.on("track", async (event) => {
             const stream = event.streams[0];
             if (!stream) {
-                console.log(`on track error!`);
+                window.console.log(`on track error!`);
                 return;
             }
             if (event.track.kind === "video") {
                 // 接続相手のカメラを描画
-                console.log(`Add mediastream video track: ${stream.id}`);
-                remoteVideoRef.current.style.border = "1px solid red";
-                remoteVideoRef.current.autoplay = true;
-                remoteVideoRef.current.playsinline = true;
-                remoteVideoRef.current.controls = true;
-                remoteVideoRef.current.width = "160";
-                remoteVideoRef.current.height = "120";
-                remoteVideoRef.current.srcObject = stream;
-                remoteVideoIdRef.current.innerText = stream.id;
+                window.console.log(`Add mediastream video track: ${stream.id}`);
+                if (remoteVideoRef.current) {
+                    remoteVideoRef.current.style.border = "1px solid red";
+                    remoteVideoRef.current.autoplay = true;
+                    remoteVideoRef.current.playsInline = true;
+                    remoteVideoRef.current.controls = true;
+                    remoteVideoRef.current.width = 160;
+                    remoteVideoRef.current.height = 120;
+                    remoteVideoRef.current.srcObject = stream;
+                }
+                if (remoteVideoIdRef.current) {
+                    remoteVideoIdRef.current.innerText = stream.id;
+                }
             } else if (event.track.kind === "audio") {
-                console.log(`Add mediastream audio track: ${stream.id}`);
+                window.console.log(`Add mediastream audio track: ${stream.id}`);
                 // 接続相手のマイク音量をUnityに送信
                 const node = await GetVolumeNode(stream);
                 node.port.onmessage = (ev) => {
                     const volume = ev.data.volume;
-                    unityInstanceRef.current.SendMessage("GameManager", "SetVoiceVolume", volume * 10);
-                    volumeTextRef.current.innerText = volume;
+                    if (unityInstanceRef.current) {
+                        unityInstanceRef.current.SendMessage("GameManager", "SetVoiceVolume", volume * 10);
+                    }
+                    if (volumeTextRef.current) {
+                        volumeTextRef.current.innerText = volume;
+                    }
                 };
                 setNode(node);
             }
@@ -76,19 +91,27 @@ export const SoraCanvas = () => {
         // 接続したチャネルIDからMediaStreamが削除された
         sendrecv.on("removetrack", (event) => {
             // リモートビデオ再生停止
-            console.log(`Remove mediastream track: ${event.target.id}`);
-            remoteVideoRef.current.srcObject = null;
-            node.port.onmessage = (event) => {
-                volumeTextRef.current.innerText = "";
-            };
-            setNode(null);
+            if (event.target) {
+                // window.console.log(`Remove mediastream track: ${event.target.id}`);
+            }
+            if (remoteVideoRef.current) {
+                remoteVideoRef.current.srcObject = null;
+            }
+            if (node) {
+                node.port.onmessage = () => {
+                    if (volumeTextRef.current) {
+                        volumeTextRef.current.innerText = "";
+                    }
+                };
+                setNode(undefined);
+            }
         });
 
         // WebRTC接続ハンドラ
         const Connect = async () => {
             // mediastream接続
-            console.log("on webrtc_connect event");
-            const mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: true });
+            window.console.log("on webrtc_connect event");
+            const mediaStream = await window.navigator.mediaDevices.getUserMedia({ audio: true, video: true });
             await sendrecv.connect(mediaStream);
             setConnect(true);
         };
@@ -96,21 +119,23 @@ export const SoraCanvas = () => {
         // WebRTC切断ハンドラ
         const Disconnect = async () => {
             // mediastream切断
-            console.log("on webrtc_dicconnect event");
+            window.console.log("on webrtc_dicconnect event");
             await sendrecv.disconnect();
-            remoteVideoRef.current.srcObject = null;
+            if (remoteVideoRef.current) {
+                remoteVideoRef.current.srcObject = null;
+            }
             setConnect(false);
         };
 
         // WebRTCイベント購読(Unityから発行)
-        console.log("addEventListener webrtc_connect");
+        window.console.log("addEventListener webrtc_connect");
         window.addEventListener("webrtc_connect", Connect);
         window.addEventListener("webrtc_disconnect", Disconnect);
 
         // クリーンアップ
         return () => {
             // WebRTCイベント購読解除
-            console.log("removeEventListener webrtc_connect");
+            window.console.log("removeEventListener webrtc_connect");
             sendrecv.on("track", () => {});
             window.removeEventListener("webrtc_connect", Connect);
             window.removeEventListener("webrtc_disconnect", Disconnect);
