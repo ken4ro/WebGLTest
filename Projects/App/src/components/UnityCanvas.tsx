@@ -104,11 +104,11 @@ export const UnityCanvas = ({ width, height }: Props) => {
             <SButton variant="contained" disabled={!startBtnEnabled} onClick={ClickStartBtn}>
                 シナリオ開始
             </SButton>
-            <SButton variant="contained" disabled={!recognitionBtnEnabled} onClick={ClickRecognitionBtn}>
+            {/* <SButton variant="contained" disabled={!recognitionBtnEnabled} onClick={ClickRecognitionBtn}>
                 音声認識開始
             </SButton>
             <SLabel>Microphone: {listening ? "on" : "off"}</SLabel>
-            <SLabel>transcript: {transcript}</SLabel>
+            <SLabel>transcript: {transcript}</SLabel> */}
         </>
     );
 };
