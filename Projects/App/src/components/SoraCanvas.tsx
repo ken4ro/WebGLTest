@@ -17,9 +17,10 @@ export const SoraCanvas = () => {
     const remoteVideoIdRef = useRef<HTMLParagraphElement>(null);
     const volumeTextRef = useRef<HTMLSpanElement>(null);
 
-    // Startボタン処理
-    const ClickStartSendRecv = async () => {
+    // WebRTC接続ハンドラ
+    const Connect = async () => {
         // mediastream接続
+        window.console.log("on webrtc_connect event");
         const mediaStream = await window.navigator.mediaDevices.getUserMedia({ audio: true, video: true });
         if (sendrecv) {
             await sendrecv.connect(mediaStream);
@@ -27,22 +28,40 @@ export const SoraCanvas = () => {
         setConnect(true);
     };
 
-    // Stopボタン処理
-    const ClickStopSendRecv = async () => {
+    // WebRTC切断ハンドラ
+    const Disconnect = async () => {
         // mediastream切断
+        window.console.log("on webrtc_dicconnect event");
         if (sendrecv) {
             await sendrecv.disconnect();
+        }
+        if (remoteVideoRef.current) {
+            remoteVideoRef.current.srcObject = null;
         }
         setConnect(false);
     };
 
+    // Startボタン処理
+    const ClickStartSendRecv = async () => {
+        // mediastream接続
+        Connect();
+    };
+
+    // Stopボタン処理
+    const ClickStopSendRecv = async () => {
+        // mediastream切断
+        Disconnect();
+    };
+
     useEffect(() => {
+        console.log("useEffect 1");
         // 開発時はStrictModeにより2度呼ばれるので回避
         if (!initRef.current) {
             initRef.current = true;
             return;
         }
 
+        console.log("useEffect 2");
         // Soraインスタンス生成
         const sendrecv = SoraProvider();
         setSendrecv(sendrecv);
@@ -105,32 +124,13 @@ export const SoraCanvas = () => {
             }
         });
 
-        // WebRTC接続ハンドラ
-        const Connect = async () => {
-            // mediastream接続
-            window.console.log("on webrtc_connect event");
-            const mediaStream = await window.navigator.mediaDevices.getUserMedia({ audio: true, video: true });
-            await sendrecv.connect(mediaStream);
-            setConnect(true);
-        };
-
-        // WebRTC切断ハンドラ
-        const Disconnect = async () => {
-            // mediastream切断
-            window.console.log("on webrtc_dicconnect event");
-            await sendrecv.disconnect();
-            if (remoteVideoRef.current) {
-                remoteVideoRef.current.srcObject = null;
-            }
-            setConnect(false);
-        };
-
         // WebRTCイベント購読(Unityから発行)
         window.addEventListener("webrtc_connect", Connect);
         window.addEventListener("webrtc_disconnect", Disconnect);
 
         // クリーンアップ
         return () => {
+            console.log("useEffect 3");
             // WebRTCイベント購読解除
             sendrecv.on("track", () => {});
             window.removeEventListener("webrtc_connect", Connect);
