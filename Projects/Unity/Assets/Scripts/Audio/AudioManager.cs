@@ -234,6 +234,9 @@ public class AudioManager : SingletonMonoBehaviour<AudioManager>
                     break;
 
                 default:
+                    audioData = await GoogleService.TextToSpeech(text, (GoogleService.Language)SignageSettings.CurrentLanguage.Value);
+                    audioDataLength = audioData.Length;
+                    audioClip = AudioClipMaker.Create("clipname", audioData, 44, AudioClipMaker.BIT_16, (audioDataLength - 44) / 2, 1, 48000, false);
                     break;
             }
 #if UNITY_EDITOR || !UNITY_WEBGL

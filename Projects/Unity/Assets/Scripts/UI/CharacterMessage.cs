@@ -104,7 +104,7 @@ public class CharacterMessage : MonoBehaviour
     /// <param name="imageFileName"></param>
     /// <param name="selectTexts"></param>
     /// <param name="selectImageFileName"></param>
-    public async UniTask SetCharacterMessage(string message, bool isAnim, string imageFileName)
+    public async UniTask SetCharacterMessage(string message, bool isAnim, ImageAccessTypes imageType, string imageFileName)
     {
         // 文字表示速度リセット
         TextAnimationDelayTimeMs = GlobalState.Instance.UserSettings.UI.TextSpeed;
@@ -115,7 +115,7 @@ public class CharacterMessage : MonoBehaviour
         // テキストセット
         await SetText(message, isAnim);
         // 画像セット
-        await SetImage(imageFileName);
+        await SetImage(imageType, imageFileName);
     }
 
     /// <summary>
@@ -246,9 +246,9 @@ public class CharacterMessage : MonoBehaviour
         }
     }
 
-    private async UniTask SetImage(string filePath)
+    private async UniTask SetImage(ImageAccessTypes type, string filePath)
     {
-        var texture2D = GraphicsHelper.LoadImage(filePath);
+        var texture2D = await GraphicsHelper.LoadImage(type, filePath);
         if (texture2D == null)
             return;
 
@@ -347,7 +347,7 @@ public class CharacterMessage : MonoBehaviour
         selectObjectRectTransform.localPosition = new Vector3(491, posY);
 
         // 選択肢の数に応じて表示位置変更
-        _selectWindowBottomPos = /*-640.0f*/ -690.0f + _selectObjectsInPage[_pageIndex.Value].Count * 120.0f;
+        _selectWindowBottomPos = /*-640.0f*/ -690.0f + _selectObjectsInPage[_pageIndex.Value].Count * /*120.0f*/ 150.0f;
 
         if (posY < _selectWindowBottomPos)
         {

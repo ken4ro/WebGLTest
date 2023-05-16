@@ -16,6 +16,9 @@ type Props = {
 };
 
 export const UnityCanvas = ({ width, height }: Props) => {
+    const [startBtnEnabled, setStartBtnEnabled] = useState(false);
+    const [recognitionBtnEnabled, setRecognitionBtnEnabled] = useState(true);
+
     // Canvasの大きさをセット
     const canvas = window.document.createElement("canvas");
     canvas.style.width = width;
@@ -31,6 +34,13 @@ export const UnityCanvas = ({ width, height }: Props) => {
         if (root) {
             root.appendChild(scriptTag);
         }
+        const loadingId = setTimeout(() => {
+            // 5秒と見なす
+            setStartBtnEnabled(true);
+        }, 5000);
+        return () => {
+            clearTimeout(loadingId);
+        };
     }, []);
 
     // Unityインスタンス生成
@@ -46,7 +56,6 @@ export const UnityCanvas = ({ width, height }: Props) => {
     }
 
     // ボットスタートボタン設定
-    const [startBtnEnabled, setStartBtnEnabled] = useState(true);
     const ClickStartBtn = () => {
         setStartBtnEnabled(false);
         if (unityInstanceRef.current !== undefined) {
@@ -58,16 +67,21 @@ export const UnityCanvas = ({ width, height }: Props) => {
     const { transcript, listening, browserSupportsSpeechRecognition } = useSpeechRecognition();
 
     // 音声認識ボタン設定
-    const [recognitionBtnEnabled, setRecognitionBtnEnabled] = useState(true);
     const ClickRecognitionBtn = () => {
         setRecognitionBtnEnabled(false);
         SpeechRecognition.startListening();
     };
 
     // 音声認識開始イベント購読
-    window.addEventListener("recognition", function () {
-        setRecognitionBtnEnabled(false);
+    window.addEventListener("speechrecognition_start", function () {
+        console.log("recognition start!!!!!!!!");
         SpeechRecognition.startListening();
+    });
+
+    // 音声認識終了イベント購読
+    window.addEventListener("speechrecognition_end", function () {
+        console.log("recognition end!!!!!!!!");
+        SpeechRecognition.stopListening();
     });
 
     // 音声認識中の処理

@@ -18,6 +18,9 @@ public class LoadingError : IState
         // 全て並列で実行
         await UniTask.WhenAll(audioTask, animationTask);
 
+        GlobalState.Instance.CurrentState.Value = GlobalState.State.Speakable;
+
+        /*
         if (GlobalState.Instance.CurrentBotRequestMethod == GlobalState.BotRequestMethod.Button)
         {
             // 発話可能状態へダイレクトに移行
@@ -26,8 +29,9 @@ public class LoadingError : IState
         else
         {
             // ストリーミング音声認識開始要求
-            //var runTask = StreamingSpeechToText.Instance.RunOneShotTask();
+            var runTask = StreamingSpeechToText.Instance.RunOneShotTask();
         }
+        */
 
     }
 

@@ -8,9 +8,7 @@ import { unityInstanceRef } from "./UnityCanvas";
 import { SoraProvider } from "../util/SoraProvider";
 import { ConnectionPublisher } from "sora-js-sdk";
 
-let count = 0;
 export const SoraCanvas = () => {
-    window.console.log(`SoraCanvas render count = ${count++}`);
     const [connect, setConnect] = useState<boolean>(false);
     const [sendrecv, setSendrecv] = useState<ConnectionPublisher>();
     const [node, setNode] = useState<AudioWorkletNode>();

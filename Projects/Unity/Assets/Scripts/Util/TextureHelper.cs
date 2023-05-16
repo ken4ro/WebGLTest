@@ -116,16 +116,23 @@ public class TextureHelper
             request.SetRequestHeader("AUTHORIZATION", auth);
         }
 
-        await request.SendWebRequest();
+        try
+        {
+            await request.SendWebRequest();
+        }
+        catch (Exception e)
+        {
+            Debug.LogError($"CreateTexture2DFromWeb Exception: {e.Message}");
+            return null;
+        }
 
-        if (request.isNetworkError || request.isHttpError)
+        if (request.result != UnityWebRequest.Result.Success)
         {
             Debug.Log(request.error);
             return null;
         }
 
         return DownloadHandlerTexture.GetContent(request);
-
     }
 
 }

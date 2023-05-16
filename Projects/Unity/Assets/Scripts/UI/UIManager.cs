@@ -446,16 +446,16 @@ public class UIManager : SingletonMonoBehaviour<UIManager>
     /// <param name="selectTexts"></param>
     /// <param name="selectImageName"></param>
     /// <returns></returns>
-    public async UniTask SetCharacterMessage(string message, bool isAnim, string imageFileName, string fullImageFileName)
+    public async UniTask SetCharacterMessage(string message, bool isAnim, ImageAccessTypes imageType, string imageFileName, string fullImageFileName)
     {
         if (!String.IsNullOrEmpty(fullImageFileName))
         {
-            var tex = GraphicsHelper.LoadImage(fullImageFileName);
+            var tex = await GraphicsHelper.LoadImage(imageType, fullImageFileName);
             fullScreenPanel.SetImage(tex);
         }
         characterMessage.EnablePanelEvent(String.IsNullOrEmpty(fullImageFileName) ? false : true);
 
-        await characterMessage.SetCharacterMessage(message, isAnim, imageFileName);
+        await characterMessage.SetCharacterMessage(message, isAnim, imageType, imageFileName);
     }
 
     /// <summary>
