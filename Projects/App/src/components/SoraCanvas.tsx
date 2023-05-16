@@ -38,7 +38,7 @@ export const SoraCanvas = () => {
 
     useEffect(() => {
         // 開発時はStrictModeにより2度呼ばれるので回避
-        if (window.process.env.NODE_ENV === "development" && !initRef.current) {
+        if (!initRef.current) {
             initRef.current = true;
             return;
         }
@@ -126,14 +126,12 @@ export const SoraCanvas = () => {
         };
 
         // WebRTCイベント購読(Unityから発行)
-        window.console.log("addEventListener webrtc_connect");
         window.addEventListener("webrtc_connect", Connect);
         window.addEventListener("webrtc_disconnect", Disconnect);
 
         // クリーンアップ
         return () => {
             // WebRTCイベント購読解除
-            window.console.log("removeEventListener webrtc_connect");
             sendrecv.on("track", () => {});
             window.removeEventListener("webrtc_connect", Connect);
             window.removeEventListener("webrtc_disconnect", Disconnect);
@@ -144,9 +142,9 @@ export const SoraCanvas = () => {
         <SContainer>
             <SVideoLayout>
                 <ButtonGroup variant="contained" aria-label="outlined primary button group">
-                    <Button disabled={connect} onClick={ClickStartSendRecv}>
+                    {/* <Button disabled={connect} onClick={ClickStartSendRecv}>
                         start
-                    </Button>
+                    </Button> */}
                     <Button disabled={!connect} onClick={ClickStopSendRecv}>
                         stop
                     </Button>

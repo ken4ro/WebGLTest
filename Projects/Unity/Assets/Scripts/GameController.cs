@@ -117,7 +117,31 @@ public class GameController : SingletonMonoBehaviour<GameController>
         }
     }
 
-#region for JavaScript
+    #region for JavaScript
+
+    public void StartBotProcess()
+    {
+        // ボット処理開始
+        GlobalState.Instance.CurrentState.Value = State.Starting;
+    }
+
+    // ユーザーメッセージをセット
+    public void SetUserMessage(string text)
+    {
+        // 音声認識の最終文字列としてセット
+        StreamingSpeechToText.Instance.RecognitionCompleteText = text;
+
+        GlobalState.Instance.CurrentState.Value = State.SpeakingComplete;
+    }
+
+    // 発話中文字列をセット
+    public void SetSpeakingText(string text)
+    {
+        // 発話中文字列を表示
+        UIManager.Instance.SetSpeakingText(text);
+
+        GlobalState.Instance.CurrentState.Value = State.Speaking;
+    }
 
     public class AudioVolumeJson
     {
@@ -129,6 +153,11 @@ public class GameController : SingletonMonoBehaviour<GameController>
         Debug.Log($"SetVoiceVolume: volume = {volume}");
         //var volume = JsonUtility.FromJson<AudioVolumeJson>(json).Volume;
         CharacterManager.Instance.SetMouseOpenYParameter(volume);
+    }
+
+    public void WebRTCDisconnect()
+    {
+        GlobalState.Instance.CurrentState.Value = GlobalState.State.Starting;
     }
 
     public class FaceInfoJson
@@ -158,31 +187,7 @@ public class GameController : SingletonMonoBehaviour<GameController>
         FaceInfoManager.Instance.FaceInfoReceived(faceInfoJson);
     }
 
-#endregion for JavaScript
-
-    public void StartBotProcess()
-    {
-        // ボット処理開始
-        GlobalState.Instance.CurrentState.Value = State.Starting;
-    }
-
-    // ユーザーメッセージをセット
-    public void SetUserMessage(string text)
-    {
-        // 音声認識の最終文字列としてセット
-        StreamingSpeechToText.Instance.RecognitionCompleteText = text;
-
-        GlobalState.Instance.CurrentState.Value = State.SpeakingComplete;
-    }
-
-    // 発話中文字列をセット
-    public void SetSpeakingText(string text)
-    {
-        // 発話中文字列を表示
-        UIManager.Instance.SetSpeakingText(text);
-
-        GlobalState.Instance.CurrentState.Value = State.Speaking;
-    }
+    #endregion for JavaScript
 
     // 現在の処理状態が変更された際に一度だけ呼ばれる
     private void OnStateChanged(State previous, State current)

@@ -145,6 +145,8 @@ public partial class BotManager : SingletonBase<BotManager>
         // イベント通知
         OnStartRequest?.Invoke();
 
+        Debug.Log($"BotManager Request: {inputText}");
+
         // リクエスト
         var response = await _botServiceProcessor.Request(isInit, inputText);
 

@@ -2,10 +2,10 @@ import Sora from "sora-js-sdk";
 
 // マルチストリーム送受信（いったん固定で）
 export const SoraProvider = () => {
-    const channelID = "test@ken4ro#43071663";
+    const channelID = "ken4ro_43071663_webgltest";
     const signalingURL = "wss://0001.stable.sora-labo.shiguredo.app/signaling";
     const accessToken =
-        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjaGFubmVsX2lkIjoidGVzdEBrZW40cm8jNDMwNzE2NjMifQ.n2YNOmgUwzCBz_e0Q5oZf9-6oQIDqvuFtvjHm7jQcWk";
+        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjaGFubmVsX2lkIjoia2VuNHJvXzQzMDcxNjYzX3dlYmdsdGVzdCIsImV4cCI6MTY4NjgxMDU5OX0.DpKnZUXc8MShA5frDztPd_AL0j43Sack-cTrSWnbOm4";
     const debug = false;
     const sora = Sora.connection(signalingURL, debug);
     const metadata = {

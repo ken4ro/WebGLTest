@@ -13,6 +13,7 @@ public class Operating : IState
         // 接続
         JSHelper.WebRTCConnect();
 
+        /*
         Observable.Timer(TimeSpan.FromSeconds(TimeoutTimeSec)).Subscribe(_ =>
         {
             // 10秒で切断
@@ -20,6 +21,7 @@ public class Operating : IState
 
             GlobalState.Instance.CurrentState.Value = GlobalState.State.Starting;
         });
+        */
     }
 
     public void OnUpdate()
