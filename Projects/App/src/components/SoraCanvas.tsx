@@ -54,85 +54,83 @@ export const SoraCanvas = () => {
     };
 
     useEffect(() => {
-        console.log("useEffect 1");
         // 開発時はStrictModeにより2度呼ばれるので回避
         if (!initRef.current) {
             initRef.current = true;
-            return;
-        }
 
-        console.log("useEffect 2");
-        // Soraインスタンス生成
-        const sendrecv = SoraProvider();
-        setSendrecv(sendrecv);
+            // Soraインスタンス生成
+            const sendrecv = SoraProvider();
+            setSendrecv(sendrecv);
 
-        // 接続したチャネルIDにMediaStreamが追加された
-        sendrecv.on("track", async (event) => {
-            const stream = event.streams[0];
-            if (!stream) {
-                window.console.log(`on track error!`);
-                return;
-            }
-            if (event.track.kind === "video") {
-                // 接続相手のカメラを描画
-                window.console.log(`Add mediastream video track: ${stream.id}`);
+            // 接続したチャネルIDにMediaStreamが追加された
+            sendrecv.on("track", async (event) => {
+                const stream = event.streams[0];
+                if (!stream) {
+                    window.console.log(`on track error!`);
+                    return;
+                }
+                if (event.track.kind === "video") {
+                    // 接続相手のカメラを描画
+                    window.console.log(`Add mediastream video track: ${stream.id}`);
+                    if (remoteVideoRef.current) {
+                        remoteVideoRef.current.style.border = "1px solid red";
+                        remoteVideoRef.current.autoplay = true;
+                        remoteVideoRef.current.playsInline = true;
+                        remoteVideoRef.current.controls = true;
+                        remoteVideoRef.current.width = 160;
+                        remoteVideoRef.current.height = 120;
+                        remoteVideoRef.current.srcObject = stream;
+                    }
+                    if (remoteVideoIdRef.current) {
+                        remoteVideoIdRef.current.innerText = stream.id;
+                    }
+                } else if (event.track.kind === "audio") {
+                    window.console.log(`Add mediastream audio track: ${stream.id}`);
+                    // 接続相手のマイク音量をUnityに送信
+                    const node = await GetVolumeNode(stream);
+                    node.port.onmessage = (ev) => {
+                        const volume = ev.data.volume;
+                        if (unityInstanceRef.current) {
+                            unityInstanceRef.current.SendMessage("GameManager", "SetVoiceVolume", volume * 10);
+                        }
+                        if (volumeTextRef.current) {
+                            volumeTextRef.current.innerText = volume;
+                        }
+                    };
+                    setNode(node);
+                }
+            });
+
+            // 接続したチャネルIDからMediaStreamが削除された
+            sendrecv.on("removetrack", (event) => {
+                // リモートビデオ再生停止
+                if (event.target) {
+                    // window.console.log(`Remove mediastream track: ${event.target.id}`);
+                }
                 if (remoteVideoRef.current) {
-                    remoteVideoRef.current.style.border = "1px solid red";
-                    remoteVideoRef.current.autoplay = true;
-                    remoteVideoRef.current.playsInline = true;
-                    remoteVideoRef.current.controls = true;
-                    remoteVideoRef.current.width = 160;
-                    remoteVideoRef.current.height = 120;
-                    remoteVideoRef.current.srcObject = stream;
+                    remoteVideoRef.current.srcObject = null;
                 }
-                if (remoteVideoIdRef.current) {
-                    remoteVideoIdRef.current.innerText = stream.id;
+                if (node) {
+                    node.port.onmessage = () => {
+                        if (volumeTextRef.current) {
+                            volumeTextRef.current.innerText = "";
+                        }
+                    };
+                    setNode(undefined);
                 }
-            } else if (event.track.kind === "audio") {
-                window.console.log(`Add mediastream audio track: ${stream.id}`);
-                // 接続相手のマイク音量をUnityに送信
-                const node = await GetVolumeNode(stream);
-                node.port.onmessage = (ev) => {
-                    const volume = ev.data.volume;
-                    if (unityInstanceRef.current) {
-                        unityInstanceRef.current.SendMessage("GameManager", "SetVoiceVolume", volume * 10);
-                    }
-                    if (volumeTextRef.current) {
-                        volumeTextRef.current.innerText = volume;
-                    }
-                };
-                setNode(node);
-            }
-        });
+            });
 
-        // 接続したチャネルIDからMediaStreamが削除された
-        sendrecv.on("removetrack", (event) => {
-            // リモートビデオ再生停止
-            if (event.target) {
-                // window.console.log(`Remove mediastream track: ${event.target.id}`);
-            }
-            if (remoteVideoRef.current) {
-                remoteVideoRef.current.srcObject = null;
-            }
-            if (node) {
-                node.port.onmessage = () => {
-                    if (volumeTextRef.current) {
-                        volumeTextRef.current.innerText = "";
-                    }
-                };
-                setNode(undefined);
-            }
-        });
-
-        // WebRTCイベント購読(Unityから発行)
-        window.addEventListener("webrtc_connect", Connect);
-        window.addEventListener("webrtc_disconnect", Disconnect);
+            // WebRTCイベント購読(Unityから発行)
+            window.addEventListener("webrtc_connect", Connect);
+            window.addEventListener("webrtc_disconnect", Disconnect);
+        }
 
         // クリーンアップ
         return () => {
-            console.log("useEffect 3");
             // WebRTCイベント購読解除
-            sendrecv.on("track", () => {});
+            if (sendrecv) {
+                sendrecv.on("track", () => {});
+            }
             window.removeEventListener("webrtc_connect", Connect);
             window.removeEventListener("webrtc_disconnect", Disconnect);
         };
