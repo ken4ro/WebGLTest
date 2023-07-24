@@ -9,15 +9,15 @@ using UnityEngine.Networking;
 
 public class ApiServerManager : SingletonBase<ApiServerManager>
 {
-    private static readonly string RequestUserTokenUrl = "https://development.studio-sylphid.com:6500/cloud/api/v1/user/token/get";
+    private static readonly string RequestUserTokenUrl = "https://dev.xrccg.com:4000/api/v1/user/token/get";
 
-    private static readonly string UpdateUserTokenUrl = "https://development.studio-sylphid.com:6500/cloud/api/v1/user/token/put";
+    private static readonly string UpdateUserTokenUrl = "https://dev.xrccg.com:4000/api/v1/user/token/put";
 
-    private static readonly string RequestUserSettingUrl = "https://development.studio-sylphid.com:6500/cloud/api/v1/user/setting/get";
+    private static readonly string RequestUserSettingUrl = "https://dev.xrccg.com:4000/api/v1/user/setting/get";
 
-    private static readonly string RequestFirstNodeUrl = "https://development.studio-sylphid.com:6500/cloud/api/v1/flow/dialog/get";
+    private static readonly string RequestFirstNodeUrl = "https://dev.xrccg.com:4000/api/v1/flow/dialog/get";
 
-    private static readonly string RequestNextNodeUrl = "https://development.studio-sylphid.com:6500/cloud/api/v1/flow/dialog/put";
+    private static readonly string RequestNextNodeUrl = "https://dev.xrccg.com:4000/api/v1/flow/dialog/put";
 
     /// <summary>
     /// ユーザートークンをリクエスト

@@ -90,6 +90,7 @@ public partial class WebAIService : IBotService
                 //utterance = "もにょもにょ"
             };
             var requestFlowJson = JsonUtility.ToJson(requestFlowJsonObject);
+            Debug.Log(requestFlowJson);
             responseString = await ApiServerManager.Instance.RequestNextNodeAsync(GlobalState.Instance.UserSettings.UserToken, requestFlowJson);
             var requestNextNodeResponseJsonObject = JsonUtility.FromJson<RequestNextNodeResponseJson>(responseString);
             if (requestNextNodeResponseJsonObject.response.Text.Jp == null)

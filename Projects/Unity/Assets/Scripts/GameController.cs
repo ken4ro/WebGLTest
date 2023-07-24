@@ -300,11 +300,14 @@ public class GameController : SingletonMonoBehaviour<GameController>
 
     private async UniTask GetUserSettings()
     {
-        // ユーザー基本設定(Web版は現状 anonymous ID固定)
+        // ユーザー基本設定
         GlobalState.Instance.UserSettings = new UserSettings()
         {
-            LoginId = "724e242c-03fd-40b3-bcf1-a6071b613f86-b3608b4b-a347-467f-a2e0-5aa3cb3b9c78-3a8482bc-14a1-47ab-b192-1a4963b3858f-44966299-8d87-463d-a168-487cadf1ffd3",
-            LoginType = "anonymous",
+            //LoginId = "724e242c-03fd-40b3-bcf1-a6071b613f86-b3608b4b-a347-467f-a2e0-5aa3cb3b9c78-3a8482bc-14a1-47ab-b192-1a4963b3858f-44966299-8d87-463d-a168-487cadf1ffd3",
+            //LoginType = "anonymous",
+            LoginId = "kenken4ro",
+            LoginType = "basic",
+            Password = "nttcom0033"
         };
 
         // ユーザートークン取得
@@ -345,6 +348,7 @@ public class GameController : SingletonMonoBehaviour<GameController>
         };
         var userTokenJson = JsonUtility.ToJson(userTokenJsonObject);
         var responseUserTokenJson = await ApiServerManager.Instance.RequestUserTokenAsync(userTokenJson);
+        Debug.Log(responseUserTokenJson);
         var responseUserTokenJsonObject = JsonUtility.FromJson<RequestUserTokenResponseJson>(responseUserTokenJson);
         GlobalState.Instance.UserSettings.UserToken = Convert.ToBase64String(Encoding.UTF8.GetBytes(responseUserTokenJsonObject.access_token));
         GlobalState.Instance.UserSettings.RefreshToken = Convert.ToBase64String(Encoding.UTF8.GetBytes(responseUserTokenJsonObject.refresh_token));

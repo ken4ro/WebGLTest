@@ -167,7 +167,6 @@ public class UIManager : SingletonMonoBehaviour<UIManager>
         fullScreenPanel.OnClick += ClickFullScreenPanel;
         recordingCheckPanel.OnClickYesBtn += AgreeRecording;
         recordingCheckPanel.OnClickNoBtn += RejectRecording;
-       
     }
 
     protected override void OnDestroy()
