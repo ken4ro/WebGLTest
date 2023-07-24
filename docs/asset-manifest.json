@@ -1,10 +1,10 @@
 {
   "files": {
-    "main.js": "/WebGLTest/static/js/main.1ce0888d.js",
+    "main.js": "/WebGLTest/static/js/main.4da06592.js",
     "index.html": "/WebGLTest/index.html",
-    "main.1ce0888d.js.map": "/WebGLTest/static/js/main.1ce0888d.js.map"
+    "main.4da06592.js.map": "/WebGLTest/static/js/main.4da06592.js.map"
   },
   "entrypoints": [
-    "static/js/main.1ce0888d.js"
+    "static/js/main.4da06592.js"
   ]
 }

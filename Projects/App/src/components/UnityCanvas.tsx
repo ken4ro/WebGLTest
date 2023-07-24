@@ -113,7 +113,7 @@ export const UnityCanvas = ({ width, height }: Props) => {
 
     return (
         <>
-            <SCanvasTitle>Unity Canvas</SCanvasTitle>
+            <SCanvasTitle>Unity Canvas test</SCanvasTitle>
             <SCanvas ref={containerRef} />;
             <SButton variant="contained" disabled={!startBtnEnabled} onClick={ClickStartBtn}>
                 シナリオ開始

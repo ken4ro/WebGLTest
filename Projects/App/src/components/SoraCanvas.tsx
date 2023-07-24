@@ -142,6 +142,7 @@ export const SoraCanvas = () => {
         };
     }, []);
 
+    return <></>;
     return (
         <SContainer>
             <SVideoLayout>
