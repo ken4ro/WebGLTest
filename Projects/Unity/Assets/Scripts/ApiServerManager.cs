@@ -1,11 +1,9 @@
 ﻿using System;
-using System.IO;
 using System.Text;
-using System.Collections;
-using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
-using Cysharp.Threading.Tasks;
 using UnityEngine.Networking;
+using Cysharp.Threading.Tasks;
 
 public class ApiServerManager : SingletonBase<ApiServerManager>
 {
@@ -18,6 +16,8 @@ public class ApiServerManager : SingletonBase<ApiServerManager>
     private static readonly string RequestFirstNodeUrl = "https://dev.xrccg.com:4000/api/v1/flow/dialog/get";
 
     private static readonly string RequestNextNodeUrl = "https://dev.xrccg.com:4000/api/v1/flow/dialog/put";
+    
+    private static readonly string RequestNodeVoiceUrl = "https://dev.xrccg.com:4000/api/v1/flow/voice/get";
 
     /// <summary>
     /// ユーザートークンをリクエスト
@@ -35,23 +35,26 @@ public class ApiServerManager : SingletonBase<ApiServerManager>
         try
         {
             await www.SendWebRequest();
-            Debug.Log($"RequestUserTokenAsync: Content-Type = {www.GetResponseHeader("Access-Control-Allow-Headers")}");
-            Debug.Log($"RequestUserTokenAsync: Access-Control-Allow-Headers = {www.GetResponseHeader("Access-Control-Allow-Origin")}");
-            Debug.Log($"RequestUserTokenAsync: Access-Control-Allow-Origin = {www.GetResponseHeader("Content-Type")}");
             if (www.result != UnityWebRequest.Result.Success)
             {
-                Debug.LogError($"RequestUserToken error result: {www.result}");
+                Debug.LogError($"RequestUserTokenAsync error result: {www.result}");
             }
             else
             {
                 var ret = www.downloadHandler.text;
-                Debug.Log($"RequestUserToken download handler text: {ret}");
+                Debug.Log($"RequestUserTokenAsync download handler text: {ret}");
                 return ret;
             }
         }
         catch (Exception e)
         {
-            Debug.LogError($"RequestUserToken exception: {e.Message}");
+            Debug.LogError($"RequestUserTokenAsync exception: {e.Message}, {www.error}");
+            var headers = www.GetResponseHeaders();
+            Debug.Log($"RequestUserTokenAsync response header count = {headers.Count}");
+            for (int i = 0; i < headers.Count; i++)
+            {
+                Debug.Log("KEY: " + headers.Keys.ToList()[i] + "    -    VALUE: " + headers[headers.Keys.ToList()[i]]);
+            }
         }
 
         return null;
@@ -72,18 +75,63 @@ public class ApiServerManager : SingletonBase<ApiServerManager>
             await www.SendWebRequest();
             if (www.result != UnityWebRequest.Result.Success)
             {
-                Debug.LogError($"UpdateUserToken error result: {www.result}");
+                Debug.LogError($"UpdateUserTokenAsync error result: {www.result}");
             }
             else
             {
                 var ret = www.downloadHandler.text;
-                Debug.Log($"UpdateUserToken download handler text: {ret}");
+                Debug.Log($"UpdateUserTokenAsync download handler text: {ret}");
                 return ret;
             }
         }
         catch (Exception e)
         {
-            Debug.LogError($"UpdateUserToken exception: {e.Message}");
+            Debug.LogError($"UpdateUserTokenAsync exception: {e.Message}, {www.error}");
+            var headers = www.GetResponseHeaders();
+            Debug.Log($"UpdateUserTokenAsync response header count = {headers.Count}");
+            for (int i = 0; i < headers.Count; i++)
+            {
+                Debug.Log("KEY: " + headers.Keys.ToList()[i] + "    -    VALUE: " + headers[headers.Keys.ToList()[i]]);
+            }
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// ユーザー設定をリクエスト
+    /// </summary>
+    /// <param name="base64Token"></param>
+    /// <returns></returns>
+    public async UniTask<string> RequestUserSettingAsync(string base64Token)
+    {
+        using UnityWebRequest www = new UnityWebRequest(RequestUserSettingUrl, "POST");
+        www.SetRequestHeader("Content-Type", "application/json");
+        www.SetRequestHeader("Authorization", "Bearer " + base64Token);
+        www.downloadHandler = new DownloadHandlerBuffer();
+        try
+        {
+            await www.SendWebRequest();
+            if (www.result != UnityWebRequest.Result.Success)
+            {
+                Debug.LogError($"RequestUserSettingAsync error result: {www.result}");
+            }
+            else
+            {
+                var ret = www.downloadHandler.text;
+                Debug.Log($"RequestUserSettingAsync download handler text: {ret}");
+                return ret;
+            }
+        }
+        catch (Exception e)
+        {
+            Debug.LogError($"RequestUserSettingAsync exception: {e.Message}, {www.error}");
+            var headers = www.GetResponseHeaders();
+            Debug.Log($"RequestUserSettingAsync response header count = {headers.Count}");
+            for (int i = 0; i < headers.Count; i++)
+            {
+                Debug.Log("KEY: " + headers.Keys.ToList()[i] + "    -    VALUE: " + headers[headers.Keys.ToList()[i]]);
+            }
         }
 
         return null;
@@ -98,6 +146,7 @@ public class ApiServerManager : SingletonBase<ApiServerManager>
     /// <returns></returns>
     public async UniTask<string> RequestFirstNodeAsync(string base64Token, string body)
     {
+        Debug.Log($"RequestFirstNodeAsync body = {body}");
         using UnityWebRequest www = new UnityWebRequest(RequestFirstNodeUrl, "POST");
         www.SetRequestHeader("Content-Type", "application/json");
         www.SetRequestHeader("Authorization", "Bearer " + base64Token);
@@ -108,7 +157,7 @@ public class ApiServerManager : SingletonBase<ApiServerManager>
             await www.SendWebRequest();
             if (www.result != UnityWebRequest.Result.Success)
             {
-                Debug.LogError($"RequestFirstNode error result: {www.result}");
+                Debug.LogError($"RequestFirstNodeAsync error result: {www.result}");
             }
             else
             {
@@ -118,7 +167,13 @@ public class ApiServerManager : SingletonBase<ApiServerManager>
         }
         catch (Exception e) 
         {
-            Debug.LogError($"RequestFirstNode exception: {e.Message}");
+            Debug.LogError($"RequestFirstNodeAsync exception: {e.Message}, {www.error}");
+            var headers = www.GetResponseHeaders();
+            Debug.Log($"RequestFirstNodeAsync response header count = {headers.Count}");
+            for (int i = 0; i < headers.Count; i++)
+            {
+                Debug.Log("KEY: " + headers.Keys.ToList()[i] + "    -    VALUE: " + headers[headers.Keys.ToList()[i]]);
+            }
         }
 
         return null;
@@ -133,9 +188,11 @@ public class ApiServerManager : SingletonBase<ApiServerManager>
     /// <returns></returns>
     public async UniTask<string> RequestNextNodeAsync(string base64Token, string body)
     {
+        Debug.Log($"RequestNextNodeAsync body = {body}");
         using UnityWebRequest www = new UnityWebRequest(RequestNextNodeUrl, "POST");
         www.SetRequestHeader("Content-Type", "application/json");
         www.SetRequestHeader("Authorization", "Bearer " + base64Token);
+        //www.SetRequestHeader("Access-Control-Allow-Origin", "*");
         www.uploadHandler = new UploadHandlerRaw(Encoding.UTF8.GetBytes(body));
         www.downloadHandler = new DownloadHandlerBuffer();
         try
@@ -143,49 +200,69 @@ public class ApiServerManager : SingletonBase<ApiServerManager>
             await www.SendWebRequest();
             if (www.result != UnityWebRequest.Result.Success)
             {
-                Debug.LogError($"RequestNextNode error result: {www.result}");
+                Debug.LogError($"RequestNextNodeAsync error result: {www.result}");
             }
             else
             {
                 var ret = www.downloadHandler.text;
-                Debug.Log($"RequestNextNode download handler text: {ret}");
+                Debug.Log($"RequestNextNodeAsync download handler text: {ret}");
                 return ret;
             }
         }
         catch (Exception e)
         {
-            Debug.LogError($"RequestNextNode exception: {e.Message}");
+            Debug.LogError($"RequestNextNodeAsync exception: {e.Message}, {www.error}");
+            var headers = www.GetResponseHeaders();
+            if (headers == null)
+            {
+                Debug.Log($"RequestNextNodeAsync response headers is null");
+            }
+            else
+            {
+                Debug.Log($"RequestNextNodeAsync response header count = {headers.Count}");
+            }
+            for (int i = 0; i < headers.Count; i++)
+            {
+                Debug.Log("KEY: " + headers.Keys.ToList()[i] + "    -    VALUE: " + headers[headers.Keys.ToList()[i]]);
+            }
         }
 
         return null;
     }
 
-    public async UniTask<string> RequestUserSettingAsync(string base64Token)
+    /// <summary>
+    /// VoiceVoxボイス取得
+    /// </summary>
+    public async UniTask<byte[]> RequestNodeVoice(string base64Token, string body)
     {
-        using UnityWebRequest www = new UnityWebRequest(RequestUserSettingUrl, "POST");
-        www.SetRequestHeader("Content-Type", "application/json");
-        www.SetRequestHeader("Authorization", "Bearer " + base64Token);
-        www.downloadHandler = new DownloadHandlerBuffer();
-        try
+        Debug.Log("RequestNodeVoice request");
+        using (UnityWebRequest www = new UnityWebRequest(RequestNodeVoiceUrl, "POST"))
         {
-            await www.SendWebRequest();
-            if (www.result != UnityWebRequest.Result.Success)
+            www.SetRequestHeader("Content-Type", "application/json");
+            www.SetRequestHeader("Authorization", "Bearer " + base64Token);
+            www.uploadHandler = new UploadHandlerRaw(Encoding.UTF8.GetBytes(body));
+            www.downloadHandler = new DownloadHandlerBuffer();
+            try
             {
-                Debug.LogError($"RequestUserSettings error result: {www.result}");
+                await www.SendWebRequest();
+                if (www.isHttpError || www.isNetworkError)
+                {
+                    Debug.LogError($"RequestNodeVoice error result: {www.error}");
+                }
+                else
+                {
+                    var ret = www.downloadHandler.data;
+                    Debug.Log($"RequestNodeVoice download handler data length: {ret.Length}");
+                    return ret;
+                }
             }
-            else
+            catch (Exception e)
             {
-                var ret = www.downloadHandler.text;
-                Debug.Log($"RequestUserSettings download handler text: {ret}");
-                return ret;
+                Debug.LogError($"RequestNodeVoice exception: {e.Message}");
             }
-        }
-        catch (Exception e)
-        {
-            Debug.LogError($"RequestUserSettings exception: {e.Message}");
-        }
 
-        return null;
+            return null;
+        }
     }
 
     [Serializable]
@@ -270,4 +347,10 @@ public class ApiServerManager : SingletonBase<ApiServerManager>
         public string service_type;
     }
 
+    [Serializable]
+    public class RequestNodeVoiceJson
+    {
+        public string source_type;
+        public string language;
+    }
 }

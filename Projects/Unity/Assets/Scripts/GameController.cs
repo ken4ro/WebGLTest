@@ -23,6 +23,11 @@ public class GameController : SingletonMonoBehaviour<GameController>
     public SynchronizationContext MainContext { get; private set; } = null;
 
     /// <summary>
+    /// クライアント(ユーザー or オペレーター)
+    /// </summary>
+    public IClient Client { get; private set; } = null;
+
+    /// <summary>
     /// 現在の待機時間[s]
     /// </summary>
     public float CurrentIdleTimeSec { get; set; } = 0.0f;
@@ -61,6 +66,10 @@ public class GameController : SingletonMonoBehaviour<GameController>
         // メインスレッド同期用コンテキストを取得しておく
         MainContext = SynchronizationContext.Current;
 
+        // クライアント初期化
+        Client = new UserClient();
+        Client.Initialize();
+
         // スクリーンセーバー設定
         ScreenSaverEnable = GlobalState.Instance.UserSettings.UI.ScreensaverEnable;
 
@@ -88,12 +97,14 @@ public class GameController : SingletonMonoBehaviour<GameController>
         // ボット処理初期化
         _ = BotManager.Instance.Initialize();
 
-#if UNITY_EDITOR || !UNITY_WEBGL // ブラウザルールにより自動で開始しない。デバッグ用
         // 指定時間待機
         await UniTask.Delay(GlobalState.Instance.UserSettings.Bot.StartDelaySec * 1000);
 
+#if UNITY_EDITOR || !UNITY_WEBGL // ブラウザルールにより自動で開始しない。デバッグ用
         // Bot処理開始
         StartBotProcess();
+#else
+        // WebGL確認用
 #endif
 
         _isInitialized = true;
@@ -117,77 +128,17 @@ public class GameController : SingletonMonoBehaviour<GameController>
         }
     }
 
-    #region for JavaScript
-
+    // ボット処理開始
     public void StartBotProcess()
     {
-        // ボット処理開始
         GlobalState.Instance.CurrentState.Value = State.Starting;
     }
 
-    // ユーザーメッセージをセット
-    public void SetUserMessage(string text)
+    // ボット処理停止
+    public void StopBotProcess()
     {
-        // 音声認識の最終文字列としてセット
-        StreamingSpeechToText.Instance.RecognitionCompleteText = text;
-
-        GlobalState.Instance.CurrentState.Value = State.SpeakingComplete;
+        GlobalState.Instance.CurrentState.Value = State.Waiting;
     }
-
-    // 発話中文字列をセット
-    public void SetSpeakingText(string text)
-    {
-        // 発話中文字列を表示
-        UIManager.Instance.SetSpeakingText(text);
-
-        GlobalState.Instance.CurrentState.Value = State.Speaking;
-    }
-
-    public class AudioVolumeJson
-    {
-        public float Volume;
-    }
-
-    public void SetVoiceVolume(float volume)
-    {
-        Debug.Log($"SetVoiceVolume: volume = {volume}");
-        //var volume = JsonUtility.FromJson<AudioVolumeJson>(json).Volume;
-        CharacterManager.Instance.SetMouseOpenYParameter(volume);
-    }
-
-    public void WebRTCDisconnect()
-    {
-        GlobalState.Instance.CurrentState.Value = GlobalState.State.Starting;
-    }
-
-    public class FaceInfoJson
-    {
-        public float Yaw;
-        public float Pitch;
-        public float Roll;
-        public double BodyYaw;
-        public double BodyPitch;
-        public double BodyRoll;
-    }
-
-    private bool _isCharacterAnimation = true;
-    public void SetFaceInfo(string faceInfoJson)
-    {
-        if (_isCharacterAnimation)
-        {
-            _isCharacterAnimation = false;
-            // キャラクターアニメーション無効化
-            CharacterManager.Instance.DisableAnimation();
-            // アイドルモーション時のキャラクタートランスフォームをセット
-            CharacterManager.Instance.SetTransformsForIdle();
-            // 顔認識有効
-            FaceInfoManager.Instance.Enable();
-        }
-
-        FaceInfoManager.Instance.FaceInfoReceived(faceInfoJson);
-    }
-
-    #endregion for JavaScript
 
     // 現在の処理状態が変更された際に一度だけ呼ばれる
     private void OnStateChanged(State previous, State current)
@@ -201,7 +152,6 @@ public class GameController : SingletonMonoBehaviour<GameController>
         _states[(int)current].OnEnter();
     }
 
-    // ボット処理開始
     private void OnStartBotRequest()
     {
         // ボットリクエスト開始
@@ -247,6 +197,15 @@ public class GameController : SingletonMonoBehaviour<GameController>
         SetUserMessage(text);
     }
 
+    // ユーザーメッセージをセット
+    private void SetUserMessage(string text)
+    {
+        // 音声認識の最終文字列としてセット
+        StreamingSpeechToText.Instance.RecognitionCompleteText = text;
+
+        GlobalState.Instance.CurrentState.Value = State.SpeakingComplete;
+    }
+
     // UI 上でスクリーンセーバーが解除された
     private void ClickScreenSaver()
     {
@@ -262,20 +221,20 @@ public class GameController : SingletonMonoBehaviour<GameController>
         GameObject characterObject = assetBundle.LoadAsset<GameObject>("Una2D");
         if (characterObject != null)
         {
-            Debug.Log($"LoadCharacterObject: LoadAsset completed.");
+            //Debug.Log($"LoadCharacterObject: LoadAsset completed.");
         }
         else
         {
-            Debug.Log($"LoadCharacterObject: LoadAsset failed.");
+            Debug.LogError($"LoadCharacterObject: LoadAsset failed.");
         }
         characterObject = Instantiate(characterObject);
         if (characterObject != null)
         {
-            Debug.Log($"LoadCharacterObject: Instantiate completed.");
+            //Debug.Log($"LoadCharacterObject: Instantiate completed.");
         }
         else
         {
-            Debug.Log($"LoadCharacterObject: Instantiate failed.");
+            Debug.LogError($"LoadCharacterObject: Instantiate failed.");
         }
 
         // Front Canvas より奥に描画するようにする
@@ -313,8 +272,12 @@ public class GameController : SingletonMonoBehaviour<GameController>
         // ユーザートークン取得
         await GetUserToken(GlobalState.Instance.UserSettings.LoginId, GlobalState.Instance.UserSettings.LoginType, GlobalState.Instance.UserSettings.Password);
 
+        // トークンをJS側に送信
+        JSHelper.SendUserToken(GlobalState.Instance.UserSettings.UserToken);
+
         // ユーザー設定取得
-        var userSettingsJson = await ApiServerManager.Instance.RequestUserSettingAsync(GlobalState.Instance.UserSettings.UserToken);
+        var userTokenBase64 = Convert.ToBase64String(Encoding.UTF8.GetBytes(GlobalState.Instance.UserSettings.UserToken));
+        var userSettingsJson = await ApiServerManager.Instance.RequestUserSettingAsync(userTokenBase64);
         var userSettingsObject = JsonUtility.FromJson<RequestUserSettingsResponseJson>(userSettingsJson);
         GlobalState.Instance.UserSettings.GoogleKey = userSettingsObject.google_key;
         GlobalState.Instance.UserSettings.UI = new UserSettingsUI();
@@ -348,10 +311,9 @@ public class GameController : SingletonMonoBehaviour<GameController>
         };
         var userTokenJson = JsonUtility.ToJson(userTokenJsonObject);
         var responseUserTokenJson = await ApiServerManager.Instance.RequestUserTokenAsync(userTokenJson);
-        Debug.Log(responseUserTokenJson);
         var responseUserTokenJsonObject = JsonUtility.FromJson<RequestUserTokenResponseJson>(responseUserTokenJson);
-        GlobalState.Instance.UserSettings.UserToken = Convert.ToBase64String(Encoding.UTF8.GetBytes(responseUserTokenJsonObject.access_token));
-        GlobalState.Instance.UserSettings.RefreshToken = Convert.ToBase64String(Encoding.UTF8.GetBytes(responseUserTokenJsonObject.refresh_token));
+        GlobalState.Instance.UserSettings.UserToken = responseUserTokenJsonObject.access_token;
+        GlobalState.Instance.UserSettings.RefreshToken = responseUserTokenJsonObject.refresh_token;
         GlobalState.Instance.UserSettings.ExpiresIn = responseUserTokenJsonObject.expires_in;
     }
 

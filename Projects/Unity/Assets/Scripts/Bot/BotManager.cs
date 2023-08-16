@@ -145,10 +145,12 @@ public partial class BotManager : SingletonBase<BotManager>
         // イベント通知
         OnStartRequest?.Invoke();
 
-        Debug.Log($"BotManager Request: {inputText}");
+        //Debug.Log($"BotManager Request: {inputText}");
 
         // リクエスト
         var response = await _botServiceProcessor.Request(isInit, inputText);
+
+        Debug.Log($"BotManager response result = {response.result}");
 
         switch (response.Status)
         {

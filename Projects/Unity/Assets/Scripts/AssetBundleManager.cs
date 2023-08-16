@@ -49,11 +49,11 @@ public class AssetBundleManager : SingletonBase<AssetBundleManager>
         }
         if (AvatarAssetBundle != null)
         {
-            Debug.Log($"LoadAvatarAssetBundle completed.");
+            //Debug.Log($"LoadAvatarAssetBundle completed.");
         }
         else
         {
-            Debug.Log($"LoadAvatarAssetBundle failed.");
+            Debug.LogError($"LoadAvatarAssetBundle failed.");
         }
     }
 
@@ -72,11 +72,11 @@ public class AssetBundleManager : SingletonBase<AssetBundleManager>
         }
         if (AvatarAssetBundle != null)
         {
-            Debug.Log($"LoadAvatarAssetBundleFromStreamingAssets completed.");
+            //Debug.Log($"LoadAvatarAssetBundleFromStreamingAssets completed.");
         }
         else
         {
-            Debug.Log($"LoadAvatarAssetBundleFromStreamingAssets failed.");
+            Debug.LogError($"LoadAvatarAssetBundleFromStreamingAssets failed.");
         }
     }
 

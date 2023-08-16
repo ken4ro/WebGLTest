@@ -60,6 +60,7 @@ public partial class WebAIService : IBotService
 
         // ボットリクエスト
         string responseString;
+        var userTokenBase64 = Convert.ToBase64String(Encoding.UTF8.GetBytes(GlobalState.Instance.UserSettings.UserToken));
         if (isInit)
         {
             // フローの初期ノードをリクエスト
@@ -67,8 +68,8 @@ public partial class WebAIService : IBotService
             {
                 flow_id = GlobalState.Instance.UserSettings.Bot.CcgFlowId
             };
-            var json = JsonUtility.ToJson(requestFirstNodeJsonObject);
-            responseString = await ApiServerManager.Instance.RequestFirstNodeAsync(GlobalState.Instance.UserSettings.UserToken, json);
+            var requestFirstNodeJson = JsonUtility.ToJson(requestFirstNodeJsonObject);
+            responseString = await ApiServerManager.Instance.RequestFirstNodeAsync(userTokenBase64, requestFirstNodeJson);
             var requestFirstNodeResponseJsonObject = JsonUtility.FromJson<RequestFirstNodeResponseJson>(responseString);
             if (requestFirstNodeResponseJsonObject.response.Text.Jp == null)
             {
@@ -90,8 +91,7 @@ public partial class WebAIService : IBotService
                 //utterance = "もにょもにょ"
             };
             var requestFlowJson = JsonUtility.ToJson(requestFlowJsonObject);
-            Debug.Log(requestFlowJson);
-            responseString = await ApiServerManager.Instance.RequestNextNodeAsync(GlobalState.Instance.UserSettings.UserToken, requestFlowJson);
+            responseString = await ApiServerManager.Instance.RequestNextNodeAsync(userTokenBase64, requestFlowJson);
             var requestNextNodeResponseJsonObject = JsonUtility.FromJson<RequestNextNodeResponseJson>(responseString);
             if (requestNextNodeResponseJsonObject.response.Text.Jp == null)
             {

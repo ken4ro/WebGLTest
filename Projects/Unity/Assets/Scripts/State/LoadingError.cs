@@ -10,7 +10,7 @@ public class LoadingError : IState
         StreamingSpeechToText.Instance.OnStartRecording += StartStreamingSpeechToText;
 
         // 他タスクより先に音声合成を行う
-        var audioClip = await AudioManager.Instance.GetAudioClip(BotManager.Instance.NoMatchText);
+        var audioClip = await AudioManager.Instance.GetAudioClip(BotManager.Instance.NoMatchText, true);
         // オーディオ再生
         var audioTask = AudioManager.Instance.Play(audioClip);
         // キャラクターアニメーション

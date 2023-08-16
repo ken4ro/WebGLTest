@@ -1,23 +1,46 @@
+/* eslint-disable @typescript-eslint/no-var-requires */
+// react
 import { useEffect, useState } from "react";
 // import styled from "styled-components";
 import styled from "@emotion/styled";
 import SpeechRecognition, { useSpeechRecognition } from "react-speech-recognition";
 import { Button } from "@mui/material";
 import { useUnity } from "../hooks/useUnity";
-
-const unityBuildRoot = "./Build";
-const buildName = "docs";
-
-export let unityInstanceRef: React.MutableRefObject<UnityInstance | undefined>;
+import { socket } from "../util/SocketProvider";
 
 type Props = {
     width: string;
     height: string;
 };
 
+type SendUserTokenType = {
+    token: string;
+};
+
+type NotificationMessage = {
+    type: string;
+    from_id: string;
+};
+
+type ResponseMessage = {
+    method: string;
+    result: string;
+    message: string;
+};
+
+type RelayToOperatorType = {
+    message: string;
+};
+
+const unityBuildRoot = "./Build";
+const buildName = "docs";
+export let unityInstanceRef: React.MutableRefObject<UnityInstance | undefined>;
+
 export const UnityCanvas = ({ width, height }: Props) => {
     const [startBtnEnabled, setStartBtnEnabled] = useState(false);
+    const [stopBtnEnabled, setStopBtnEnabled] = useState(false);
     const [recognitionBtnEnabled, setRecognitionBtnEnabled] = useState(true);
+    const [userToken, setUserToken] = useState("");
 
     // Canvasの大きさをセット
     const canvas = window.document.createElement("canvas");
@@ -35,13 +58,124 @@ export const UnityCanvas = ({ width, height }: Props) => {
             root.appendChild(scriptTag);
         }
         const loadingId = setTimeout(() => {
-            // 5秒と見なす
+            // 8秒と見なす
             setStartBtnEnabled(true);
-        }, 5000);
+        }, 8000);
         return () => {
             clearTimeout(loadingId);
         };
     }, []);
+
+    // トークン更新時の処理
+    useEffect(() => {
+        console.log("token update effect!");
+        // シグナリングサーバと接続された
+        const onConnect = () => {
+            console.log("onConnect");
+        };
+        // シグナリングサーバから切断された
+        const onDisconnect = () => {
+            console.log("onDisconnect");
+        };
+        // シグナリングサーバから通知受信
+        const onNotification = (message: NotificationMessage) => {
+            console.log(`onNotification: type = ${message.type}, from id = ${message.from_id}`);
+            if (unityInstanceRef.current !== undefined) {
+                unityInstanceRef.current.SendMessage("GameManager", "SignalingServerOnNotification", JSON.stringify(message));
+            }
+        };
+        // シグナリングサーバからレスポンス受信
+        const onResponse = (message: ResponseMessage) => {
+            console.log(`onResponse: method = ${message.method}, result = ${message.result}`);
+            if (unityInstanceRef.current !== undefined) {
+                unityInstanceRef.current.SendMessage("GameManager", "SignalingServerOnResponse", JSON.stringify(message));
+            }
+        };
+        // シグナリングサーバからエラー受信
+        const onError = (error: string) => {
+            console.log("onError: ", error);
+        };
+
+        // ユーザートークン受信時ハンドラ
+        const receivedTokenHandler = (ev: CustomEvent<SendUserTokenType>) => {
+            console.log("send_user_token event from Unity: token = ", ev.detail.token);
+            setUserToken(ev.detail.token);
+        };
+
+        // シグナリングサーバ接続開始時ハンドラ
+        const connectHandler = () => {
+            console.log("signaling_connect event from Unity");
+            // socket.io接続
+            socket.on("connect", onConnect);
+            socket.on("disconnect", onDisconnect);
+            socket.on("error", onError);
+            socket.on("notification", onNotification);
+            socket.on("response", onResponse);
+            socket.connect();
+        };
+
+        // シグナリングサーバ接続終了時ハンドラ
+        const disconnectHandler = () => {
+            console.log("signaling_disconnect event from Unity");
+            // socket.io切断
+            socket.off("connect", onConnect);
+            socket.off("disconnect", onDisconnect);
+            socket.off("error", onError);
+            socket.off("notification", onNotification);
+            socket.off("response", onResponse);
+            socket.disconnect();
+        };
+
+        // シグナリングサーバログイン時ハンドラ
+        const loginHandler = () => {
+            console.log("signaling_login event from Unity");
+            const value = userToken + "," + "peer id" + "," + "calling" + "," + "map" + "," + "presend payload";
+            console.log("loginUser value = ", value);
+            socket.emit("loginUser", value);
+        };
+
+        // オペレーターにメッセージ送信時ハンドラ
+        const relayToOperatorHandler = (ev: CustomEvent<RelayToOperatorType>) => {
+            console.log("relay_to_operator event from Unity: message = ", ev.detail.message);
+            const value = userToken + "," + "target peer id" + "," + ev.detail.message;
+            console.log("relayToOperator value = ", value);
+            socket.emit("relayToOperator", value);
+        };
+
+        // ユーザートークン取得イベント購読
+        window.addEventListener("send_user_token", receivedTokenHandler as EventListenerOrEventListenerObject);
+
+        // シグナリングサーバ接続開始イベント購読
+        window.addEventListener("signaling_connect", connectHandler);
+
+        // シグナリングサーバ接続終了イベント購読
+        window.addEventListener("signaling_disconnect", disconnectHandler);
+
+        // シグナリングサーバログインイベント購読
+        window.addEventListener("signaling_login", loginHandler);
+
+        // オペレーターへにメッセージ送信時イベント購読
+        window.addEventListener("relay_to_operator", relayToOperatorHandler as EventListenerOrEventListenerObject);
+
+        return () => {
+            console.log("token update effect release!");
+
+            // ユーザートークン取得イベント購読
+            window.removeEventListener("send_user_token", receivedTokenHandler as EventListenerOrEventListenerObject);
+
+            // シグナリングサーバ接続開始イベント購読
+            window.removeEventListener("signaling_connect", connectHandler);
+
+            // シグナリングサーバ接続終了イベント購読
+            window.removeEventListener("signaling_disconnect", disconnectHandler);
+
+            // シグナリングサーバログインイベント購読
+            window.removeEventListener("signaling_login", loginHandler);
+
+            // オペレーターへにメッセージ送信時イベント購読
+            window.removeEventListener("relay_to_operator", relayToOperatorHandler as EventListenerOrEventListenerObject);
+        };
+    }, [userToken]);
 
     // Unityインスタンス生成
     const { instanceRef, containerRef } = useUnity({
@@ -61,26 +195,30 @@ export const UnityCanvas = ({ width, height }: Props) => {
         if (unityInstanceRef.current !== undefined) {
             unityInstanceRef.current.SendMessage("GameManager", "StartBotProcess");
         }
+        setStopBtnEnabled(true);
+    };
+
+    // ボットストップボタン設定
+    const ClickStopBtn = () => {
+        setStopBtnEnabled(false);
+        if (unityInstanceRef.current !== undefined) {
+            unityInstanceRef.current.SendMessage("GameManager", "StopBotProcess");
+        }
+        setStartBtnEnabled(true);
     };
 
     // 音声認識初期化
     const { transcript, listening, browserSupportsSpeechRecognition } = useSpeechRecognition();
 
-    // 音声認識ボタン設定
-    const ClickRecognitionBtn = () => {
-        setRecognitionBtnEnabled(false);
-        SpeechRecognition.startListening();
-    };
-
     // 音声認識開始イベント購読
     window.addEventListener("speechrecognition_start", function () {
-        console.log("recognition start!!!!!!!!");
+        console.log("speechrecognition_start event from Unity");
         SpeechRecognition.startListening();
     });
 
     // 音声認識終了イベント購読
     window.addEventListener("speechrecognition_end", function () {
-        console.log("recognition end!!!!!!!!");
+        console.log("speechrecognition_start event from Unity");
         SpeechRecognition.stopListening();
     });
 
@@ -113,16 +251,14 @@ export const UnityCanvas = ({ width, height }: Props) => {
 
     return (
         <>
-            <SCanvasTitle>Unity Canvas test</SCanvasTitle>
+            <SCanvasTitle>Unity Canvas</SCanvasTitle>
             <SCanvas ref={containerRef} />;
             <SButton variant="contained" disabled={!startBtnEnabled} onClick={ClickStartBtn}>
                 シナリオ開始
             </SButton>
-            {/* <SButton variant="contained" disabled={!recognitionBtnEnabled} onClick={ClickRecognitionBtn}>
-                音声認識開始
+            <SButton variant="contained" disabled={!stopBtnEnabled} onClick={ClickStopBtn}>
+                シナリオ停止
             </SButton>
-            <SLabel>Microphone: {listening ? "on" : "off"}</SLabel>
-            <SLabel>transcript: {transcript}</SLabel> */}
         </>
     );
 };
@@ -144,8 +280,8 @@ const SCanvas = styled.div`
 
 const SButton = styled(Button)`
     display: block;
-    margin-top: 10px;
     /* margin-top: 10px; */
+    margin-bottom: 1rem;
     margin-left: auto;
     margin-right: auto;
 `;

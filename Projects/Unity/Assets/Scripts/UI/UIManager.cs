@@ -105,6 +105,11 @@ public class UIManager : SingletonMonoBehaviour<UIManager>
     [SerializeField] FullScreenPanel fullScreenPanel = null;
 
     /// <summary>
+    /// Webカメラ映像表示用パネル
+    /// </summary>
+    [SerializeField] WebCameraPanel webCameraPanel = null;
+
+    /// <summary>
     /// 受領資料表示用パネル
     /// </summary>
     [SerializeField] ReceivedDocumentPanel receivedDocumentPanel = null;
@@ -155,6 +160,8 @@ public class UIManager : SingletonMonoBehaviour<UIManager>
         speakableIcon.Initialize();
         pushableSimpleIcon.Initialize();
         pushableCocoaIcon.Initialize();
+        webCameraPanel.Initialize();
+        receivedDocumentPanel.Initialize();
         callingPanel.Initialize();
         errorDisplayPanel.Initialize();
         fullScreenPanel.Initialize();
@@ -209,6 +216,8 @@ public class UIManager : SingletonMonoBehaviour<UIManager>
         // ユーザーメッセージ
         SetUserText("");
         DisableUserMessage();
+        // WebCamera
+        DisableWebCameraPanel();
         // 受領資料
         DisableReceivedDocumentPanel();
         // オペレーター呼び出し画面
@@ -363,6 +372,16 @@ public class UIManager : SingletonMonoBehaviour<UIManager>
     #endregion
 
     /// <summary>
+    /// Webカメラ映像表示用パネルを有効にする
+    /// </summary>
+    public void EnableWebCameraPanel() => webCameraPanel.Enable();
+
+    /// <summary>
+    /// Webカメラ映像表示用パネルを無効にする
+    /// </summary>
+    public void DisableWebCameraPanel() => webCameraPanel.Disable();
+
+    /// <summary>
     /// 受領資料表示用パネルを有効にする
     /// </summary>
     public void EnableReceivedDocumentPanel() => receivedDocumentPanel.Enable();
@@ -497,6 +516,16 @@ public class UIManager : SingletonMonoBehaviour<UIManager>
     /// </summary>
     /// <param name="text"></param>
     public void SetSpeakingText(string text) => speakingMessage.SetSpeakingText(text);
+
+    /// <summary>
+    /// WebCameraキャプチャ開始
+    /// </summary>
+    public void WebCameraPlay() => webCameraPanel.Play();
+
+    /// <summary>
+    /// WebCameraキャプチャ停止
+    /// </summary>
+    public void WebCameraStop() => webCameraPanel.Stop();
 
     /// オペレーター呼び出し開始
     /// </summary>

@@ -1,7 +1,10 @@
 ﻿using System;
+using System.Text;
 using UnityEngine;
 using UnityEngine.Networking;
 using Cysharp.Threading.Tasks;
+using static SignageSettings;
+using static ApiServerManager;
 
 public class AudioManager : SingletonMonoBehaviour<AudioManager>
 {
@@ -49,13 +52,6 @@ public class AudioManager : SingletonMonoBehaviour<AudioManager>
     // ボイス設定
     private static readonly int VoiceChannels = 1;
 
-    // リングバッファ関連
-    private static readonly int Bit = 16;
-    private static readonly int UnityBit = 32;
-    private static readonly int DelayMilliseconds = 100;
-    private static readonly float DelaySeconds = 0.1f;
-    private static readonly int StartBufferingMilliseconds = 300;
-
     // 接続先のマイクサンプリングレート
     private int _targetMicSampleRate = 0;
 
@@ -98,9 +94,9 @@ public class AudioManager : SingletonMonoBehaviour<AudioManager>
     /// </summary>
     /// <param name="text"></param>
     /// <returns></returns>
-    public async UniTask<AudioClip> GetAudioClip(string text)
+    public async UniTask<AudioClip> GetAudioClip(string text, bool nomatch = false)
     {
-        AudioClip audioClip = await GetWebAudioClip(GlobalState.Instance.UserSettings.Bot.VoiceType, text);
+        AudioClip audioClip = await GetWebAudioClip(GlobalState.Instance.UserSettings.Bot.VoiceType, text, nomatch);
 
         return audioClip;
     }
@@ -130,12 +126,12 @@ public class AudioManager : SingletonMonoBehaviour<AudioManager>
         _audioSourceForCharacter.Play();
         while (audioClip.loadState != AudioDataLoadState.Loaded)
         {
-            Debug.Log($"audioClip loadState = {audioClip.loadState}");
+            //Debug.Log($"audioClip loadState = {audioClip.loadState}");
             await UniTask.Delay(10);
         }
         // 再生終了まで待つ
         var audioClipLengthMs = (int)TimeSpan.FromSeconds(audioClip.length).TotalMilliseconds;
-        Debug.Log($"audioClip length = {audioClip.length}, samples = {audioClip.samples}, msec = = {audioClipLengthMs}");
+        //Debug.Log($"audioClip length = {audioClip.length}, samples = {audioClip.samples}, msec = = {audioClipLengthMs}");
         await UniTask.Delay(audioClipLengthMs);
         // オートリップシンク終了
         CharacterManager.Instance.StopAutoLipSync();
@@ -197,12 +193,13 @@ public class AudioManager : SingletonMonoBehaviour<AudioManager>
     /// <param name="type"></param>
     /// <param name="text"></param>
     /// <returns></returns>
-    private async UniTask<AudioClip> GetWebAudioClip(string type, string text)
+    private async UniTask<AudioClip> GetWebAudioClip(string type, string text, bool nomatch = false)
     {
         string key = $"{type}_{text}";
         var audioCache = new TextToSpeechAudioCache(key);
 #if UNITY_EDITOR || !UNITY_WEBGL
-        if (audioCache != null && audioCache.IsCached())
+        //if (audioCache != null && audioCache.IsCached()) // いったんサーバキャッシュを使う
+        if (false)
         {
             Debug.Log($"GetWebAudioClip: from cache file path = {audioCache.GetFilePath()}");
             // キャッシュから取得
@@ -210,7 +207,8 @@ public class AudioManager : SingletonMonoBehaviour<AudioManager>
         }
 #else
         // WebGLの場合はファイル存在チェックが出来ないので、ファイルがある前提で...
-        if (audioCache != null)
+        //if (audioCache != null)
+        if (false)
         {
             Debug.Log($"GetWebAudioClip: from StreamingAssets file path = {audioCache.GetFilePath()}");
             // キャッシュから取得
@@ -219,7 +217,7 @@ public class AudioManager : SingletonMonoBehaviour<AudioManager>
 #endif
         else
         {
-            Debug.Log($"GetWebAudioClip: from web file path = {audioCache.GetFilePath()}");
+            Debug.Log($"GetWebAudioClip: from web type = {type}");
             // 新規で音声合成して取得
             AudioClip audioClip = null;
             byte[] audioData = null;
@@ -232,11 +230,31 @@ public class AudioManager : SingletonMonoBehaviour<AudioManager>
                     audioDataLength = audioData.Length;
                     audioClip = AudioClipMaker.Create("clipname", audioData, 44, AudioClipMaker.BIT_16, (audioDataLength - 44) / 2, 1, 48000, false);
                     break;
-
+                // Server Cache
+                case "xrccgCache":
                 default:
-                    audioData = await GoogleService.TextToSpeech(text, (GoogleService.Language)SignageSettings.CurrentLanguage.Value);
+                    var userTokenBase64 = Convert.ToBase64String(Encoding.UTF8.GetBytes(GlobalState.Instance.UserSettings.UserToken));
+                    var json = new RequestNodeVoiceJson()
+                    {
+                        source_type = "node",
+                        language = CurrentLanguage.Value.ToString().ToLower()
+                    };
+                    if (nomatch)
+                    {
+                        json.source_type = "notFound";
+                    }
+                    audioData = await ApiServerManager.Instance.RequestNodeVoice(userTokenBase64, JsonUtility.ToJson(json));
                     audioDataLength = audioData.Length;
-                    audioClip = AudioClipMaker.Create("clipname", audioData, 44, AudioClipMaker.BIT_16, (audioDataLength - 44) / 2, 1, 48000, false);
+                    if (CurrentLanguage.Value == Language.Japanese)
+                    {
+                        // 日本語はVoiceVoxデフォルト=24kHz
+                        audioClip = AudioClipMaker.Create("clipname", audioData, 44, AudioClipMaker.BIT_16, (audioDataLength - 44) / 2, 1, 24000, false);
+                    }
+                    else if (CurrentLanguage.Value == Language.English)
+                    {
+                        // 英語はGoogleデフォルト=48kHz
+                        audioClip = AudioClipMaker.Create("clipname", audioData, 44, AudioClipMaker.BIT_16, (audioDataLength - 44) / 2, 1, 48000, false);
+                    }
                     break;
             }
 #if UNITY_EDITOR || !UNITY_WEBGL
