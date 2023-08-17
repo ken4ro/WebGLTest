@@ -61,8 +61,29 @@ export const UnityCanvas = ({ width, height }: Props) => {
             // 8秒と見なす
             setStartBtnEnabled(true);
         }, 8000);
+
+        // リセットボタンを有効化
+        const enableResetBtn = () => {
+            console.log("enable_reset_btn event from Unity");
+            setStopBtnEnabled(true);
+        };
+        // リセットボタン有効化イベント購読
+        window.addEventListener("enable_reset_btn", enableResetBtn);
+
+        // リセットボタンを無効化
+        const disableResetBtn = () => {
+            console.log("disable_reset_btn event from Unity");
+            setStopBtnEnabled(false);
+        };
+        // リセットボタン無効化イベント購読
+        window.addEventListener("disable_reset_btn", disableResetBtn);
+
         return () => {
             clearTimeout(loadingId);
+            // リセットボタン有効化イベント購読解除
+            window.removeEventListener("enable_reset_btn", enableResetBtn);
+            // リセットボタン無効化イベント購読解除
+            window.removeEventListener("disable_reset_btn", disableResetBtn);
         };
     }, []);
 
@@ -159,20 +180,15 @@ export const UnityCanvas = ({ width, height }: Props) => {
 
         return () => {
             console.log("token update effect release!");
-
-            // ユーザートークン取得イベント購読
+            // ユーザートークン取得イベント購読解除
             window.removeEventListener("send_user_token", receivedTokenHandler as EventListenerOrEventListenerObject);
-
-            // シグナリングサーバ接続開始イベント購読
+            // シグナリングサーバ接続開始イベント購読解除
             window.removeEventListener("signaling_connect", connectHandler);
-
-            // シグナリングサーバ接続終了イベント購読
+            // シグナリングサーバ接続終了イベント購読解除
             window.removeEventListener("signaling_disconnect", disconnectHandler);
-
-            // シグナリングサーバログインイベント購読
+            // シグナリングサーバログインイベント購読解除
             window.removeEventListener("signaling_login", loginHandler);
-
-            // オペレーターへにメッセージ送信時イベント購読
+            // オペレーターへにメッセージ送信時イベント購読解除
             window.removeEventListener("relay_to_operator", relayToOperatorHandler as EventListenerOrEventListenerObject);
         };
     }, [userToken]);
@@ -189,21 +205,27 @@ export const UnityCanvas = ({ width, height }: Props) => {
         containerRef.current.style.height = height;
     }
 
-    // ボットスタートボタン設定
+    // シナリオ開始ボタン設定
     const ClickStartBtn = () => {
+        // シナリオ開始ボタン無効化
         setStartBtnEnabled(false);
+        // シナリオ開始信号をUnityへ
         if (unityInstanceRef.current !== undefined) {
             unityInstanceRef.current.SendMessage("GameManager", "StartBotProcess");
         }
-        setStopBtnEnabled(true);
     };
 
-    // ボットストップボタン設定
+    // リセットボタン設定
     const ClickStopBtn = () => {
+        // リセットボタン無効化
         setStopBtnEnabled(false);
+        // 音声認識停止
+        SpeechRecognition.stopListening();
+        // リセット処理停止信号をUnityへ
         if (unityInstanceRef.current !== undefined) {
             unityInstanceRef.current.SendMessage("GameManager", "StopBotProcess");
         }
+        // シナリオ開始ボタン有効化
         setStartBtnEnabled(true);
     };
 
@@ -257,7 +279,7 @@ export const UnityCanvas = ({ width, height }: Props) => {
                 シナリオ開始
             </SButton>
             <SButton variant="contained" disabled={!stopBtnEnabled} onClick={ClickStopBtn}>
-                シナリオ停止
+                リセット
             </SButton>
         </>
     );

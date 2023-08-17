@@ -5,6 +5,15 @@ public static class JSHelper
 {
 #if UNITY_EDITOR || !UNITY_WEBGL
 
+    public static void EnableResetBtn()
+    {
+        Debug.Log($"EnableResetBtn called by Editor");
+    }
+    public static void DisableResetBtn()
+    {
+        Debug.Log($"DisableResetBtn called by Editor");
+    }
+
     #region for SpeechRecognition
 
     public static void StartSpeechRecognition()
@@ -63,6 +72,12 @@ public static class JSHelper
     #endregion for WebRTC
 
 #else
+
+    [DllImport("__Internal")]
+    public static extern void EnableResetBtn();
+
+    [DllImport("__Internal")]
+    public static extern void DisableResetBtn();
 
     #region for SpeechRecognition
 

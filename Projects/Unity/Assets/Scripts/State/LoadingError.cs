@@ -7,6 +7,9 @@ public class LoadingError : IState
 {
     public async void OnEnter()
     {
+        // この時点では戻れない
+        GlobalState.Instance.CanReturnToTop = false;
+
         StreamingSpeechToText.Instance.OnStartRecording += StartStreamingSpeechToText;
 
         // 他タスクより先に音声合成を行う

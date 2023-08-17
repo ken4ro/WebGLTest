@@ -13,6 +13,9 @@ public class Operating : IState
 
     public async void OnEnter()
     {
+        // シグナリング中はトップに戻れない
+        GlobalState.Instance.CanReturnToTop = false;
+
         // UIリセット
         await UIManager.Instance.Reset();
 

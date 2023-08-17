@@ -288,6 +288,9 @@ public class CharacterManager : SingletonMonoBehaviour<CharacterManager>
     /// <param name="faceInfo"></param>
     public void FaceUpdate(FaceInfoManager.FaceInfo faceInfo) => _characterModel.FaceUpdate(faceInfo);
 
+    /// <summary>
+    /// 手動口パク開始
+    /// </summary>
     public void StartAutoLipSync()
     {
         Debug.Log("StartAutoLipSync");
@@ -296,6 +299,9 @@ public class CharacterManager : SingletonMonoBehaviour<CharacterManager>
         _autoMouthInput.enabled = true;
     }
 
+    /// <summary>
+    /// 手動口パク停止
+    /// </summary>
     public void StopAutoLipSync()
     {
         Debug.Log("StopAutoLipSync");

@@ -6,6 +6,9 @@ public class Starting : IState
 {
     public async void OnEnter()
     {
+        // トップに戻れない
+        GlobalState.Instance.CanReturnToTop = false;
+
         // UIリセット
         await UIManager.Instance.Reset();
 

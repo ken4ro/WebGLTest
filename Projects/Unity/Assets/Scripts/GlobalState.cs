@@ -156,4 +156,8 @@ public class GlobalState : SingletonBase<GlobalState>
         public int Height;
     }
 
+    /// <summary>
+    /// トップに戻れる状態か
+    /// </summary>
+    public bool CanReturnToTop { get; set; } = false;
 }

@@ -9,6 +9,9 @@ public class LoadingComplete : IState
 {
     public async void OnEnter()
     {
+        // この時点では戻れない
+        GlobalState.Instance.CanReturnToTop = false;
+
         StreamingSpeechToText.Instance.OnStartRecording += StartStreamingSpeechToText;
 
         //スクリプトだけ先んじて処理
@@ -81,6 +84,9 @@ public class LoadingComplete : IState
         // キャラクター処理終了後のアクション
         var action = BotManager.Instance.GetAction();
         ActionManager.Instance.Execute(action);
+
+        // この時点では戻れる
+        GlobalState.Instance.CanReturnToTop = true;
     }
 
     public void OnUpdate()

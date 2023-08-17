@@ -12,6 +12,9 @@ public class Waiting : IState
         // UIリセット
         await UIManager.Instance.Reset();
         // キャラクターリセット
+        CharacterManager.Instance.DisableAnimation();
+        CharacterManager.Instance.SetTransformsForIdle();
+        CharacterManager.Instance.EnableAnimation();
         CharacterManager.Instance.ResetAnimation();
         CharacterManager.Instance.ResetPosition();
         //CharacterManager.Instance.Disable();

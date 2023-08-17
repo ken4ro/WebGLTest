@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using static GlobalState;
 
 public class JSManager : SingletonMonoBehaviour<JSManager>
@@ -14,6 +15,7 @@ public class JSManager : SingletonMonoBehaviour<JSManager>
     // ƒ{ƒbƒgˆ—’â~
     public void StopBotProcess()
     {
+        //SceneManager.LoadScene(0);
         GlobalState.Instance.CurrentState.Value = State.Waiting;
     }
 

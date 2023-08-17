@@ -6,6 +6,9 @@ public class Speaking : IState
 {
     public void OnEnter()
     {
+        // 発話中は戻るの禁止
+        GlobalState.Instance.CanReturnToTop = false;
+
         StreamingSpeechToText.Instance.OnStreamingDataComplete += StreamingSpeechToTextComplete;
 
         // 発話中ウィンドウ表示

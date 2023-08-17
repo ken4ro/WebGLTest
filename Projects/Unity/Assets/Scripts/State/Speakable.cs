@@ -6,6 +6,9 @@ public class Speakable : IState
 {
     public void OnEnter()
     {
+        // トップに戻れる
+        GlobalState.Instance.CanReturnToTop = true;
+
         StreamingSpeechToText.Instance.OnStreamingDataAvailable += StreamingSpeechToTextAvailable;
         StreamingSpeechToText.Instance.OnStreamingDataComplete += StreamingSpeechToTextComplete;
 

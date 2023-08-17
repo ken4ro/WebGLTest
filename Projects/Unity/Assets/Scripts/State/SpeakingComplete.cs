@@ -17,6 +17,9 @@ public class SpeakingComplete : IState
 
     public async void OnEnter()
     {
+        // 発話完了後はトップに戻れない
+        GlobalState.Instance.CanReturnToTop = false;
+
         // 音声認識終了
         JSHelper.StopSpeechRecognition();
 

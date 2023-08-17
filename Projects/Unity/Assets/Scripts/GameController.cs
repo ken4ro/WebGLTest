@@ -8,6 +8,7 @@ using UniRx;
 using static GlobalState;
 using static SignageSettings;
 using static ApiServerManager;
+using UnityEngine.SceneManagement;
 
 /// <summary>
 // 主にゲーム全体のステート管理を担う
@@ -42,6 +43,9 @@ public class GameController : SingletonMonoBehaviour<GameController>
 
     // State管理
     private List<IState> _states = new List<IState>();
+
+    // トップに戻れるか
+    private bool canReturnToTop = false;
 
     protected override async void Awake()
     {
@@ -125,6 +129,20 @@ public class GameController : SingletonMonoBehaviour<GameController>
         if (_isInitialized)
         {
             _states[(int)GlobalState.Instance.CurrentState.Value].OnUpdate();
+        }
+
+        // トップに戻れるか判定
+        if (canReturnToTop != GlobalState.Instance.CanReturnToTop)
+        {
+            canReturnToTop = GlobalState.Instance.CanReturnToTop;
+            if (canReturnToTop)
+            {
+                JSHelper.EnableResetBtn();
+            }
+            else
+            {
+                JSHelper.DisableResetBtn();
+            }
         }
     }
 
