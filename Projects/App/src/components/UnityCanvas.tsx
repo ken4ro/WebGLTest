@@ -9,8 +9,8 @@ import { useUnity } from "../hooks/useUnity";
 import { socket } from "../util/SocketProvider";
 
 type Props = {
-    width: string;
-    height: string;
+    width?: number;
+    height?: number;
 };
 
 type SendUserTokenType = {
@@ -44,8 +44,8 @@ export const UnityCanvas = ({ width, height }: Props) => {
 
     // Canvasの大きさをセット
     const canvas = window.document.createElement("canvas");
-    canvas.style.width = width;
-    canvas.style.height = height;
+    canvas.style.width = width + "px";
+    canvas.style.height = height + "px";
 
     // Unityスクリプト読み込み
     useEffect(() => {
@@ -89,7 +89,6 @@ export const UnityCanvas = ({ width, height }: Props) => {
 
     // トークン更新時の処理
     useEffect(() => {
-        console.log("token update effect!");
         // シグナリングサーバと接続された
         const onConnect = () => {
             console.log("onConnect");
@@ -179,7 +178,6 @@ export const UnityCanvas = ({ width, height }: Props) => {
         window.addEventListener("relay_to_operator", relayToOperatorHandler as EventListenerOrEventListenerObject);
 
         return () => {
-            console.log("token update effect release!");
             // ユーザートークン取得イベント購読解除
             window.removeEventListener("send_user_token", receivedTokenHandler as EventListenerOrEventListenerObject);
             // シグナリングサーバ接続開始イベント購読解除
@@ -201,8 +199,8 @@ export const UnityCanvas = ({ width, height }: Props) => {
     });
     unityInstanceRef = instanceRef;
     if (containerRef.current) {
-        containerRef.current.style.width = width;
-        containerRef.current.style.height = height;
+        containerRef.current.style.width = width + "px";
+        containerRef.current.style.height = height + "px";
     }
 
     // シナリオ開始ボタン設定
@@ -274,7 +272,7 @@ export const UnityCanvas = ({ width, height }: Props) => {
     return (
         <>
             <SCanvasTitle>Unity Canvas</SCanvasTitle>
-            <SCanvas ref={containerRef} />;
+            <SCanvas ref={containerRef} />
             <SButton variant="contained" disabled={!startBtnEnabled} onClick={ClickStartBtn}>
                 シナリオ開始
             </SButton>

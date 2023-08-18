@@ -7,7 +7,9 @@ import { SoraCanvas } from "./components/SoraCanvas";
 function App() {
     return (
         <>
-            <UnityCanvas width="1280px" height="720px" />
+            {/* このようにサイズ指定も可能 */}
+            {/* <UnityCanvas width={1280} height={720} /> */}
+            <UnityCanvas />
             <SoraCanvas />
         </>
     );
