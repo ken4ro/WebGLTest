@@ -40,7 +40,9 @@ export const MainPage = () => {
                     </div>
                     <div className={styles.headline} id="demo">
                         <img src={headlineDemoImage} alt="xr concierge" width={1280} height={200} />
-                        <UnityCanvas />
+                        <div className={styles.demo_canvas}>
+                            <UnityCanvas />
+                        </div>
                     </div>
                 </div>
             </main>
