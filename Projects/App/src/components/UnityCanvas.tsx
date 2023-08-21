@@ -1,11 +1,15 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 // react
 import { useEffect, useState } from "react";
-// import styled from "styled-components";
-import styled from "@emotion/styled";
+// react-speech-recognition
 import SpeechRecognition, { useSpeechRecognition } from "react-speech-recognition";
+// mui
 import { Button } from "@mui/material";
+// style
+import styles from "./UnityCanvas.module.scss";
+// hooks
 import { useUnity } from "../hooks/useUnity";
+// components
 import { socket } from "../util/SocketProvider";
 
 type Props = {
@@ -271,42 +275,27 @@ export const UnityCanvas = ({ width, height }: Props) => {
 
     return (
         <>
-            <SCanvasTitle>Unity Canvas</SCanvasTitle>
-            <SCanvas ref={containerRef} />
-            <SButton variant="contained" disabled={!startBtnEnabled} onClick={ClickStartBtn}>
-                シナリオ開始
-            </SButton>
-            <SButton variant="contained" disabled={!stopBtnEnabled} onClick={ClickStopBtn}>
-                リセット
-            </SButton>
+            <div className={styles.canvas} ref={containerRef} />
+            <div className={styles.button_area}>
+                <Button
+                    className={styles.button}
+                    variant="contained"
+                    disabled={!startBtnEnabled}
+                    onClick={ClickStartBtn}
+                    sx={{ bgcolor: "#4D8E8A", "&:hover": { bgcolor: "#3A827E" } }}
+                >
+                    シナリオ開始
+                </Button>
+                <Button
+                    className={styles.button}
+                    variant="contained"
+                    disabled={!stopBtnEnabled}
+                    onClick={ClickStopBtn}
+                    sx={{ bgcolor: "#4D8E8A", "&:hover": { bgcolor: "#3A827E" } }}
+                >
+                    リセット
+                </Button>
+            </div>
         </>
     );
 };
-
-const SCanvasTitle = styled.div`
-    text-align: center;
-    margin-top: 30px;
-    margin-left: auto;
-    margin-right: auto;
-`;
-
-const SCanvas = styled.div`
-    align-items: center;
-    align-content: center;
-    margin-top: 10px;
-    margin-left: auto;
-    margin-right: auto;
-`;
-
-const SButton = styled(Button)`
-    display: block;
-    /* margin-top: 10px; */
-    margin-bottom: 1rem;
-    margin-left: auto;
-    margin-right: auto;
-`;
-
-const SLabel = styled.div`
-    text-align: center;
-    margin-top: 10px;
-`;

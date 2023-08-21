@@ -1,0 +1,13 @@
+.wrapper {
+}
+
+.container {
+    height: 2rem;
+    background-color: #333;
+}
+
+.container > p {
+    margin-left: 0.1rem;
+    line-height: 2rem;
+    color: #cccccc;
+}
