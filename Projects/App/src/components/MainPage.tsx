@@ -15,7 +15,7 @@ export const MainPage = () => {
             <main className={styles.main}>
                 <div className={styles.content}>
                     <div className={styles.main_image}>
-                        <img src={mainImage} alt="xr concierge" width={1280} height={600} />
+                        <img src={mainImage} alt="xr concierge" />
                     </div>
                     <div className={styles.headline} id="about">
                         <img src={headlineConciergeImage} alt="xr concierge" width={1280} height={200} />
