@@ -10,6 +10,12 @@ const GameControlPlugin = {
         const event = new Event("disable_reset_btn");
         window.dispatchEvent(event);
     },
+
+    GameControllerInitialized: function () {
+        console.log("GameControlPlugin: GameControllerInitialized");
+        const event = new Event("gamecontroller_initialized");
+        window.dispatchEvent(event);
+    },
 };
 
 mergeInto(LibraryManager.library, GameControlPlugin);

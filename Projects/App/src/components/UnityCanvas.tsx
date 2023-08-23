@@ -61,10 +61,6 @@ export const UnityCanvas = ({ width, height }: Props) => {
         if (root) {
             root.appendChild(scriptTag);
         }
-        const loadingId = setTimeout(() => {
-            // 8秒と見なす
-            setStartBtnEnabled(true);
-        }, 8000);
 
         // リセットボタンを有効化
         const enableResetBtn = () => {
@@ -82,12 +78,21 @@ export const UnityCanvas = ({ width, height }: Props) => {
         // リセットボタン無効化イベント購読
         window.addEventListener("disable_reset_btn", disableResetBtn);
 
+        // シナリオ開始ボタン有効化
+        const enableScenarioStartBtn = () => {
+            console.log("gamecontroller_initialized event from Unity");
+            setStartBtnEnabled(true);
+        };
+        // シナリオ開始ボタン有効化イベント購読
+        window.addEventListener("gamecontroller_initialized", enableScenarioStartBtn);
+
         return () => {
-            clearTimeout(loadingId);
             // リセットボタン有効化イベント購読解除
             window.removeEventListener("enable_reset_btn", enableResetBtn);
             // リセットボタン無効化イベント購読解除
             window.removeEventListener("disable_reset_btn", disableResetBtn);
+            // シナリオ開始ボタン有効化イベント購読解除
+            window.removeEventListener("gamecontroller_initialized", enableScenarioStartBtn);
         };
     }, []);
 

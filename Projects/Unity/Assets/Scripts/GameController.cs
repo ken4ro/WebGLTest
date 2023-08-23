@@ -112,6 +112,9 @@ public class GameController : SingletonMonoBehaviour<GameController>
 #endif
 
         _isInitialized = true;
+
+        // 初期化完了をJS側に伝える
+        JSHelper.GameControllerInitialized();
     }
 
     void OnApplicationQuit()

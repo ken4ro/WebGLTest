@@ -14,6 +14,11 @@ public static class JSHelper
         Debug.Log($"DisableResetBtn called by Editor");
     }
 
+    public static void GameControllerInitialized()
+    {
+        Debug.Log("GameControllerInitialized called by Editor");
+    }
+
     #region for SpeechRecognition
 
     public static void StartSpeechRecognition()
@@ -78,6 +83,9 @@ public static class JSHelper
 
     [DllImport("__Internal")]
     public static extern void DisableResetBtn();
+
+    [DllImport("__Internal")]
+    public static extern void GameControllerInitialized();
 
     #region for SpeechRecognition
 
