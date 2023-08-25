@@ -44,6 +44,7 @@ export const MainPage = () => {
                             <UnityCanvas />
                         </div>
                         {/* <iframe className={styles.demo_iframe} src="https://dev.xrccg.com:4003" /> */}
+                        <div>{/* <SoraCanvas /> */}</div>
                     </div>
                 </div>
             </main>

@@ -283,11 +283,11 @@ public class GameController : SingletonMonoBehaviour<GameController>
         // ユーザー基本設定
         GlobalState.Instance.UserSettings = new UserSettings()
         {
-            //LoginId = "724e242c-03fd-40b3-bcf1-a6071b613f86-b3608b4b-a347-467f-a2e0-5aa3cb3b9c78-3a8482bc-14a1-47ab-b192-1a4963b3858f-44966299-8d87-463d-a168-487cadf1ffd3",
-            //LoginType = "anonymous",
-            LoginId = "kenken4ro",
-            LoginType = "basic",
-            Password = "nttcom0033"
+            LoginId = "bc5b6bbe-538d-4f6b-bedb-449a575ef231-428899cd-8deb-4011-968c-73dea2228b93-34fa0af4-a20f-4a62-bce3-e1e9f025d6fc-57f160b4-2f58-46a5-bd63-ed750673def6",
+            LoginType = "anonymous",
+            //LoginId = "kenken4ro",
+            //LoginType = "basic",
+            //Password = "nttcom0033"
         };
 
         // ユーザートークン取得

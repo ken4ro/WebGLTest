@@ -3,7 +3,7 @@ import Sora from "sora-js-sdk";
 const channelID = "test@ken4ro#43071663";
 const signalingURL = "wss://0001.stable.sora-labo.shiguredo.app/signaling";
 const accessToken =
-    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjaGFubmVsX2lkIjoidGVzdEBrZW40cm8jNDMwNzE2NjMifQ.n2YNOmgUwzCBz_e0Q5oZf9-6oQIDqvuFtvjHm7jQcWk";
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjaGFubmVsX2lkIjoia2VuNHJvXzQzMDcxNjYzX3dlYmdsdGVzdCJ9.DfIrzfcwqGkJJGYN-LFtFgbuMsPwnb1DNIA66gHn3cs";
 const debug = false;
 const sora = Sora.connection(signalingURL, debug);
 

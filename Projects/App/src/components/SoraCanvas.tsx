@@ -131,6 +131,8 @@ export const SoraCanvas = () => {
         window.addEventListener("webrtc_connect", Connect);
         window.addEventListener("webrtc_disconnect", Disconnect);
 
+        Connect();
+
         // クリーンアップ
         return () => {
             // WebRTCイベント購読解除
@@ -142,7 +144,6 @@ export const SoraCanvas = () => {
         };
     }, []);
 
-    return <></>;
     return (
         <SContainer>
             <SVideoLayout>
