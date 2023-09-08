@@ -87,7 +87,7 @@ public class CharacterManager : SingletonMonoBehaviour<CharacterManager>
     private Vector3[] _characterPositions = null;
     private Quaternion[] _characterRotations = null;
 
-    // 口パク
+    // 口パク(Live2D)
     private CubismMouthController _mouthController = null;
     private CubismAutoMouthInput _autoMouthInput = null;
     private CubismParameter _mouthOpenYParameter = null;
@@ -97,27 +97,42 @@ public class CharacterManager : SingletonMonoBehaviour<CharacterManager>
     private float _currentVolume = 0.0f;
     private float _velocity = 0.0f;
 
+    // 口パク(3D)
+    private AutoLipSync _autoLipSync = null;
+
+
     protected override void Awake()
     {
         base.Awake();
 
-        _mouthController = this.gameObject.GetComponent<CubismMouthController>();
-        _autoMouthInput = this.gameObject.GetComponent<CubismAutoMouthInput>();
-        _mouthOpenYParameter = GameObject.Find("ParamMouthOpenY").GetComponent<CubismParameter>();
-
-        _mouthController.enabled = false;
-        _autoMouthInput.enabled = false;
+        if (GlobalState.Instance.CurrentCharacterModel.Value == GlobalState.CharacterModel.Una2D)
+        {
+            _mouthController = this.gameObject.GetComponent<CubismMouthController>();
+            _autoMouthInput = this.gameObject.GetComponent<CubismAutoMouthInput>();
+            _mouthOpenYParameter = GameObject.Find("ParamMouthOpenY").GetComponent<CubismParameter>();
+            _mouthController.enabled = false;
+            _autoMouthInput.enabled = false;
+        }
+        else if (GlobalState.Instance.CurrentCharacterModel.Value == GlobalState.CharacterModel.Una3D)
+        {
+            _autoLipSync = this.gameObject.GetComponent<AutoLipSync>();
+            _autoLipSync._skinnedMeshRenderer = FacialSkinnedMesh;
+            _autoLipSync.enabled = false;
+        }
 
         AudioManager.Instance.SetAudioSourceForCharacter();
     }
 
     void LateUpdate()
     {
-        //float targetVolume = _mouthOpenYValue * _power;
-        float targetVolume = _mouthOpenYValue;
-        targetVolume = targetVolume < _threshold ? 0 : targetVolume;
-        _currentVolume = Mathf.SmoothDamp(_currentVolume, targetVolume, ref _velocity, 0.05f);
-        _mouthOpenYParameter.Value = Mathf.Clamp01(_currentVolume);
+        if (GlobalState.Instance.CurrentCharacterModel.Value == GlobalState.CharacterModel.Una2D)
+        {
+            //float targetVolume = _mouthOpenYValue * _power;
+            float targetVolume = _mouthOpenYValue;
+            targetVolume = targetVolume < _threshold ? 0 : targetVolume;
+            _currentVolume = Mathf.SmoothDamp(_currentVolume, targetVolume, ref _velocity, 0.05f);
+            _mouthOpenYParameter.Value = Mathf.Clamp01(_currentVolume);
+        }
     }
 
     void OnEnable()
@@ -293,10 +308,17 @@ public class CharacterManager : SingletonMonoBehaviour<CharacterManager>
     /// </summary>
     public void StartAutoLipSync()
     {
-        Debug.Log("StartAutoLipSync");
-        _mouthController.MouthOpening = 0;
-        _mouthController.enabled = true;
-        _autoMouthInput.enabled = true;
+        //Debug.Log("StartAutoLipSync");
+        if (GlobalState.Instance.CurrentCharacterModel.Value == GlobalState.CharacterModel.Una2D)
+        {
+            _mouthController.MouthOpening = 0;
+            _mouthController.enabled = true;
+            _autoMouthInput.enabled = true;
+        }
+        else if (GlobalState.Instance.CurrentCharacterModel.Value == GlobalState.CharacterModel.Una3D)
+        {
+            _autoLipSync.enabled = true;
+        }
     }
 
     /// <summary>
@@ -304,15 +326,26 @@ public class CharacterManager : SingletonMonoBehaviour<CharacterManager>
     /// </summary>
     public void StopAutoLipSync()
     {
-        Debug.Log("StopAutoLipSync");
-        _mouthController.enabled = false;
-        _autoMouthInput.enabled = false;
-        _mouthController.MouthOpening = 0;
+        //Debug.Log("StopAutoLipSync");
+        if (GlobalState.Instance.CurrentCharacterModel.Value == GlobalState.CharacterModel.Una2D)
+        {
+            _mouthController.enabled = false;
+            _autoMouthInput.enabled = false;
+            _mouthController.MouthOpening = 0;
+        }
+        else if (GlobalState.Instance.CurrentCharacterModel.Value == GlobalState.CharacterModel.Una3D)
+        {
+            _autoLipSync.enabled = false;
+            _autoLipSync.ResetLipSync();
+        }
     }
 
     public void SetMouseOpenYParameter(float value)
     {
-        _mouthOpenYValue = value;
+        if (GlobalState.Instance.CurrentCharacterModel.Value == GlobalState.CharacterModel.Una2D)
+        {
+            _mouthOpenYValue = value;
+        }
     }
 
     private void GetTransforms()

@@ -1,18 +1,13 @@
-const SpeechRecognitionPlugin =
-{
-    StartSpeechRecognition: function()
-    {
-        console.log("SpeechRecognitionPlugin: StartRecognition");
+const SpeechRecognitionPlugin = {
+    StartSpeechRecognition: function () {
         const event = new Event("speechrecognition_start");
         window.dispatchEvent(event);
     },
 
-    StopSpeechRecognition: function()
-    {
-        console.log("SpeechRecognitionPlugin: StopRecognition");
-        const event = new Event("speechrecognition_end")
+    StopSpeechRecognition: function () {
+        const event = new Event("speechrecognition_end");
         window.dispatchEvent(event);
-    }
+    },
 };
 
 mergeInto(LibraryManager.library, SpeechRecognitionPlugin);

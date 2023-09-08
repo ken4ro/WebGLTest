@@ -61,14 +61,35 @@ public class AssetBundleManager : SingletonBase<AssetBundleManager>
     {
         if (AvatarAssetBundle == null)
         {
+            var assetBundlePath = "";
 #if !UNITY_EDITOR && UNITY_WEBGL
-            var assetBundlePath = Path.Combine(Application.streamingAssetsPath, "avatar_webgl.bundle");
-            AvatarAssetBundle = await LoadAssetBundleWithWebRequestAsync(assetBundlePath);
+            switch (GlobalState.Instance.CurrentCharacterModel.Value)
+            {
+                case CharacterModel.Una2D:
+                    assetBundlePath = Path.Combine(Application.streamingAssetsPath, "avatar_2d_webgl.bundle");
+                    break;
+                case CharacterModel.Una3D:
+                    assetBundlePath = Path.Combine(Application.streamingAssetsPath, "avatar_3d_webgl.bundle");
+                    break;
+                default:
+                    assetBundlePath = Path.Combine(Application.streamingAssetsPath, "avatar_2d_webgl.bundle");
+                    break;
+            }
 #else
-            var assetBundlePath = Path.Combine(Application.streamingAssetsPath, "avatar_windows.bundle");
-            //AvatarAssetBundle = await LoadAssetBundleAsync(avatarAssetBundlePath);
-            AvatarAssetBundle = await LoadAssetBundleWithWebRequestAsync(assetBundlePath);
+            switch (GlobalState.Instance.CurrentCharacterModel.Value)
+            {
+                case CharacterModel.Una2D:
+                    assetBundlePath = Path.Combine(Application.streamingAssetsPath, "avatar_2d_windows.bundle");
+                    break;
+                case CharacterModel.Una3D:
+                    assetBundlePath = Path.Combine(Application.streamingAssetsPath, "avatar_3d_windows.bundle");
+                    break;
+                default:
+                    assetBundlePath = Path.Combine(Application.streamingAssetsPath, "avatar_2d_windows.bundle");
+                    break;
+            }
 #endif
+            AvatarAssetBundle = await LoadAssetBundleWithWebRequestAsync(assetBundlePath);
         }
         if (AvatarAssetBundle != null)
         {

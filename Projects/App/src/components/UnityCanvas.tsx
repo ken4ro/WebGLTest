@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 // react
-import { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 // react-speech-recognition
 import SpeechRecognition, { useSpeechRecognition } from "react-speech-recognition";
 // mui
@@ -43,7 +43,6 @@ export let unityInstanceRef: React.MutableRefObject<UnityInstance | undefined>;
 export const UnityCanvas = ({ width, height }: Props) => {
     const [startBtnEnabled, setStartBtnEnabled] = useState(false);
     const [stopBtnEnabled, setStopBtnEnabled] = useState(false);
-    const [recognitionBtnEnabled, setRecognitionBtnEnabled] = useState(true);
     const [userToken, setUserToken] = useState("");
 
     // Canvasの大きさをセット
@@ -51,8 +50,29 @@ export const UnityCanvas = ({ width, height }: Props) => {
     canvas.style.width = width + "px";
     canvas.style.height = height + "px";
 
+    // Unityインスタンス生成
+    const { instanceRef, containerRef } = useUnity({
+        canvas,
+        unityBuildRoot,
+        buildName,
+    });
+    unityInstanceRef = instanceRef;
+    if (containerRef.current) {
+        containerRef.current.style.width = width + "px";
+        containerRef.current.style.height = height + "px";
+    }
+
+    // 音声認識初期化
+    const { transcript, listening, browserSupportsSpeechRecognition } = useSpeechRecognition();
+
+    // ブラウザ対応確認
+    if (!browserSupportsSpeechRecognition) {
+        console.error("Browser doesn't support speech recognition.");
+    }
+
     // Unityスクリプト読み込み
     useEffect(() => {
+        // Unityスクリプト読み込み
         const scriptSrc = `${unityBuildRoot}/${buildName}.loader.js`;
         const root = window.document.getElementById("root");
         const scriptTag = window.document.createElement("script");
@@ -64,7 +84,6 @@ export const UnityCanvas = ({ width, height }: Props) => {
 
         // リセットボタンを有効化
         const enableResetBtn = () => {
-            console.log("enable_reset_btn event from Unity");
             setStopBtnEnabled(true);
         };
         // リセットボタン有効化イベント購読
@@ -72,7 +91,6 @@ export const UnityCanvas = ({ width, height }: Props) => {
 
         // リセットボタンを無効化
         const disableResetBtn = () => {
-            console.log("disable_reset_btn event from Unity");
             setStopBtnEnabled(false);
         };
         // リセットボタン無効化イベント購読
@@ -80,11 +98,22 @@ export const UnityCanvas = ({ width, height }: Props) => {
 
         // シナリオ開始ボタン有効化
         const enableScenarioStartBtn = () => {
-            console.log("gamecontroller_initialized event from Unity");
             setStartBtnEnabled(true);
         };
         // シナリオ開始ボタン有効化イベント購読
         window.addEventListener("gamecontroller_initialized", enableScenarioStartBtn);
+
+        // 音声認識開始イベント購読
+        window.addEventListener("speechrecognition_start", function () {
+            // console.log("speechrecognition_start event from Unity");
+            SpeechRecognition.startListening();
+        });
+
+        // 音声認識終了イベント購読
+        window.addEventListener("speechrecognition_end", function () {
+            // console.log("speechrecognition_start event from Unity");
+            SpeechRecognition.stopListening();
+        });
 
         return () => {
             // リセットボタン有効化イベント購読解除
@@ -127,7 +156,7 @@ export const UnityCanvas = ({ width, height }: Props) => {
 
         // ユーザートークン受信時ハンドラ
         const receivedTokenHandler = (ev: CustomEvent<SendUserTokenType>) => {
-            console.log("send_user_token event from Unity: token = ", ev.detail.token);
+            // console.log("send_user_token event from Unity: token = ", ev.detail.token);
             setUserToken(ev.detail.token);
         };
 
@@ -200,27 +229,15 @@ export const UnityCanvas = ({ width, height }: Props) => {
         };
     }, [userToken]);
 
-    // Unityインスタンス生成
-    const { instanceRef, containerRef } = useUnity({
-        canvas,
-        unityBuildRoot,
-        buildName,
-    });
-    unityInstanceRef = instanceRef;
-    if (containerRef.current) {
-        containerRef.current.style.width = width + "px";
-        containerRef.current.style.height = height + "px";
-    }
-
     // シナリオ開始ボタン設定
-    const ClickStartBtn = () => {
+    const ClickStartBtn = useCallback(async () => {
         // シナリオ開始ボタン無効化
         setStartBtnEnabled(false);
         // シナリオ開始信号をUnityへ
         if (unityInstanceRef.current !== undefined) {
             unityInstanceRef.current.SendMessage("GameManager", "StartBotProcess");
         }
-    };
+    }, []);
 
     // リセットボタン設定
     const ClickStopBtn = () => {
@@ -228,7 +245,7 @@ export const UnityCanvas = ({ width, height }: Props) => {
         setStopBtnEnabled(false);
         // 音声認識停止
         SpeechRecognition.stopListening();
-        // リセット処理停止信号をUnityへ
+        // シナリオ停止信号をUnityへ
         if (unityInstanceRef.current !== undefined) {
             unityInstanceRef.current.SendMessage("GameManager", "StopBotProcess");
         }
@@ -236,25 +253,10 @@ export const UnityCanvas = ({ width, height }: Props) => {
         setStartBtnEnabled(true);
     };
 
-    // 音声認識初期化
-    const { transcript, listening, browserSupportsSpeechRecognition } = useSpeechRecognition();
-
-    // 音声認識開始イベント購読
-    window.addEventListener("speechrecognition_start", function () {
-        console.log("speechrecognition_start event from Unity");
-        SpeechRecognition.startListening();
-    });
-
-    // 音声認識終了イベント購読
-    window.addEventListener("speechrecognition_end", function () {
-        console.log("speechrecognition_start event from Unity");
-        SpeechRecognition.stopListening();
-    });
-
     // 音声認識中の処理
     useEffect(() => {
         if (transcript !== "") {
-            window.console.log("transcript: " + transcript);
+            // console.log("transcript: " + transcript);
             // 音声認識中の経過文字列をUnity側に送信
             if (unityInstanceRef.current !== undefined) {
                 unityInstanceRef.current.SendMessage("GameManager", "SetSpeakingText", transcript);
@@ -271,12 +273,6 @@ export const UnityCanvas = ({ width, height }: Props) => {
             }
         }
     }, [listening]);
-
-    // ブラウザ対応確認
-    if (!browserSupportsSpeechRecognition) {
-        window.console.log("Browser doesn't support speech recognition.");
-        return <span>Browser doesn't support speech recognition.</span>;
-    }
 
     return (
         <>

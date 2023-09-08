@@ -1,6 +1,12 @@
 ﻿using System;
 using UnityEngine;
 
+public enum AvatarType
+{
+    Una2D,
+    Una3D,
+}
+
 /// <summary>
 /// ユーザー設定クラス
 /// </summary>

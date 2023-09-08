@@ -38,8 +38,7 @@
         "rm": "rmdir /s /q \"../../docs\"",
         "mv": "move build \"../../docs\"",
         "deploy": "npm run rm && npm run build && npm run mv",
-        "tsc": "tsc --noEmit",
-        "dev": "next dev"
+        "tsc": "tsc --noEmit"
     },
     "eslintConfig": {
         "extends": [

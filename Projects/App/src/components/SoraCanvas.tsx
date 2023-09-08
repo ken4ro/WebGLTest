@@ -3,7 +3,7 @@ import React from "react";
 import styled from "@emotion/styled";
 import { useEffect, useRef, useState } from "react";
 import { Button, ButtonGroup } from "@mui/material";
-import { GetVolumeNode } from "../util/GetVolumeNode";
+import { GetVolumeNodeFromStream } from "../util/GetVolumeNode";
 import { unityInstanceRef } from "./UnityCanvas";
 import { SoraProvider } from "../util/SoraProvider";
 import { ConnectionPublisher } from "sora-js-sdk";
@@ -94,7 +94,7 @@ export const SoraCanvas = () => {
             } else if (event.track.kind === "audio") {
                 window.console.log(`Add mediastream audio track: ${stream.id}`);
                 // 接続相手のマイク音量をUnityに送信
-                const node = await GetVolumeNode(stream);
+                const node = await GetVolumeNodeFromStream(stream);
                 node.port.onmessage = (ev) => {
                     const volume = ev.data.volume;
                     if (unityInstanceRef.current) {

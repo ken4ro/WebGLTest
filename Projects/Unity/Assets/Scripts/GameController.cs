@@ -2,13 +2,14 @@
 using System.Text;
 using System.Threading;
 using System.Collections.Generic;
+using System.Web;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using Cysharp.Threading.Tasks;
 using UniRx;
 using static GlobalState;
 using static SignageSettings;
 using static ApiServerManager;
-using UnityEngine.SceneManagement;
 
 /// <summary>
 // 主にゲーム全体のステート管理を担う
@@ -50,7 +51,7 @@ public class GameController : SingletonMonoBehaviour<GameController>
     protected override async void Awake()
     {
         base.Awake();
-
+        
         // ユーザー設定取得
         await GetUserSettings();
 
@@ -87,11 +88,9 @@ public class GameController : SingletonMonoBehaviour<GameController>
         UIManager.Instance.OnClickScreenSaver += ClickScreenSaver;
 
         // 使用キャラクターセット
-        GlobalState.Instance.CurrentCharacterModel.Value = CharacterModel.Una2D;
-
-        // アバター読み込み
+        GlobalState.Instance.CurrentCharacterModel.Value = CharacterModel.Una3D; // TODO: サーバ側から設定取得
+        // ストリーミングアセットフォルダからアバター読み込み
         await AssetBundleManager.Instance.LoadAvatarAssetBundleFromStreamingAssets();
-
         // キャラクターオブジェクト作成
         LoadCharacterObject();
 
@@ -239,7 +238,19 @@ public class GameController : SingletonMonoBehaviour<GameController>
         var assetBundle = AssetBundleManager.Instance.AvatarAssetBundle;
 
         // キャラクターオブジェクト作成
-        GameObject characterObject = assetBundle.LoadAsset<GameObject>("Una2D");
+        GameObject characterObject = null;
+        switch (GlobalState.Instance.CurrentCharacterModel.Value)
+        {
+            case CharacterModel.Una2D:
+                characterObject = assetBundle.LoadAsset<GameObject>("Una2D");
+                break;
+            case CharacterModel.Una3D:
+                characterObject = assetBundle.LoadAsset<GameObject>("Una");
+                break;
+            default:
+                characterObject = assetBundle.LoadAsset<GameObject>("Una2D");
+                break;
+        }
         if (characterObject != null)
         {
             //Debug.Log($"LoadCharacterObject: LoadAsset completed.");
@@ -280,14 +291,25 @@ public class GameController : SingletonMonoBehaviour<GameController>
 
     private async UniTask GetUserSettings()
     {
+        // anonymous id 取得
+        var anonymousId = "";
+#if UNITY_EDITOR || !UNITY_WEBGL
+        anonymousId = "bc5b6bbe-538d-4f6b-bedb-449a575ef231-428899cd-8deb-4011-968c-73dea2228b93-34fa0af4-a20f-4a62-bce3-e1e9f025d6fc-57f160b4-2f58-46a5-bd63-ed750673def6";
+#else
+        // URL を取得
+        var currentUrl = Application.absoluteURL;
+        Debug.Log($"URL = {currentUrl}");
+        var uri = new Uri(currentUrl);
+        var queries = HttpUtility.ParseQueryString(uri.Query);
+        anonymousId = queries["id"];
+#endif
+        Debug.Log($"anonymous id = {anonymousId}");
+
         // ユーザー基本設定
         GlobalState.Instance.UserSettings = new UserSettings()
         {
-            LoginId = "bc5b6bbe-538d-4f6b-bedb-449a575ef231-428899cd-8deb-4011-968c-73dea2228b93-34fa0af4-a20f-4a62-bce3-e1e9f025d6fc-57f160b4-2f58-46a5-bd63-ed750673def6",
+            LoginId = anonymousId,
             LoginType = "anonymous",
-            //LoginId = "kenken4ro",
-            //LoginType = "basic",
-            //Password = "nttcom0033"
         };
 
         // ユーザートークン取得
